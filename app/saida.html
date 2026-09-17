@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bible ACF Studio — Projeção</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none}
+  canvas,#black{position:absolute;inset:0;width:100%;height:100%;opacity:0;will-change:opacity}
+  #black{background:#000;z-index:10}
+  #status{position:absolute;left:12px;bottom:10px;font:13px system-ui,sans-serif;color:#777;z-index:11;opacity:0;transition:opacity .3s}
+  body.offline #status{opacity:1}
+  body:hover{cursor:default}
+</style>
+<script src="engine.js"></script>
+</head>
+<body>
+<canvas id="bg0"></canvas><canvas id="bg1"></canvas>
+<canvas id="tx0"></canvas><canvas id="tx1"></canvas>
+<div id="black"></div>
+<div id="status">Aguardando o operador…</div>
+<script src="saida.js"></script>
+</body>
+</html>

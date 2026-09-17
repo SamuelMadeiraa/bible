@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BIBLE ACF</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(to bottom, #1b1b1b, #0d0d0d);
+    color:white;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:10px;
+  }
+  header {
+    text-align:center;
+    padding:20px 0;
+    background:#222;
+    border-bottom:1px solid #444;
+    border-radius:10px;
+    margin-bottom:20px;
+  }
+  header h1 { color:#ffd700; letter-spacing:1px; }
+  .controls {
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+  }
+  .card {
+    background:#222;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.5);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  select,input,button {
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    font-weight:bold;
+    font-size:1rem;
+    outline:none;
+    background:#333;
+    color:white;
+    transition:0.3s;
+  }
+  input[type="range"] { width:100%; }
+  button:hover { background:#444; cursor:pointer; }
+  .canvas-wrapper {
+    width:100%;
+    max-width:900px;
+    margin:auto;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 0 25px rgba(255,255,255,0.2);
+    position:relative;
+  }
+  #container {
+    width:100%;
+    height:0;
+    padding-bottom:56.25%;
+    position:relative;
+    background: url('fundo.jpg') center/cover no-repeat; /* Imagem padrão */
+  }
+  #verso,#referencia {
+    position:absolute;
+    text-shadow:2px 2px 12px rgba(0,0,0,0.7);
+    line-height:1.4;
+  }
+  #verso { top:10%; left:5%; font-size:2rem; max-width:90%; color:white; }
+  #referencia { bottom:10%; left:5%; font-size:1.2rem; font-weight:700; color:white; }
+  #listaPalavras span { margin-right:8px; cursor:pointer; border-bottom:1px dotted #ffd700; }
+  .actions {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin-top:15px;
+  }
+  footer { text-align:center; margin-top:25px; padding:10px; color:#888; font-size:0.9rem; }
+  @media(max-width:600px){
+    #verso { font-size:1.2rem; }
+    #referencia { font-size:1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header><h1>BIBLE </h1></header>
+
+<div class="controls">
+  <div class="card">
+    <label>Livro</label>
+    <select id="livro" onchange="carregarCapitulos()"></select>
+    <label>Capítulo</label>
+    <select id="capitulo" onchange="carregarVersiculos()"></select>
+    <label>Versículo</label>
+    <select id="versiculo"></select>
+  </div>
+
+  <div class="card">
+    <label>Palavras para destacar</label>
+    <div style="display:flex;gap:5px;">
+      <input type="text" id="novaPalavra" placeholder="Digite palavra" />
+      <button onclick="adicionarPalavra()">+</button>
+    </div>
+    <div id="listaPalavras"><em>Nenhuma palavra adicionada</em></div>
+    <label>Cor do destaque <input type="color" id="corDestaque" value="#ffff00"/></label>
+  </div>
+
+  <div class="card">
+    <label>Tamanho do verso <span id="valVerso">32</span></label>
+    <input type="range" id="tamanhoVerso" min="18" max="60" value="32"/>
+    <label>Tamanho referência <span id="valRef">20</span></label>
+    <input type="range" id="tamanhoRef" min="12" max="40" value="20"/>
+    <label>Posição referência <span id="valPosRef">10</span></label>
+    <input type="range" id="posicaoRef" min="2" max="80" value="10"/>
+    <label>Cor da referência <input type="color" id="corReferencia" value="#ffffff"/></label>
+  </div>
+
+  <div class="card">
+    <label>Vertical verso <span id="valPosV">10</span></label>
+    <input type="range" id="posicaoVerso" min="0" max="80" value="10"/>
+    <label>Horizontal verso <span id="valPosH">5</span></label>
+    <input type="range" id="posicaoHorizontalVerso" min="0" max="90" value="5"/>
+    <label>Fundo</label>
+    <input type="file" id="uploadFundo" accept="image/*"/>
+  </div>
+</div>
+
+<div class="canvas-wrapper">
+  <div id="container">
+    <div id="verso">Selecione um versículo...</div>
+    <div id="referencia">MATEUS 11:28</div>
+  </div>
+</div>
+
+<div class="actions">
+  <button onclick="buscarVersiculo()">🔍 Buscar</button>
+  <button onclick="baixarImagem()">📸 Baixar</button>
+  <button onclick="alternarReferencia()" id="toggleRef">👁 Ocultar Referência</button>
+</div>
+
+<footer>© 2025 • Desenvolvido por Samuel Madeira</footer>
+
+<script>
+const livros={"Gênesis":50,"Êxodo":40,"Levítico":27,"Números":36,"Deuteronômio":34,"Josué":24,"Juízes":21,"Rute":4,"1 Samuel":31,"2 Samuel":24,"1 Reis":22,"2 Reis":25,"Salmos":150,"Provérbios":31,"Eclesiastes":12,"Isaías":66,"Jeremias":52,"Ezequiel":48,"Daniel":12,"Oséias":14,"Mateus":28,"Marcos":16,"Lucas":24,"João":21,"Atos":28,"Romanos":16,"1 Coríntios":16,"2 Coríntios":13,"Gálatas":6,"Efésios":6,"Filipenses":4,"Colossenses":4,"1 Tessalonicenses":5,"2 Tessalonicenses":3,"1 Timóteo":6,"2 Timóteo":4,"Tito":3,"Filemom":1,"Hebreus":13,"Tiago":5,"1 Pedro":5,"2 Pedro":3,"1 João":5,"2 João":1,"3 João":1,"Judas":1,"Apocalipse":22};
+
+const livroSelect=document.getElementById("livro");
+const versoEl=document.getElementById("verso");
+const refEl=document.getElementById("referencia");
+const tamanhoVerso=document.getElementById("tamanhoVerso");
+const tamanhoRef=document.getElementById("tamanhoRef");
+const posicaoRef=document.getElementById("posicaoRef");
+const posicaoVerso=document.getElementById("posicaoVerso");
+const posicaoHorizontalVerso=document.getElementById("posicaoHorizontalVerso");
+const uploadFundo=document.getElementById("uploadFundo");
+const corReferencia=document.getElementById("corReferencia");
+const container = document.getElementById('container');
+let palavrasDestaque=[];
+
+// Carregar imagem padrão
+const fundoPadrao = 'fundo.jpg';
+container.style.backgroundImage = `url('${fundoPadrao}')`;
+
+for(let nome in livros){ const opt=document.createElement("option"); opt.value=nome; opt.textContent=nome; livroSelect.appendChild(opt); }
+
+function carregarCapitulos(){const livro=livroSelect.value; const capituloSelect=document.getElementById("capitulo"); capituloSelect.innerHTML=""; for(let i=1;i<=livros[livro];i++){const opt=document.createElement("option"); opt.value=i; opt.textContent=i; capituloSelect.appendChild(opt);} carregarVersiculos();}
+function carregarVersiculos(){const versiculoSelect=document.getElementById("versiculo"); versiculoSelect.innerHTML=""; for(let i=1;i<=30;i++){const opt=document.createElement("option"); opt.value=i; opt.textContent=i; versiculoSelect.appendChild(opt);} }
+
+function destacarPalavra(texto,palavras,cor){if(!palavras) return texto; const lista=palavras.split(',').map(p=>p.trim()).filter(p=>p); for(const palavra of lista){const regex=new RegExp(`(${palavra.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'); texto=texto.replace(regex,`<span style="color:${cor};font-weight:900;">$1</span>`);} return texto;}
+
+async function buscarVersiculo(){
+  const livro=livroSelect.value;
+  const cap=document.getElementById("capitulo").value;
+  const ver=document.getElementById("versiculo").value;
+  const url=`https://bible-api.com/${livro}+${cap}:${ver}?translation=almeida`;
+  try{const res=await fetch(url); const data=await res.json();
+    if(data.text){ 
+      const cor=document.getElementById("corDestaque").value;
+      const texto=destacarPalavra(data.text,palavrasDestaque.join(','),cor);
+      versoEl.innerHTML=texto.toUpperCase(); 
+      refEl.innerText=`${livro.toUpperCase()} ${cap}:${ver}`;
+      refEl.style.color = corReferencia.value;
+    } else{versoEl.innerText="Versículo não encontrado."; refEl.innerText="";}}
+  catch{versoEl.innerText="Erro ao buscar versículo.";}
+}
+
+function adicionarPalavra(){const input=document.getElementById('novaPalavra'); const palavra=input.value.trim(); if(palavra&&!palavrasDestaque.includes(palavra.toLowerCase())){palavrasDestaque.push(palavra.toLowerCase()); atualizarListaPalavras(); input.value='';}}
+function atualizarListaPalavras(){const lista=document.getElementById('listaPalavras'); lista.innerHTML=''; if(palavrasDestaque.length===0){lista.innerHTML='<em>Nenhuma palavra adicionada</em>'; return;} palavrasDestaque.forEach((pal,i)=>{const span=document.createElement('span'); span.textContent=pal; span.title="Clique para remover"; span.onclick=()=>{palavrasDestaque.splice(i,1); atualizarListaPalavras();}; lista.appendChild(span);});}
+
+tamanhoVerso.addEventListener('input',()=>{versoEl.style.fontSize=tamanhoVerso.value+'px'; document.getElementById('valVerso').innerText=tamanhoVerso.value;});
+tamanhoRef.addEventListener('input',()=>{refEl.style.fontSize=tamanhoRef.value+'px'; document.getElementById('valRef').innerText=tamanhoRef.value;});
+posicaoRef.addEventListener('input',()=>{refEl.style.bottom=posicaoRef.value+'%'; document.getElementById('valPosRef').innerText=posicaoRef.value;});
+posicaoVerso.addEventListener('input',()=>{versoEl.style.top=posicaoVerso.value+'%'; document.getElementById('valPosV').innerText=posicaoVerso.value;});
+posicaoHorizontalVerso.addEventListener('input',()=>{versoEl.style.left=posicaoHorizontalVerso.value+'%'; document.getElementById('valPosH').innerText=posicaoHorizontalVerso.value;});
+corReferencia.addEventListener('input',()=>{refEl.style.color = corReferencia.value;});
+
+// Upload de fundo
+uploadFundo.addEventListener('change',(event)=>{const file=event.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=(e)=>{container.style.backgroundImage=`url('${e.target.result}')`;}; reader.readAsDataURL(file);});
+
+// Download com nome da referência
+function baixarImagem(){
+  html2canvas(container, {useCORS:true}).then(canvas => {
+    const link = document.createElement('a');
+    let nomeArquivo = refEl.innerText.trim()
+                       .replace(/\s+/g, '_')
+                       .replace(/:/g, '_')
+                       .replace(/[\\\/\*\?"<>\|]/g,'');
+    if(palavrasDestaque.length > 0) nomeArquivo += '_DESTAQUE';
+    link.download = nomeArquivo + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+let refVisivel=true;
+function alternarReferencia(){refVisivel=!refVisivel; refEl.style.display=refVisivel?'block':'none'; document.getElementById('toggleRef').innerText=refVisivel?'👁 Ocultar Referência':'📘 Mostrar Referência';}
+
+livroSelect.selectedIndex=0;
+carregarCapitulos();
+</script>
+
+</body>
+</html>

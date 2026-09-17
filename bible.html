@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bible ACF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Bebas+Neue&family=Anton&family=Montserrat:wght@400;600;700;800&family=Playfair+Display:wght@500;600;700;800&family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="bible_acf.js"></script>
+<script src="fundo.js"></script>
+<style>
+  :root{
+    --bg:#0e0e10; --panel:#17171a; --panel2:#1f1f23; --line:#2c2c31;
+    --text:#ececef; --muted:#9a9aa3; --accent:#e8b923; --accent-ink:#1a1400;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);background:#121214;position:sticky;top:0;z-index:5}
+  header h1{font-family:"Barlow Condensed";font-weight:700;font-size:1.6rem;letter-spacing:.5px}
+  header h1 span{color:var(--accent)}
+  .app{display:grid;grid-template-columns:380px 1fr;gap:0;min-height:calc(100vh - 60px)}
+  aside{border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;max-height:calc(100vh - 60px)}
+  main{padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+  .preview-wrap{position:sticky;top:80px;display:flex;flex-direction:column;gap:14px}
+  details{border-bottom:1px solid var(--line)}
+  summary{cursor:pointer;padding:14px 18px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"▾";color:var(--muted);transition:transform .2s}
+  details:not([open]) summary::after{transform:rotate(-90deg)}
+  .sec{padding:0 18px 16px;display:flex;flex-direction:column;gap:10px}
+  label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+  .row{display:flex;gap:8px;align-items:flex-end}
+  .row>*{flex:1;min-width:0}
+  select,input[type=text],input[type=search],textarea,button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;outline:none}
+  select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:84px;line-height:1.4}
+  button{cursor:pointer;font-weight:600;width:auto;white-space:nowrap}
+  button:hover{background:#2a2a30}
+  button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  button.primary:hover{filter:brightness(1.08)}
+  button.on{border-color:var(--accent);color:var(--accent)}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  input[type=color]{width:42px;height:36px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);padding:2px;cursor:pointer;flex:none}
+  .val{float:right;color:var(--text);font-variant-numeric:tabular-nums;text-transform:none}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{flex:1;border:none;border-radius:0;background:var(--panel2);padding:8px 4px;font-weight:500}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--accent);color:var(--accent-ink)}
+  .swatches{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .sw{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;flex:none}
+  .sw.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+  .bgsw{width:54px;height:34px;border-radius:6px;border:2px solid transparent;cursor:pointer;padding:0;background-size:cover;background-position:center}
+  .bgsw.on{border-color:var(--accent)}
+  .check{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--text);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
+  .check input{accent-color:var(--accent);width:16px;height:16px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px 4px 6px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);font-size:.85rem}
+  .chip i{width:12px;height:12px;border-radius:50%;display:inline-block}
+  .chip b{cursor:pointer;color:var(--muted);font-weight:700;padding-left:2px}
+  .chip b:hover{color:#fff}
+  .hint{font-size:.8rem;color:var(--muted);line-height:1.4}
+  #results{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+  #results div{padding:7px 9px;border-radius:6px;background:var(--panel2);cursor:pointer;font-size:.85rem;line-height:1.35}
+  #results div:hover{background:#2a2a30}
+  #results strong{color:var(--accent)}
+  .stage{background:#050505;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;justify-content:center;align-items:center}
+  canvas#cv{max-width:100%;max-height:calc(100vh - 290px);height:auto;display:block;cursor:pointer;border-radius:4px}
+  .words{display:flex;flex-wrap:wrap;gap:5px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .words span{padding:4px 8px;border-radius:6px;background:var(--panel2);cursor:pointer;font-family:"Barlow Condensed";font-weight:600;font-size:1.05rem;letter-spacing:.3px;border:1px solid transparent;user-select:none}
+  .words span:hover{border-color:#555}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .bar .ref-now{font-family:"Barlow Condensed";font-size:1.3rem;font-weight:600}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:8px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none;z-index:10}
+  .toast.show{opacity:1}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:14px}
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr}
+    aside{max-height:none;border-right:none;order:2}
+    main{order:1;padding:12px 16px}
+    .preview-wrap{position:static}
+    canvas#cv{max-height:70vh}
+    header{padding:12px 16px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>BIBLE <span>ACF</span> STUDIO</h1>
+  <button class="primary" id="btnDownload">⬇ Baixar PNG</button>
+</header>
+
+<div class="app">
+<aside>
+
+  <details open>
+    <summary>📖 Passagem</summary>
+    <div class="sec">
+      <div>
+        <label>Livro</label>
+        <select id="selLivro"></select>
+      </div>
+      <div class="row">
+        <div><label>Capítulo</label><select id="selCap"></select></div>
+        <div><label>Versículo</label><select id="selV1"></select></div>
+        <div><label>Até</label><select id="selV2"></select></div>
+      </div>
+      <div class="row">
+        <button id="btnPrev">◀ Anterior</button>
+        <button id="btnRand">🎲 Aleatório</button>
+        <button id="btnNext">Próximo ▶</button>
+      </div>
+      <div>
+        <label>Buscar por palavra na Bíblia</label>
+        <div class="row">
+          <input type="search" id="busca" placeholder="ex: manancial das águas" />
+          <button id="btnBusca" style="flex:none">🔍</button>
+        </div>
+      </div>
+      <div id="results"></div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>✏️ Texto &amp; destaque</summary>
+    <div class="sec">
+      <div>
+        <label>Texto (editável)</label>
+        <textarea id="txt"></textarea>
+      </div>
+      <div>
+        <label>Referência (editável)</label>
+        <input type="text" id="refTxt" />
+      </div>
+      <div class="row">
+        <div>
+          <label>Estilo da referência</label>
+          <div class="seg" id="segRefStyle">
+            <button data-v="roman">II Reis</button>
+            <button data-v="arabic">2 Reis</button>
+          </div>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="chkVersao"> Adicionar “ACF” na referência</label>
+      <label class="check"><input type="checkbox" id="chkRef" checked> Mostrar referência</label>
+      <label class="check"><input type="checkbox" id="chkNum"> Mostrar número dos versículos (intervalo)</label>
+
+      <hr style="border:none;border-top:1px solid var(--line)">
+
+      <div>
+        <label>Cor do destaque</label>
+        <div class="swatches" id="hlSwatches"></div>
+      </div>
+      <div>
+        <label>Destacar palavra ou frase</label>
+        <div class="row">
+          <input type="text" id="novaPalavra" placeholder="ex: águas  ou  assim diz o senhor" />
+          <button id="btnAddPalavra" style="flex:none">+ Destacar</button>
+        </div>
+      </div>
+      <div class="chips" id="chipsRegras"></div>
+      <p class="hint">Dica: clique direto nas palavras da imagem (ou na lista abaixo dela) para destacar/remover com a cor selecionada. Palavras adicionadas aqui continuam destacadas quando você troca de versículo.</p>
+      <label class="check"><input type="checkbox" id="chkHlBold" checked> Destaque mais forte (negrito)</label>
+    </div>
+  </details>
+
+  <details open>
+    <summary>🎨 Estilo do texto</summary>
+    <div class="sec">
+      <div class="row">
+        <div>
+          <label>Fonte</label>
+          <select id="selFonte">
+            <option>Barlow Condensed</option>
+            <option>Oswald</option>
+            <option>Bebas Neue</option>
+            <option>Anton</option>
+            <option>Montserrat</option>
+            <option>Playfair Display</option>
+            <option>Lora</option>
+            <option>Inter</option>
+          </select>
+        </div>
+        <div style="flex:.6">
+          <label>Peso</label>
+          <select id="selPeso">
+            <option value="400">Normal</option>
+            <option value="500">Médio</option>
+            <option value="600">Semi</option>
+            <option value="700">Negrito</option>
+            <option value="800">Extra</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label>Cor do texto</label><input type="color" id="corTexto" value="#ffffff"></div>
+        <div><label>Cor referência</label><input type="color" id="corRef" value="#ffffff"></div>
+        <div><label>Sombra</label><input type="color" id="corSombra" value="#000000"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="chkUpper" checked> TUDO MAIÚSCULO</label>
+      <label class="check"><input type="checkbox" id="chkSombra" checked> Sombra no texto</label>
+      <label class="check"><input type="checkbox" id="chkAuto" checked> Tamanho automático (preencher área)</label>
+      <div>
+        <label>Tamanho do texto <span class="val" id="vTam"></span></label>
+        <input type="range" id="rTam" min="24" max="260" value="96">
+      </div>
+      <div>
+        <label>Tamanho da referência <span class="val" id="vRefTam"></span></label>
+        <input type="range" id="rRefTam" min="30" max="100" value="58">
+      </div>
+      <div>
+        <label>Altura da linha <span class="val" id="vLh"></span></label>
+        <input type="range" id="rLh" min="90" max="180" value="118">
+      </div>
+      <div>
+        <label>Espaço entre letras <span class="val" id="vLs"></span></label>
+        <input type="range" id="rLs" min="-5" max="20" value="0">
+      </div>
+      <div>
+        <label>Alinhamento</label>
+        <div class="seg" id="segAlign">
+          <button data-v="left">Esquerda</button>
+          <button data-v="center">Centro</button>
+          <button data-v="right">Direita</button>
+        </div>
+      </div>
+      <div>
+        <label>Posição vertical</label>
+        <div class="seg" id="segVAlign">
+          <button data-v="top">Topo</button>
+          <button data-v="middle">Meio</button>
+          <button data-v="bottom">Base</button>
+        </div>
+      </div>
+      <div>
+        <label>Margem lateral <span class="val" id="vMargem"></span></label>
+        <input type="range" id="rMargem" min="2" max="20" value="5">
+      </div>
+      <div>
+        <label>Largura do texto <span class="val" id="vLarg"></span></label>
+        <input type="range" id="rLarg" min="40" max="100" value="100">
+      </div>
+      <div>
+        <label>Altura da área de texto <span class="val" id="vArea"></span></label>
+        <input type="range" id="rArea" min="30" max="95" value="78">
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>🖼️ Fundo</summary>
+    <div class="sec">
+      <div>
+        <label>Tipo</label>
+        <div class="seg" id="segBg">
+          <button data-v="image">Imagem</button>
+          <button data-v="solid">Cor</button>
+          <button data-v="gradient">Degradê</button>
+        </div>
+      </div>
+      <div id="bgImageBox" class="sec" style="padding:0">
+        <div class="swatches" id="imgSwatches"></div>
+        <div>
+          <label>Enviar imagem</label>
+          <input type="file" id="upFundo" accept="image/*" style="width:100%;color:var(--muted)">
+        </div>
+        <div>
+          <label>Enquadramento horizontal <span class="val" id="vFx"></span></label>
+          <input type="range" id="rFx" min="0" max="100" value="50">
+        </div>
+        <div>
+          <label>Enquadramento vertical <span class="val" id="vFy"></span></label>
+          <input type="range" id="rFy" min="0" max="100" value="50">
+        </div>
+        <div>
+          <label>Zoom <span class="val" id="vZoom"></span></label>
+          <input type="range" id="rZoom" min="100" max="250" value="100">
+        </div>
+        <div>
+          <label>Desfoque <span class="val" id="vBlur"></span></label>
+          <input type="range" id="rBlur" min="0" max="20" value="0">
+        </div>
+      </div>
+      <div id="bgSolidBox" class="row">
+        <div><label>Cor de fundo</label><input type="color" id="corFundo" value="#0b0b0d"></div>
+      </div>
+      <div id="bgGradBox" class="sec" style="padding:0">
+        <div class="swatches" id="gradSwatches"></div>
+        <div class="row">
+          <div><label>Cor 1</label><input type="color" id="grad1" value="#0f2027"></div>
+          <div><label>Cor 2</label><input type="color" id="grad2" value="#2c5364"></div>
+          <div style="flex:2">
+            <label>Ângulo <span class="val" id="vAng"></span></label>
+            <input type="range" id="rAng" min="0" max="360" value="135">
+          </div>
+        </div>
+      </div>
+      <div>
+        <label>Escurecer fundo <span class="val" id="vOverlay"></span></label>
+        <input type="range" id="rOverlay" min="0" max="90" value="0">
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>📐 Formato</summary>
+    <div class="sec">
+      <div class="seg" id="segFormato">
+        <button data-v="16:9">16:9</button>
+        <button data-v="1:1">1:1</button>
+        <button data-v="4:5">4:5</button>
+        <button data-v="9:16">Story</button>
+      </div>
+      <p class="hint" id="formatoInfo"></p>
+      <button id="btnReset">↺ Restaurar estilo padrão</button>
+    </div>
+  </details>
+
+</aside>
+
+<main>
+  <div class="preview-wrap">
+    <div class="bar">
+      <div class="ref-now" id="refNow"></div>
+      <div class="row" style="flex:none">
+        <button id="btnCopiar">📋 Copiar texto</button>
+        <button class="primary" id="btnDownload2">⬇ Baixar PNG</button>
+      </div>
+    </div>
+    <div class="stage"><canvas id="cv" width="1920" height="1080"></canvas></div>
+    <div class="words" id="words"></div>
+  </div>
+</main>
+</div>
+
+<footer>© 2026 • Desenvolvido por Samuel Madeira • Almeida Corrigida Fiel</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const BIBLIA = window.BIBLIA_ACF || [];
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+
+const FORMATOS = { '16:9':[1920,1080], '1:1':[1080,1080], '4:5':[1080,1350], '9:16':[1080,1920] };
+const HL_CORES = ['#FFD400','#FF8A00','#FF3B3B','#FF4FA3','#B388FF','#4FC3F7','#5BE584','#FFFFFF'];
+const GRADS = [
+  ['#0f2027','#2c5364'],['#000000','#434343'],['#1a0b2e','#6a2c70'],['#3a1c05','#c67c2b'],
+  ['#021b1a','#1f6f5c'],['#141e30','#243b55'],['#42275a','#734b6d'],['#1d0000','#8e0e00']
+];
+
+const PADRAO = {
+  font:'Barlow Condensed', weight:'600', textColor:'#ffffff', refColor:'#ffffff', shadowColor:'#000000',
+  upper:true, shadow:true, auto:true, size:96, refSize:58, lh:118, ls:0,
+  align:'left', valign:'top', margin:5, width:100, area:78,
+  bgType:'image', bgColor:'#0b0b0d', grad1:'#0f2027', grad2:'#2c5364', ang:135,
+  fx:50, fy:50, zoom:100, blur:0, overlay:0,
+  format:'16:9', refStyle:'roman', version:false, showRef:true, verseNums:false,
+  hlColor:'#FFD400', hlBold:true
+};
+let S = { ...PADRAO };
+try { Object.assign(S, JSON.parse(localStorage.getItem('bibleStudioStyle') || '{}')); } catch(e) {}
+
+// passagem e texto
+let P = { b:11, c:1, v1:20, v2:20 };
+let texto = '', referencia = '';
+let regras = [];        // [{txt, parts:[norm...], cor}]
+let cliques = {};       // índice da palavra -> cor | 'off'
+let caixas = [];        // hit boxes das palavras no canvas
+
+// imagens de fundo
+const imagens = [];     // {src, img}
+let imgAtual = 0;
+function addImagem(src, selecionar){
+  const img = new Image();
+  img.onload = () => { render(); montarImgSwatches(); };
+  img.src = src;
+  imagens.push({src, img});
+  if (selecionar) imgAtual = imagens.length - 1;
+  montarImgSwatches();
+}
+if (window.FUNDO_PADRAO) addImagem(window.FUNDO_PADRAO, true);
+
+// ---------- utilidades ----------
+const norm = t => t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
+const tokens = () => texto.split(/\s+/).filter(Boolean);
+const ROMANOS = ['I','II','III'];
+function nomeLivro(i){
+  const n = BIBLIA[i].name;
+  if (S.refStyle === 'roman') return n.replace(/^(\d)\s/, (m, d) => ROMANOS[d-1] + ' ');
+  return n;
+}
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1800); }
+function salvarEstilo(){ try { localStorage.setItem('bibleStudioStyle', JSON.stringify(S)); } catch(e) {} }
+
+// ---------- seleção de passagem ----------
+function montarLivros(){
+  const sel = $('selLivro');
+  sel.innerHTML = BIBLIA.map((l,i) => `<option value="${i}">${l.name}</option>`).join('');
+}
+function montarCapitulos(){
+  const n = BIBLIA[P.b].chapters.length;
+  $('selCap').innerHTML = Array.from({length:n},(_,i)=>`<option value="${i}">${i+1}</option>`).join('');
+}
+function montarVersiculos(){
+  const n = BIBLIA[P.b].chapters[P.c].length;
+  $('selV1').innerHTML = Array.from({length:n},(_,i)=>`<option value="${i}">${i+1}</option>`).join('');
+  montarAte();
+}
+function montarAte(){
+  const n = BIBLIA[P.b].chapters[P.c].length;
+  let h = '';
+  for (let i = P.v1; i < n; i++) h += `<option value="${i}">${i === P.v1 ? '—' : i+1}</option>`;
+  $('selV2').innerHTML = h;
+}
+function irPara(b, c, v1, v2){
+  P = { b, c, v1, v2: v2 ?? v1 };
+  $('selLivro').value = b;
+  montarCapitulos(); $('selCap').value = c;
+  montarVersiculos(); $('selV1').value = v1;
+  montarAte(); $('selV2').value = P.v2;
+  carregarPassagem();
+}
+function montarReferencia(){
+  const r = `${nomeLivro(P.b)} ${P.c+1}:${P.v1+1}${P.v2 > P.v1 ? '-' + (P.v2+1) : ''}`;
+  return r + (S.version ? ' (ACF)' : '');
+}
+function carregarPassagem(){
+  const cap = BIBLIA[P.b].chapters[P.c];
+  const partes = [];
+  for (let i = P.v1; i <= P.v2; i++) partes.push((S.verseNums && P.v2 > P.v1 ? (i+1) + ' ' : '') + cap[i]);
+  texto = partes.join(' ');
+  referencia = montarReferencia();
+  $('txt').value = texto;
+  $('refTxt').value = referencia;
+  cliques = {};
+  render();
+}
+
+$('selLivro').onchange = e => irPara(+e.target.value, 0, 0);
+$('selCap').onchange = e => irPara(P.b, +e.target.value, 0);
+$('selV1').onchange = e => irPara(P.b, P.c, +e.target.value);
+$('selV2').onchange = e => { P.v2 = +e.target.value; carregarPassagem(); };
+
+function passo(dir){
+  let { b, c, v1 } = P;
+  v1 = dir > 0 ? P.v2 + 1 : v1 - 1;
+  if (v1 >= BIBLIA[b].chapters[c].length) { v1 = 0; c++; if (c >= BIBLIA[b].chapters.length) { c = 0; b = (b+1) % BIBLIA.length; } }
+  if (v1 < 0) { c--; if (c < 0) { b = (b - 1 + BIBLIA.length) % BIBLIA.length; c = BIBLIA[b].chapters.length - 1; } v1 = BIBLIA[b].chapters[c].length - 1; }
+  irPara(b, c, v1);
+}
+$('btnNext').onclick = () => passo(1);
+$('btnPrev').onclick = () => passo(-1);
+$('btnRand').onclick = () => {
+  const b = Math.floor(Math.random()*BIBLIA.length);
+  const c = Math.floor(Math.random()*BIBLIA[b].chapters.length);
+  irPara(b, c, Math.floor(Math.random()*BIBLIA[b].chapters[c].length));
+};
+
+// busca
+function buscar(){
+  const q = $('busca').value.trim();
+  const box = $('results');
+  if (q.length < 2) { box.innerHTML = ''; return; }
+  const nq = q.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  const res = [];
+  outer: for (let b = 0; b < BIBLIA.length; b++)
+    for (let c = 0; c < BIBLIA[b].chapters.length; c++)
+      for (let v = 0; v < BIBLIA[b].chapters[c].length; v++) {
+        const t = BIBLIA[b].chapters[c][v];
+        if (t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().includes(nq)) {
+          res.push({b,c,v,t}); if (res.length >= 100) break outer;
+        }
+      }
+  box.innerHTML = res.length ? '' : '<p class="hint">Nada encontrado.</p>';
+  res.forEach(r => {
+    const d = document.createElement('div');
+    const s = document.createElement('strong');
+    s.textContent = `${BIBLIA[r.b].name} ${r.c+1}:${r.v+1} `;
+    d.append(s, document.createTextNode(r.t));
+    d.onclick = () => irPara(r.b, r.c, r.v);
+    box.appendChild(d);
+  });
+  if (res.length >= 100) box.insertAdjacentHTML('beforeend','<p class="hint">Mostrando os 100 primeiros resultados.</p>');
+}
+$('btnBusca').onclick = buscar;
+$('busca').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
+// texto/ref editáveis
+$('txt').addEventListener('input', e => { texto = e.target.value; cliques = {}; render(); });
+$('refTxt').addEventListener('input', e => { referencia = e.target.value; render(); });
+
+// ---------- destaque ----------
+function mapaDestaque(tks){
+  const nt = tks.map(norm);
+  const cores = new Array(tks.length).fill(null);
+  for (const r of regras) {
+    const L = r.parts.length;
+    for (let s = 0; s + L <= nt.length; s++) {
+      let ok = true;
+      for (let k = 0; k < L; k++) if (nt[s+k] !== r.parts[k]) { ok = false; break; }
+      if (ok) for (let k = 0; k < L; k++) cores[s+k] = r.cor;
+    }
+  }
+  for (const i in cliques) {
+    if (i >= cores.length) continue;
+    cores[i] = cliques[i] === 'off' ? null : cliques[i];
+  }
+  return cores;
+}
+function alternarPalavra(i){
+  const cores = mapaDestaque(tokens());
+  const temRegra = (() => { const c = cliques[i]; delete cliques[i]; const r = mapaDestaque(tokens())[i]; if (c !== undefined) cliques[i] = c; return r; })();
+  if (cores[i]) {
+    if (cores[i].toLowerCase() !== S.hlColor.toLowerCase()) cliques[i] = S.hlColor; // troca para a cor atual
+    else if (temRegra) cliques[i] = 'off';
+    else delete cliques[i];
+  } else {
+    cliques[i] = S.hlColor;
+  }
+  render();
+}
+function addRegra(){
+  const v = $('novaPalavra').value.trim();
+  if (!v) return;
+  const parts = v.split(/\s+/).map(norm).filter(Boolean);
+  if (!parts.length) return;
+  regras = regras.filter(r => r.parts.join(' ') !== parts.join(' '));
+  regras.push({ txt:v, parts, cor:S.hlColor });
+  $('novaPalavra').value = '';
+  montarRegras(); render();
+}
+$('btnAddPalavra').onclick = addRegra;
+$('novaPalavra').addEventListener('keydown', e => { if (e.key === 'Enter') addRegra(); });
+function montarRegras(){
+  const box = $('chipsRegras');
+  box.innerHTML = '';
+  regras.forEach((r, idx) => {
+    const c = document.createElement('span'); c.className = 'chip';
+    const dot = document.createElement('i'); dot.style.background = r.cor;
+    const x = document.createElement('b'); x.textContent = '×'; x.title = 'Remover';
+    x.onclick = () => { regras.splice(idx,1); montarRegras(); render(); };
+    c.append(dot, document.createTextNode(r.txt), x);
+    box.appendChild(c);
+  });
+  if (regras.length) {
+    const limpar = document.createElement('button');
+    limpar.textContent = 'Limpar tudo'; limpar.style.padding = '4px 10px';
+    limpar.onclick = () => { regras = []; cliques = {}; montarRegras(); render(); };
+    box.appendChild(limpar);
+  }
+}
+function montarHlSwatches(){
+  const box = $('hlSwatches'); box.innerHTML = '';
+  HL_CORES.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'sw' + (c.toLowerCase() === S.hlColor.toLowerCase() ? ' on' : '');
+    b.style.background = c; b.title = c;
+    b.onclick = () => { S.hlColor = c; $('hlCustom').value = c; montarHlSwatches(); salvarEstilo(); };
+    box.appendChild(b);
+  });
+  const inp = document.createElement('input');
+  inp.type = 'color'; inp.id = 'hlCustom'; inp.value = S.hlColor; inp.title = 'Outra cor';
+  inp.oninput = e => { S.hlColor = e.target.value; salvarEstilo(); box.querySelectorAll('.sw').forEach(s => s.classList.remove('on')); };
+  box.appendChild(inp);
+}
+
+// ---------- render ----------
+function fontStr(size, peso){ return `${peso} ${size}px "${S.font}"`; }
+function layout(tks, size, maxW, cores = []){
+  ctx.font = fontStr(size, S.weight);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = (S.ls * size / 100) + 'px';
+  const esp = ctx.measureText(' ').width;
+  const linhas = []; let atual = [], larg = 0;
+  tks.forEach((t, i) => {
+    ctx.font = fontStr(size, cores[i] && S.hlBold ? Math.max(700, +S.weight) : S.weight);
+    const w = ctx.measureText(S.upper ? t.toLocaleUpperCase('pt-BR') : t).width;
+    if (atual.length && larg + esp + w > maxW) { linhas.push({items:atual, w:larg}); atual = []; larg = 0; }
+    larg += (atual.length ? esp : 0) + w;
+    atual.push({i, t, w});
+  });
+  if (atual.length) linhas.push({items:atual, w:larg});
+  return { linhas, esp };
+}
+
+let renderId = 0;
+async function render(){
+  const id = ++renderId;
+  const [W, H] = FORMATOS[S.format];
+  try { await document.fonts.load(fontStr(80, S.weight)); await document.fonts.load(fontStr(80, 800)); } catch(e) {}
+  if (id !== renderId) return;
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,W,H);
+  desenharFundo(W, H);
+
+  const tks = tokens();
+  const cores = mapaDestaque(tks);
+  const unit = Math.min(W, H) / 1080;          // escala relativa ao lado menor
+  const mx = W * S.margin / 100;
+  const my = H * S.margin / 100 * (W > H ? 1 : 0.8);
+  const maxW = (W - 2*mx) * S.width / 100;
+  const areaH = H * S.area / 100 - my;
+  const lh = S.lh / 100;
+  const refK = S.refSize / 100;
+  const mostrarRef = S.showRef && referencia.trim();
+
+  const alturaTotal = (size, nl) => nl * size * lh + (mostrarRef ? size * 0.35 + size * refK * 1.1 : 0);
+  let size = S.size * unit;
+  if (S.auto && tks.length) {
+    let lo = 20 * unit, hi = 260 * unit;
+    for (let k = 0; k < 18; k++) {
+      const mid = (lo + hi) / 2;
+      const { linhas } = layout(tks, mid, maxW, cores);
+      if (alturaTotal(mid, linhas.length) <= areaH) lo = mid; else hi = mid;
+    }
+    size = Math.floor(lo);
+    $('rTam').value = Math.round(size / unit); $('vTam').textContent = Math.round(size / unit);
+  }
+  const { linhas, esp } = layout(tks, size, maxW, cores);
+  const total = alturaTotal(size, linhas.length);
+
+  let top;
+  if (S.valign === 'top') top = my;
+  else if (S.valign === 'middle') top = (H - total) / 2;
+  else top = H - my - total;
+
+  const blocoX = S.align === 'left' ? mx : S.align === 'right' ? W - mx - maxW : (W - maxW) / 2;
+  const xLinha = w => S.align === 'left' ? blocoX : S.align === 'right' ? blocoX + maxW - w : blocoX + (maxW - w) / 2;
+
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  if (S.shadow) { ctx.shadowColor = hexA(S.shadowColor, .75); ctx.shadowBlur = size * .18; ctx.shadowOffsetX = size * .03; ctx.shadowOffsetY = size * .04; }
+  caixas = [];
+  const asc = size * 0.82;
+  linhas.forEach((ln, li) => {
+    let x = xLinha(ln.w);
+    const base = top + asc + li * size * lh + (size * lh - size) / 2;
+    ln.items.forEach(it => {
+      const cor = cores[it.i];
+      ctx.font = fontStr(size, cor && S.hlBold ? Math.max(700, +S.weight) : S.weight);
+      const txt = S.upper ? it.t.toLocaleUpperCase('pt-BR') : it.t;
+      if (cor) {
+        // pontuação fica na cor do texto; só a palavra recebe o destaque
+        const m = txt.match(/^([^\p{L}\p{N}]*)(.*?)([^\p{L}\p{N}]*)$/u);
+        let px = x;
+        [[m[1], S.textColor], [m[2], cor], [m[3], S.textColor]].forEach(([parte, c]) => {
+          if (!parte) return;
+          ctx.fillStyle = c; ctx.fillText(parte, px, base);
+          px += ctx.measureText(parte).width;
+        });
+      } else {
+        ctx.fillStyle = S.textColor;
+        ctx.fillText(txt, x, base);
+      }
+      caixas.push({ i:it.i, x, y: base - asc, w: it.w, h: size * lh });
+      x += it.w + esp;
+    });
+  });
+
+  if (mostrarRef) {
+    const rs = size * refK;
+    ctx.font = fontStr(rs, S.weight);
+    if ('letterSpacing' in ctx) ctx.letterSpacing = (S.ls * rs / 100) + 'px';
+    const r = S.upper ? referencia.toLocaleUpperCase('pt-BR') : referencia;
+    const rw = ctx.measureText(r).width;
+    const ry = top + linhas.length * size * lh + size * 0.35 + rs * 0.82;
+    ctx.fillStyle = S.refColor;
+    ctx.fillText(r, xLinha(rw), ry);
+  }
+  ctx.shadowColor = 'transparent';
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+
+  $('refNow').textContent = referencia;
+  montarPalavras(tks, cores);
+}
+
+function hexA(hex, a){
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;
+}
+function desenharFundo(W, H){
+  ctx.save();
+  if (S.bgType === 'image' && imagens[imgAtual] && imagens[imgAtual].img.complete && imagens[imgAtual].img.naturalWidth) {
+    const img = imagens[imgAtual].img;
+    const esc = Math.max(W / img.naturalWidth, H / img.naturalHeight) * S.zoom / 100;
+    const dw = img.naturalWidth * esc, dh = img.naturalHeight * esc;
+    const dx = (W - dw) * S.fx / 100, dy = (H - dh) * S.fy / 100;
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+    if (S.blur > 0) { ctx.filter = `blur(${S.blur * Math.min(W,H) / 1080}px)`; }
+    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.filter = 'none';
+  } else if (S.bgType === 'gradient') {
+    const a = (S.ang - 90) * Math.PI / 180;
+    const r = Math.abs(W * Math.cos(a)) / 2 + Math.abs(H * Math.sin(a)) / 2;
+    const cx = W/2, cy = H/2;
+    const g = ctx.createLinearGradient(cx - Math.cos(a)*r, cy - Math.sin(a)*r, cx + Math.cos(a)*r, cy + Math.sin(a)*r);
+    g.addColorStop(0, S.grad1); g.addColorStop(1, S.grad2);
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  } else {
+    ctx.fillStyle = S.bgColor; ctx.fillRect(0,0,W,H);
+  }
+  if (S.overlay > 0) { ctx.fillStyle = `rgba(0,0,0,${S.overlay/100})`; ctx.fillRect(0,0,W,H); }
+  ctx.restore();
+}
+
+function montarPalavras(tks, cores){
+  const box = $('words');
+  box.innerHTML = '';
+  tks.forEach((t, i) => {
+    const s = document.createElement('span');
+    s.textContent = t;
+    if (cores[i]) { s.style.background = cores[i]; s.style.color = contraste(cores[i]); }
+    s.onclick = () => alternarPalavra(i);
+    box.appendChild(s);
+  });
+}
+function contraste(hex){
+  const n = parseInt(hex.slice(1), 16);
+  const l = (0.299*(n>>16&255) + 0.587*(n>>8&255) + 0.114*(n&255)) / 255;
+  return l > 0.6 ? '#111' : '#fff';
+}
+
+cv.addEventListener('click', e => {
+  const r = cv.getBoundingClientRect();
+  const x = (e.clientX - r.left) * cv.width / r.width;
+  const y = (e.clientY - r.top) * cv.height / r.height;
+  const hit = caixas.find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
+  if (hit) alternarPalavra(hit.i);
+});
+
+// ---------- controles de estilo ----------
+function ligarRange(id, chave, valId, fmt){
+  const el = $(id);
+  const show = () => { if (valId) $(valId).textContent = fmt ? fmt(+el.value) : el.value; };
+  el.value = S[chave]; show();
+  el.addEventListener('input', () => {
+    S[chave] = +el.value; show();
+    if (chave === 'size') { S.auto = false; $('chkAuto').checked = false; }
+    salvarEstilo(); render();
+  });
+}
+function ligarInput(id, chave, prop = 'value', reref){
+  const el = $(id);
+  el[prop] = S[chave];
+  el.addEventListener(prop === 'checked' ? 'change' : 'input', () => {
+    S[chave] = el[prop]; salvarEstilo();
+    if (reref) carregarPassagemMantendo(); else render();
+  });
+}
+function ligarSeg(id, chave, cb){
+  const box = $(id);
+  const upd = () => box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === S[chave]));
+  box.querySelectorAll('button').forEach(b => b.onclick = () => { S[chave] = b.dataset.v; upd(); salvarEstilo(); cb ? cb() : render(); });
+  upd();
+}
+function carregarPassagemMantendo(){
+  // atualiza referência/numeração sem perder os cliques
+  const c = cliques;
+  carregarPassagem();
+  if (!S.verseNums) cliques = c;
+  render();
+}
+
+ligarRange('rTam','size','vTam');
+ligarRange('rRefTam','refSize','vRefTam', v => v + '%');
+ligarRange('rLh','lh','vLh', v => (v/100).toFixed(2));
+ligarRange('rLs','ls','vLs');
+ligarRange('rMargem','margin','vMargem', v => v + '%');
+ligarRange('rLarg','width','vLarg', v => v + '%');
+ligarRange('rArea','area','vArea', v => v + '%');
+ligarRange('rFx','fx','vFx', v => v + '%');
+ligarRange('rFy','fy','vFy', v => v + '%');
+ligarRange('rZoom','zoom','vZoom', v => v + '%');
+ligarRange('rBlur','blur','vBlur');
+ligarRange('rOverlay','overlay','vOverlay', v => v + '%');
+ligarRange('rAng','ang','vAng', v => v + '°');
+ligarInput('selFonte','font');
+ligarInput('selPeso','weight');
+ligarInput('corTexto','textColor');
+ligarInput('corRef','refColor');
+ligarInput('corSombra','shadowColor');
+ligarInput('corFundo','bgColor');
+ligarInput('grad1','grad1');
+ligarInput('grad2','grad2');
+ligarInput('chkUpper','upper','checked');
+ligarInput('chkSombra','shadow','checked');
+ligarInput('chkAuto','auto','checked');
+ligarInput('chkHlBold','hlBold','checked');
+ligarInput('chkRef','showRef','checked');
+ligarInput('chkVersao','version','checked', true);
+ligarInput('chkNum','verseNums','checked', true);
+ligarSeg('segAlign','align');
+ligarSeg('segVAlign','valign');
+ligarSeg('segRefStyle','refStyle', carregarPassagemMantendo);
+ligarSeg('segBg','bgType', () => { mostrarBgBox(); render(); });
+ligarSeg('segFormato','format', () => { infoFormato(); render(); });
+
+function mostrarBgBox(){
+  $('bgImageBox').style.display = S.bgType === 'image' ? 'flex' : 'none';
+  $('bgSolidBox').style.display = S.bgType === 'solid' ? 'flex' : 'none';
+  $('bgGradBox').style.display = S.bgType === 'gradient' ? 'flex' : 'none';
+}
+function infoFormato(){
+  const [w,h] = FORMATOS[S.format];
+  $('formatoInfo').textContent = `${w} × ${h} px` + ({'16:9':' • telão / YouTube','1:1':' • post quadrado','4:5':' • post Instagram','9:16':' • Stories / Status'}[S.format]);
+}
+function montarImgSwatches(){
+  const box = $('imgSwatches'); box.innerHTML = '';
+  imagens.forEach((im, i) => {
+    const b = document.createElement('button');
+    b.className = 'bgsw' + (i === imgAtual ? ' on' : '');
+    b.style.backgroundImage = `url("${im.src}")`;
+    b.onclick = () => { imgAtual = i; S.bgType = 'image'; montarImgSwatches(); render(); };
+    box.appendChild(b);
+  });
+}
+function montarGradSwatches(){
+  const box = $('gradSwatches'); box.innerHTML = '';
+  GRADS.forEach(([a,b]) => {
+    const el = document.createElement('button');
+    el.className = 'bgsw';
+    el.style.background = `linear-gradient(135deg, ${a}, ${b})`;
+    el.onclick = () => { S.grad1 = a; S.grad2 = b; $('grad1').value = a; $('grad2').value = b; salvarEstilo(); render(); };
+    box.appendChild(el);
+  });
+}
+$('upFundo').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = ev => {
+    S.bgType = 'image';
+    document.querySelectorAll('#segBg button').forEach(b => b.classList.toggle('on', b.dataset.v === 'image'));
+    mostrarBgBox();
+    addImagem(ev.target.result, true);
+  };
+  rd.readAsDataURL(f);
+  e.target.value = '';
+});
+
+$('btnReset').onclick = () => {
+  const fmt = S.format;
+  S = { ...PADRAO, format: fmt };
+  salvarEstilo();
+  location.reload();
+};
+
+// ---------- download ----------
+function baixar(){
+  render().then(() => {
+    const nome = (referencia || 'versiculo').trim()
+      .normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/[:\s\-]+/g,'_').replace(/[^\w]/g,'').toUpperCase() || 'VERSICULO';
+    cv.toBlob(blob => {
+      if (!blob) { toast('Não foi possível gerar a imagem.'); return; }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${nome}_${S.format.replace(':','x')}.png`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast('Imagem baixada!');
+    }, 'image/png');
+  });
+}
+$('btnDownload').onclick = baixar;
+$('btnDownload2').onclick = baixar;
+$('btnCopiar').onclick = () => {
+  navigator.clipboard?.writeText(`${texto}\n${referencia}`).then(() => toast('Texto copiado!'), () => toast('Não foi possível copiar.'));
+};
+
+// ---------- início ----------
+if (!BIBLIA.length) {
+  document.querySelector('main').innerHTML = '<p style="padding:30px">Arquivo <b>bible_acf.js</b> não encontrado. Ele precisa estar na mesma pasta do bible.html.</p>';
+} else {
+  montarLivros();
+  montarHlSwatches();
+  montarGradSwatches();
+  mostrarBgBox();
+  infoFormato();
+  irPara(P.b, P.c, P.v1);
+  document.fonts.ready.then(render);
+}
+</script>
+</body>
+</html>

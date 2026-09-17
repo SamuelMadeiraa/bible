@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bible ACF Studio — Operador</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="operador.css">
+<script src="bible_acf.js"></script>
+<script src="fundo.js"></script>
+<script src="engine.js"></script>
+</head>
+<body>
+
+<header>
+  <h1><img src="icon.png" alt="">BIBLE <span>ACF</span> STUDIO</h1>
+
+  <div class="hgroup">
+    <select id="selMonitor" title="Monitor da projeção"></select>
+    <button id="btnProjecao" class="primary">🖥 Abrir projeção</button>
+    <span class="pill" id="pillSaida"><i></i><span>Projeção fechada</span></span>
+  </div>
+
+  <div class="hgroup">
+    <label class="check" title="Qualquer mudança na prévia vai direto para a tela">
+      <input type="checkbox" id="chkAuto"> Ao vivo automático
+    </label>
+    <label class="inline" title="Duração da transição">
+      Transição
+      <input type="range" id="rTrans" min="0" max="1500" step="50">
+      <b id="vTrans"></b>
+    </label>
+    <button id="btnPng" title="Salvar a prévia como imagem PNG">⬇ PNG</button>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ============ ESQUERDA: navegação ============ -->
+  <aside class="left">
+    <div class="quick">
+      <input type="text" id="quickRef" placeholder="Ir para… ex: jo 3 16  •  2rs 2:21" autocomplete="off" />
+    </div>
+    <div class="tabs" data-group="left">
+      <button data-tab="nav" class="on">Bíblia</button>
+      <button data-tab="busca">Buscar</button>
+      <button data-tab="hist">Histórico</button>
+    </div>
+
+    <div class="tabpane on" data-pane="nav">
+      <select id="selLivro"></select>
+      <div class="chapters" id="chapters"></div>
+      <div class="verses" id="verses" tabindex="0"></div>
+      <p class="hint">Clique = prévia • Duplo clique = ao vivo • Shift+clique = intervalo</p>
+    </div>
+
+    <div class="tabpane" data-pane="busca">
+      <div class="row">
+        <input type="search" id="busca" placeholder="palavra ou frase" />
+        <select id="buscaEscopo" style="flex:.7">
+          <option value="all">Bíblia toda</option>
+          <option value="at">Antigo T.</option>
+          <option value="nt">Novo T.</option>
+          <option value="livro">Livro atual</option>
+        </select>
+      </div>
+      <div class="results" id="results"></div>
+    </div>
+
+    <div class="tabpane" data-pane="hist">
+      <div class="results" id="historico"></div>
+    </div>
+  </aside>
+
+  <!-- ============ CENTRO: monitores ============ -->
+  <main>
+    <div class="monitors">
+      <section class="mon">
+        <div class="mon-h"><b>PRÉVIA</b><span id="prevRef"></span></div>
+        <div class="screen" id="scrPrev"><canvas id="cvPrev"></canvas></div>
+      </section>
+      <section class="mon live" id="monLive">
+        <div class="mon-h"><b><i class="dot"></i>AO VIVO</b><span id="liveRef">—</span></div>
+        <div class="screen" id="scrLive"><canvas id="cvLive"></canvas></div>
+      </section>
+    </div>
+
+    <div class="actions">
+      <button id="btnPrev" title="Versículo anterior (← / PageUp)">◀</button>
+      <button id="btnGo" class="go" title="Enter">▶ ENVIAR AO VIVO <kbd>Enter</kbd></button>
+      <button id="btnNext" title="Próximo versículo (→ / PageDown)">▶</button>
+      <span class="sep"></span>
+      <button id="btnClear" class="mode" title="Mostra só o fundo">Limpar texto <kbd>C</kbd></button>
+      <button id="btnBlack" class="mode" title="Tela totalmente preta">Tela preta <kbd>B</kbd></button>
+    </div>
+
+    <div class="words" id="words"></div>
+    <p class="hint center">Clique nas palavras (aqui ou na prévia) para destacar com a cor selecionada.
+      Setas ←/→ trocam de versículo (funciona com passador de slides).</p>
+  </main>
+
+  <!-- ============ DIREITA: ajustes ============ -->
+  <aside class="right">
+    <div class="tabs" data-group="right">
+      <button data-tab="texto" class="on">Texto</button>
+      <button data-tab="estilo">Estilo</button>
+      <button data-tab="fundo">Fundo</button>
+      <button data-tab="saida">Saída</button>
+    </div>
+
+    <!-- TEXTO -->
+    <div class="tabpane on" data-pane="texto">
+      <div>
+        <label>Cor do destaque</label>
+        <div class="swatches" id="hlSwatches"></div>
+      </div>
+      <div>
+        <label>Destacar palavra ou frase (fica em todos os versículos)</label>
+        <div class="row">
+          <input type="text" id="novaPalavra" placeholder="ex: águas  •  assim diz o senhor" />
+          <button id="btnAddPalavra" style="flex:none">+</button>
+        </div>
+      </div>
+      <div class="chips" id="chipsRegras"></div>
+      <label class="check"><input type="checkbox" id="chkHlBold"> Destaque em negrito</label>
+      <hr>
+      <div>
+        <label>Texto (editável)</label>
+        <textarea id="txt"></textarea>
+      </div>
+      <div>
+        <label>Referência (editável)</label>
+        <input type="text" id="refTxt" />
+      </div>
+      <div>
+        <label>Estilo da referência</label>
+        <div class="seg" id="segRefStyle">
+          <button data-v="roman">II Reis</button>
+          <button data-v="arabic">2 Reis</button>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="chkRef"> Mostrar referência</label>
+      <label class="check"><input type="checkbox" id="chkVersao"> Adicionar “ACF” na referência</label>
+      <label class="check"><input type="checkbox" id="chkNum"> Números dos versículos (intervalo)</label>
+    </div>
+
+    <!-- ESTILO -->
+    <div class="tabpane" data-pane="estilo">
+      <div class="row">
+        <div>
+          <label>Fonte</label>
+          <select id="selFonte">
+            <option>Barlow Condensed</option><option>Oswald</option><option>Bebas Neue</option>
+            <option>Anton</option><option>Montserrat</option><option>Playfair Display</option>
+            <option>Lora</option><option>Inter</option>
+          </select>
+        </div>
+        <div style="flex:.6">
+          <label>Peso</label>
+          <select id="selPeso">
+            <option value="400">Normal</option><option value="500">Médio</option>
+            <option value="600">Semi</option><option value="700">Negrito</option><option value="800">Extra</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label>Texto</label><input type="color" id="corTexto"></div>
+        <div><label>Referência</label><input type="color" id="corRef"></div>
+        <div><label>Sombra</label><input type="color" id="corSombra"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="chkUpper"> TUDO MAIÚSCULO</label>
+      <label class="check"><input type="checkbox" id="chkSombra"> Sombra no texto</label>
+      <label class="check"><input type="checkbox" id="chkTamAuto"> Tamanho automático</label>
+      <div><label>Tamanho do texto <span class="val" id="vTam"></span></label><input type="range" id="rTam" min="24" max="260"></div>
+      <div><label>Tamanho da referência <span class="val" id="vRefTam"></span></label><input type="range" id="rRefTam" min="30" max="100"></div>
+      <div><label>Altura da linha <span class="val" id="vLh"></span></label><input type="range" id="rLh" min="90" max="180"></div>
+      <div><label>Espaço entre letras <span class="val" id="vLs"></span></label><input type="range" id="rLs" min="-5" max="20"></div>
+      <div>
+        <label>Alinhamento</label>
+        <div class="seg" id="segAlign"><button data-v="left">Esquerda</button><button data-v="center">Centro</button><button data-v="right">Direita</button></div>
+      </div>
+      <div>
+        <label>Posição vertical</label>
+        <div class="seg" id="segVAlign"><button data-v="top">Topo</button><button data-v="middle">Meio</button><button data-v="bottom">Base</button></div>
+      </div>
+      <div><label>Margem <span class="val" id="vMargem"></span></label><input type="range" id="rMargem" min="2" max="20"></div>
+      <div><label>Largura do texto <span class="val" id="vLarg"></span></label><input type="range" id="rLarg" min="40" max="100"></div>
+      <div><label>Altura da área de texto <span class="val" id="vArea"></span></label><input type="range" id="rArea" min="30" max="95"></div>
+      <button id="btnReset">↺ Restaurar estilo padrão</button>
+    </div>
+
+    <!-- FUNDO -->
+    <div class="tabpane" data-pane="fundo">
+      <div class="seg" id="segBg"><button data-v="image">Imagem</button><button data-v="solid">Cor</button><button data-v="gradient">Degradê</button></div>
+      <div id="bgImageBox" class="stack">
+        <div class="swatches" id="imgSwatches"></div>
+        <label class="upload">＋ Adicionar imagens<input type="file" id="upFundo" accept="image/*" multiple hidden></label>
+        <div><label>Enquadramento horizontal <span class="val" id="vFx"></span></label><input type="range" id="rFx" min="0" max="100"></div>
+        <div><label>Enquadramento vertical <span class="val" id="vFy"></span></label><input type="range" id="rFy" min="0" max="100"></div>
+        <div><label>Zoom <span class="val" id="vZoom"></span></label><input type="range" id="rZoom" min="100" max="250"></div>
+        <div><label>Desfoque <span class="val" id="vBlur"></span></label><input type="range" id="rBlur" min="0" max="20"></div>
+      </div>
+      <div id="bgSolidBox" class="row"><div><label>Cor de fundo</label><input type="color" id="corFundo"></div></div>
+      <div id="bgGradBox" class="stack">
+        <div class="swatches" id="gradSwatches"></div>
+        <div class="row">
+          <div><label>Cor 1</label><input type="color" id="grad1"></div>
+          <div><label>Cor 2</label><input type="color" id="grad2"></div>
+          <div style="flex:2"><label>Ângulo <span class="val" id="vAng"></span></label><input type="range" id="rAng" min="0" max="360"></div>
+        </div>
+      </div>
+      <div><label>Escurecer fundo <span class="val" id="vOverlay"></span></label><input type="range" id="rOverlay" min="0" max="90"></div>
+    </div>
+
+    <!-- SAÍDA -->
+    <div class="tabpane" data-pane="saida">
+      <div>
+        <label>Monitores detectados</label>
+        <div id="listaMonitores" class="stack"></div>
+      </div>
+      <p class="hint">Com 2 monitores (ou projetor/TV no HDMI), a projeção abre em tela cheia no monitor escolhido.
+        Com um só monitor, abre em janela — use <kbd>F11</kbd> ou duplo clique nela para tela cheia.
+        Configure o Windows em <b>Estender</b> estas telas (<kbd>Win</kbd>+<kbd>P</kbd>).</p>
+      <hr>
+      <div>
+        <label>Transmissão pela rede (OBS, outro PC, Smart TV)</label>
+        <div id="links" class="stack"></div>
+      </div>
+      <p class="hint"><b>OBS:</b> Fontes → + → <i>Navegador</i> → cole o link, largura 1920, altura 1080.<br>
+        <b>Outro PC/TV</b> na mesma rede Wi-Fi: abra o link no navegador e dê duplo clique para tela cheia.
+        Se o Windows perguntar sobre o firewall, permita o acesso em redes privadas.</p>
+      <hr>
+      <div>
+        <label>Formato do PNG exportado</label>
+        <div class="seg" id="segFormato">
+          <button data-v="16:9">16:9</button><button data-v="1:1">1:1</button>
+          <button data-v="4:5">4:5</button><button data-v="9:16">Story</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="operador.js"></script>
+</body>
+</html>
