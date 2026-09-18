@@ -1,5 +1,12 @@
 // Controle do Bible Studio pelo celular: fala com o PC pela rede (porta 7777).
 const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// o QR code do PC traz a senha no endereço (?pin=1234): entra direto, sem digitar
+const pinDoLink = new URLSearchParams(location.search).get('pin');
+if (/^\d{4}$/.test(pinDoLink || '')) {
+  localStorage.setItem('bibleStudioPin', pinDoLink);
+  history.replaceState(null, '', location.pathname);
+}
 let PIN = localStorage.getItem('bibleStudioPin') || '';
 let E = null;              // último estado recebido do PC
 let es = null;             // conexão de eventos
@@ -162,20 +169,20 @@ function aplicarEstado(st) {
 function desenharRoteiro(st) {
   const lista = st.roteiro || [];
   const prox = lista[st.prevIdx];
-  $('rotProx').textContent = prox ? prox.icone + ' ' + prox.nome : (st.prevRef ? '📖 ' + st.prevRef : '—');
+  $('rotProx').innerHTML = prox ? icone(prox.icone, 'ico-antes') + esc(prox.nome) : (st.prevRef ? icone('book-open', 'ico-antes') + esc(st.prevRef) : '—');
   const box = $('roteiroLista');
   const chave = lista.map(e => e.tipo + e.nome).join('|');
   if (box.dataset.chave !== chave) {
     box.dataset.chave = chave;
     box.innerHTML = '';
     if (!lista.length) {
-      box.innerHTML = '<p class="dica">O roteiro está vazio. Monte no computador (＋ Adicionar ou 📂 Roteiros).</p>';
+      box.innerHTML = '<p class="dica">O roteiro está vazio. Monte no computador (botões Adicionar ou Roteiros).</p>';
     }
     lista.forEach((ev, i) => {
       const d = document.createElement('div');
       d.className = 'item';
       d.dataset.i = i;
-      d.innerHTML = `<b>${ev.icone}</b><span>${ev.nome}<i class="selos"></i><small>${ev.sub || ''}</small></span>`;
+      d.innerHTML = `<b>${icone(ev.icone)}</b><span>${ev.nome}<i class="selos"></i><small>${ev.sub || ''}</small></span>`;
       const b = document.createElement('button');
       b.className = 'tocar';
       b.textContent = 'NO AR';
@@ -202,8 +209,8 @@ function emVista(el) {
 function desenharMidia(m) {
   if (!m) return;
   const item = m.itens[m.idx];
-  $('midiaAgora').textContent = item ? `${m.tocando ? '▶' : '⏸'} ${item.nome}` : 'Nada tocando';
-  $('mPlay').textContent = m.tocando ? '⏸' : '▶';
+  $('midiaAgora').innerHTML = item ? icone(m.tocando ? 'play' : 'pause', 'ico-antes') + esc(item.nome) : 'Nada tocando';
+  porIcone($('mPlay'), m.tocando ? 'pause' : 'play');
   $('midiaT').textContent = fmt(m.t);
   $('midiaD').textContent = fmt(m.dur);
   $('midiaBarra').style.width = m.dur ? (m.t / m.dur * 100) + '%' : '0%';

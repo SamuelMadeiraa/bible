@@ -130,6 +130,20 @@ input[type=color]{width:100%;height:32px;border:1px solid var(--line);border-rad
 .link{display:flex;gap:6px}
 .link input{font-family:ui-monospace,Consolas,monospace;font-size:.8rem}
 
+/* QR code do controle pelo celular */
+.qr-mini{display:flex;gap:12px;align-items:center}
+.qr-mini .qr{width:112px;height:112px;flex:none;background:#fff;border-radius:8px;padding:4px;cursor:zoom-in}
+.qr-mini .qr-lado{display:flex;flex-direction:column;gap:8px;min-width:0}
+.qr svg{display:block;width:100%;height:100%}
+.qr-area{display:flex;gap:18px;align-items:center}
+.qr-grande{width:250px;height:250px;flex:none;background:#fff;border-radius:12px;padding:8px}
+.qr-grande svg{display:block;width:100%;height:100%}
+.qr-info{display:flex;flex-direction:column;gap:12px;min-width:0}
+.qr-pin{display:flex;flex-direction:column;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.6px}
+.qr-pin b{font-size:2.4rem;letter-spacing:6px;color:var(--text);font-variant-numeric:tabular-nums;line-height:1.1}
+.qr-passos{padding-left:18px;display:flex;flex-direction:column;gap:6px;line-height:1.4;font-size:.85rem}
+.qr-vazio{color:#333;font-size:.8rem;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:10px}
+
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);padding:9px 16px;border-radius:8px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
 .toast.show{opacity:1}
 
@@ -336,3 +350,19 @@ body.sem-dicas .hint{display:none}
 .cron.aovivo .cron-valor{color:#ff7a7c}
 .cron.parado .cron-valor{color:#b9b8bc}
 @keyframes piscar{50%{opacity:.35}}
+
+/* ícones (Lucide, em app/icones.js) */
+.ico{width:1.15em;height:1.15em;flex:none;vertical-align:-.22em;display:inline-block}
+.ico-antes{margin-right:.45em}
+.ico-depois{margin-left:.35em;width:1em;height:1em;opacity:.75}
+.p-ctrls .ico,.actions #btnPrev .ico,.actions #btnNext .ico{width:1.25em;height:1.25em}
+.mi-item .thumb .ico{width:20px;height:20px}
+.mi-item .x .ico{width:15px;height:15px;vertical-align:-.15em}
+.badge .ico{width:11px;height:11px;vertical-align:-.1em}
+.painel-item .marca .ico{width:14px;height:14px}
+.fechar .ico{width:18px;height:18px;vertical-align:-.25em}
+button.so-icone{padding-left:10px;padding-right:10px}
+/* menus: ícone à esquerda, título e descrição à direita */
+.menu button:has(>.ico){display:grid;grid-template-columns:auto 1fr;column-gap:11px;align-items:center}
+.menu button>.ico{grid-row:1/3;margin:0;width:18px;height:18px;color:var(--azul-claro)}
+.menu button:has(>.ico)>small{grid-column:2}

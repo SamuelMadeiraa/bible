@@ -146,29 +146,69 @@ if (ponte) {
   setInterval(publicarEstado, 2000);      // garante que o celular não fique defasado
   publicarEstado();
 
-  // links e senha do controle na aba "Saída"
-  (async () => {
-    const info = await ponte.remoteInfo();
+  // ---------- QR code para abrir o controle no celular ----------
+  const QR = { info: null, rede: 0, modo: 'app' };
+  const SEM_REDE = '<div class="qr-vazio">Este PC não está numa rede Wi-Fi/cabo — conecte e clique em Atualizar endereço</div>';
+  const PASSOS = {
+    app: [
+      'Conecte o celular no <b>mesmo Wi-Fi</b> do computador.',
+      'Abra a <b>câmera</b> do celular e aponte para o QR code.',
+      'Toque em <b>Instalar app</b> (ou “Adicionar à tela inicial”). Das próximas vezes é só abrir o ícone <b>Bible Controle</b>.',
+    ],
+    direto: [
+      'Conecte o celular no <b>mesmo Wi-Fi</b> do computador.',
+      'Escaneie o QR code: o controle abre direto, <b>sem precisar de internet</b>.',
+      'Esse modo não instala o app — use quando o celular estiver sem internet.',
+    ],
+  };
+
+  function desenharQr() {
+    const info = QR.info;
+    if (!info) return;
+    const e = info.enderecos[QR.rede];
+    const svg = e ? (QR.modo === 'app' ? e.qrApp : e.qrDireto) : SEM_REDE;
+    const link = e ? (QR.modo === 'app' ? e.app : e.direto) : '';
+
+    // aba "Saída": QR pequeno
     const box = $('controleInfo');
-    if (!box || !info.urls.length) return;
-    box.innerHTML = '';
-    const pin = document.createElement('div');
-    pin.className = 'pin';
-    pin.innerHTML = `Senha do controle: <b>${info.pin}</b>`;
-    box.appendChild(pin);
-    info.urls.forEach((u, i) => {
-      if (i === 0) return;                 // o primeiro é localhost, não serve para o celular
-      const d = document.createElement('div');
-      d.className = 'link';
-      const inp = document.createElement('input');
-      inp.type = 'text'; inp.readOnly = true; inp.value = u;
-      const cp = document.createElement('button');
-      cp.textContent = 'Copiar';
-      cp.onclick = () => navigator.clipboard.writeText(u).then(() => toast('Link copiado!'));
-      d.append(inp, cp);
-      box.appendChild(d);
-    });
-    if (info.urls.length <= 1) box.insertAdjacentHTML('beforeend',
-      '<p class="hint">Este PC não está numa rede Wi-Fi/cabo, então não há endereço para o celular.</p>');
-  })();
+    if (box) {
+      box.innerHTML = `<div class="qr-mini">
+          <div class="qr" title="Clique para ampliar">${e ? e.qrApp : SEM_REDE}</div>
+          <div class="qr-lado">
+            <div class="pin">Senha do controle: <b>${info.pin}</b></div>
+            <button type="button" data-qr-ampliar>${icone('smartphone', 'ico-antes')}Mostrar QR code grande</button>
+          </div>
+        </div>`;
+      box.querySelectorAll('.qr, [data-qr-ampliar]').forEach(el => el.onclick = abrirQr);
+    }
+
+    // janela
+    $('qrGrande').innerHTML = svg;
+    $('qrPin').textContent = info.pin;
+    $('qrLink').value = link;
+    $('qrPassos').innerHTML = PASSOS[QR.modo].map(p => `<li>${p}</li>`).join('');
+    $('qrRedeBox').hidden = info.enderecos.length < 2;
+    $('qrRede').innerHTML = info.enderecos.map((x, i) => `<option value="${i}">${x.host}${i === 0 ? ' (recomendado)' : ''}</option>`).join('');
+    $('qrRede').value = QR.rede;
+    $('qrAviso').innerHTML = 'Não conectou? Confira se o celular está no mesmo Wi-Fi e, se o Windows perguntar sobre o '
+      + '<b>firewall</b>, permita o Bible Studio em redes privadas.';
+    document.querySelectorAll('#segQr button').forEach(b => b.classList.toggle('on', b.dataset.v === QR.modo));
+  }
+
+  async function carregarQr() {
+    try { QR.info = await ponte.remoteInfo(); } catch (e) { return; }
+    if (QR.rede >= QR.info.enderecos.length) QR.rede = 0;
+    desenharQr();
+  }
+  function abrirQr() { carregarQr(); abrirModal('modalCelular'); }
+
+  $('btnCelular').onclick = abrirQr;
+  $('qrAtualizar').onclick = () => carregarQr().then(() => toast('Endereço atualizado'));
+  $('qrRede').onchange = e => { QR.rede = +e.target.value; desenharQr(); };
+  document.querySelectorAll('#segQr button').forEach(b => b.onclick = () => { QR.modo = b.dataset.v; desenharQr(); });
+  $('qrCopiar').onclick = () => navigator.clipboard.writeText($('qrLink').value).then(() => toast('Link copiado!'));
+
+  // o servidor pode demorar um instante para abrir a porta; e a rede pode mudar com o app aberto
+  setTimeout(carregarQr, 800);
+  setInterval(() => { if (!$('modalCelular').classList.contains('on')) carregarQr(); }, 30000);
 }

@@ -109,15 +109,15 @@ function rotulo(ev) {
     case 'versiculo': {
       const cap = BIBLIA[ev.b] && BIBLIA[ev.b].chapters[ev.c];
       const t = cap ? cap[ev.v1] || '' : '';
-      return { titulo: refDe(ev), sub: t.length > 90 ? t.slice(0, 90) + '…' : t, icone: '📖' };
+      return { titulo: refDe(ev), sub: t.length > 90 ? t.slice(0, 90) + '…' : t, icone: 'book-open' };
     }
-    case 'texto': return { titulo: ev.titulo || 'Aviso', sub: ev.texto || '', icone: '📝' };
-    case 'preta': return { titulo: 'Tela preta', sub: 'Apaga toda a projeção', icone: '⬛' };
-    case 'fundo': return { titulo: 'Só o fundo', sub: 'Tira o texto e deixa o fundo', icone: '🌄' };
-    case 'audio': return { titulo: ev.nome, sub: 'áudio • toca sem tapar a tela', icone: '🎵' };
-    case 'web': return { titulo: ev.nome || hostDe(ev.url), sub: 'transmissão / link • ' + hostDe(ev.url), icone: '📡' };
-    case 'imagem': return { titulo: ev.nome, sub: 'foto', icone: '🖼' };
-    default: return { titulo: ev.nome, sub: 'vídeo', icone: '🎬' };
+    case 'texto': return { titulo: ev.titulo || 'Aviso', sub: ev.texto || '', icone: 'message-square-text' };
+    case 'preta': return { titulo: 'Tela preta', sub: 'Apaga toda a projeção', icone: 'eye-off' };
+    case 'fundo': return { titulo: 'Só o fundo', sub: 'Tira o texto e deixa o fundo', icone: 'wallpaper' };
+    case 'audio': return { titulo: ev.nome, sub: 'áudio • toca sem tapar a tela', icone: 'music' };
+    case 'web': return { titulo: ev.nome || hostDe(ev.url), sub: 'transmissão / link • ' + hostDe(ev.url), icone: 'radio-tower' };
+    case 'imagem': return { titulo: ev.nome, sub: 'foto', icone: 'image' };
+    default: return { titulo: ev.nome, sub: 'vídeo', icone: 'clapperboard' };
   }
 }
 
@@ -221,7 +221,7 @@ function montarLista() {
     const th = document.createElement('div');
     th.className = 'thumb';
     if (ev.thumb) th.style.backgroundImage = `url("${ev.thumb}")`;
-    else th.textContent = r.icone;
+    else th.innerHTML = icone(r.icone);
 
     const nome = document.createElement('div');
     nome.className = 'nome';
@@ -233,7 +233,7 @@ function montarLista() {
     selos.className = 'selos';
     if (i === R.liveIdx) selos.insertAdjacentHTML('beforeend', '<b class="badge ar">NO AR</b>');
     if (i === R.prevIdx) selos.insertAdjacentHTML('beforeend', '<b class="badge prox">PRÓXIMO</b>');
-    if (i === MP.idx && tocando && ev.tipo === 'audio') selos.insertAdjacentHTML('beforeend', '<b class="badge som">♪</b>');
+    if (i === MP.idx && tocando && ev.tipo === 'audio') selos.insertAdjacentHTML('beforeend', '<b class="badge som">' + icone('music') + '</b>');
     if (ev.tipo === 'web') selos.insertAdjacentHTML('beforeend', '<b class="badge web">LINK</b>');
     d.appendChild(selos);
 
@@ -253,7 +253,7 @@ function montarLista() {
     if (ev.tipo === 'web') {
       const ed = document.createElement('span');
       ed.className = 'x';
-      ed.textContent = '✎';
+      ed.innerHTML = icone('pencil');
       ed.title = 'Editar transmissão';
       ed.onclick = e => { e.stopPropagation(); abrirEditorWeb(i); };
       d.appendChild(ed);
@@ -261,7 +261,7 @@ function montarLista() {
     if (ev.tipo === 'texto') {
       const ed = document.createElement('span');
       ed.className = 'x';
-      ed.textContent = '✎';
+      ed.innerHTML = icone('pencil');
       ed.title = 'Editar aviso';
       ed.onclick = e => { e.stopPropagation(); abrirEditorTexto(i); };
       d.appendChild(ed);
@@ -367,7 +367,7 @@ function mostrarPreviaEvento(ev) {
   box.className = 'prev-evento on ev-' + ev.tipo;
   box.style.backgroundImage = ev.thumb ? `url("${ev.thumb}")` : '';
   if (ev.tipo === 'web') box.classList.add('ev-web');
-  box.innerHTML = `<span>${r.icone} ${esc(r.titulo)}</span>`;
+  box.innerHTML = `<span>${icone(r.icone, 'ico-antes')}${esc(r.titulo)}</span>`;
   mon?.classList.add('com-evento');
   $('prevEvNome').textContent = r.titulo;
 }
@@ -639,15 +639,15 @@ function atualizarPainel() {
   if (!$('pNow')) return;
   const web = MP.itens[webNoAr];
   if (web) {
-    $('pNow').textContent = `${webTocando ? '📡' : '⏸'} ${rotulo(web).titulo}`;
-    $('pPlay').textContent = webTocando ? '⏸' : '▶';
+    $('pNow').innerHTML = icone(webTocando ? 'radio-tower' : 'pause', 'ico-antes') + esc(rotulo(web).titulo);
+    porIcone($('pPlay'), webTocando ? 'pause' : 'play');
     $('pT').textContent = 'AO VIVO';
     $('pD').textContent = hostDe(web.url);
     $('vVol').textContent = MP.volume + '%';
     return;
   }
-  $('pNow').textContent = item ? `${tocando ? '▶' : '⏸'} ${item.nome}` : 'Nenhuma mídia tocando';
-  $('pPlay').textContent = tocando ? '⏸' : '▶';
+  $('pNow').innerHTML = item ? icone(tocando ? 'play' : 'pause', 'ico-antes') + esc(item.nome) : 'Nenhuma mídia tocando';
+  porIcone($('pPlay'), tocando ? 'pause' : 'play');
   $('pT').textContent = fmt(tAtual);
   $('pD').textContent = fmt(durAtual);
   if (!arrastandoSeek) $('pSeek').value = durAtual ? Math.round(tAtual / durAtual * 1000) : 0;

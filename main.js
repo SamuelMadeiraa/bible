@@ -14,7 +14,20 @@ const clients = new Set();     // conexões SSE (OBS / navegador / outro PC)
 let serverPort = null;
 let ultimaMidia = null;        // último comando de mídia (para quem conectar depois)
 let estadoRemoto = null;       // resumo do app para o controle no celular
-const PIN = String(Math.floor(1000 + Math.random() * 9000));   // senha do controle remoto
+const SITE_CONTROLE = 'https://bible-studio-site.vercel.app/controle/';   // app do celular (PWA)
+
+// senha do controle remoto: fica guardada, para o app instalado no celular continuar entrando
+// depois que o Bible Studio for fechado e aberto de novo
+const PIN = (() => {
+  const arq = path.join(app.getPath('userData'), 'controle-remoto.json');
+  try {
+    const p = JSON.parse(fs.readFileSync(arq, 'utf8')).pin;
+    if (/^\d{4}$/.test(p)) return p;
+  } catch (e) {}
+  const novo = String(Math.floor(1000 + Math.random() * 9000));
+  try { fs.mkdirSync(path.dirname(arq), { recursive: true }); fs.writeFileSync(arq, JSON.stringify({ pin: novo })); } catch (e) {}
+  return novo;
+})();
 
 // sem isso o Chromium bloqueia tocar áudio/vídeo sem um clique do operador na janela
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
@@ -451,10 +464,25 @@ ipcMain.on('estado:put', (e, st) => {
   estadoRemoto = st;
   broadcast(st, 'estado');
 });
-ipcMain.handle('remote:info', () => ({
-  pin: PIN,
-  urls: lanUrls().map(u => u + 'controle'),
-}));
+function qrSvg(texto) {
+  const qrcode = require('qrcode-generator');
+  const qr = qrcode(0, 'M');
+  qr.addData(texto);
+  qr.make();
+  return qr.createSvgTag({ cellSize: 4, margin: 3, scalable: true });
+}
+// um QR por endereço de rede: "app" abre o app instalável do site; "direto" abre o controle
+// servido pelo próprio PC (funciona mesmo sem internet no celular)
+ipcMain.handle('remote:info', () => {
+  const nome = os.hostname();
+  const enderecos = !serverPort ? [] : lanUrls().slice(1).map(u => {
+    const host = new URL(u).host;                                  // ip:porta
+    const direto = `${u}controle?pin=${PIN}`;
+    const app = `${SITE_CONTROLE}#pc=${encodeURIComponent(host)}&pin=${PIN}&nome=${encodeURIComponent(nome)}`;
+    return { host, direto, app, qrApp: qrSvg(app), qrDireto: qrSvg(direto) };
+  });
+  return { pin: PIN, nome, urls: lanUrls().map(u => u + 'controle'), enderecos };
+});
 
 ipcMain.handle('server:info', () => ({ port: serverPort, urls: lanUrls(), versao: app.getVersion(), empacotado: app.isPackaged }));
 ipcMain.on('open-external', (e, url) => {
@@ -462,14 +490,30 @@ ipcMain.on('open-external', (e, url) => {
 });
 
 // ---------------- servidor da rede (OBS / outro PC / TV) ----------------
+// o endereço mais provável de ser o Wi-Fi/cabo da igreja vem primeiro
+// (placas virtuais, VPN e endereços sem rede ficam por último)
+// prefixos de MAC de placas virtuais (VirtualBox, VMware, Hyper-V, Parallels), que às vezes se chamam só "Ethernet 3"
+const MAC_VIRTUAL = /^(0a:00:27|08:00:27|00:50:56|00:0c:29|00:05:69|00:1c:14|00:15:5d|00:1c:42)/i;
+function notaRede(nome, ip, mac) {
+  let n = 0;
+  if (/virtual|vmware|vbox|hyper-v|vethernet|wsl|docker|loopback|bluetooth|tailscale|zerotier|hamachi|radmin|vpn/i.test(nome)) n += 10;
+  if (MAC_VIRTUAL.test(mac || '')) n += 10;
+  if (/wi-?fi|wlan|wireless|sem fio/i.test(nome)) n -= 1;
+  if (ip.startsWith('169.254.')) n += 20;
+  if (ip.startsWith('192.168.')) n -= 3;
+  else if (ip.startsWith('10.')) n -= 2;
+  else if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) n -= 1;
+  return n;
+}
 function lanUrls() {
-  const urls = [];
-  for (const list of Object.values(os.networkInterfaces())) {
+  const lista = [];
+  for (const [nome, list] of Object.entries(os.networkInterfaces())) {
     for (const n of list || []) {
-      if (n.family === 'IPv4' && !n.internal) urls.push(`http://${n.address}:${serverPort}/`);
+      if (n.family === 'IPv4' && !n.internal) lista.push({ ip: n.address, nota: notaRede(nome, n.address, n.mac) });
     }
   }
-  return [`http://localhost:${serverPort}/`, ...urls];
+  lista.sort((a, b) => a.nota - b.nota);
+  return [`http://localhost:${serverPort}/`, ...lista.map(x => `http://${x.ip}:${serverPort}/`)];
 }
 
 function broadcast(dados, evento = 'slide') {
@@ -516,7 +560,7 @@ const TIPOS_MIDIA = {
   '.gif': 'image/gif', '.bmp': 'image/bmp',
 };
 const PUBLICOS = new Set(['saida.html', 'saida.js', 'engine.js', 'fonts.css',
-  'controle.html', 'controle.js', 'controle.css', 'logo-header.png', 'icon.png',
+  'controle.html', 'controle.js', 'controle.css', 'icones.js', 'logo-header.png', 'icon.png',
   'icon-512.png', 'manifest.webmanifest', 'sw.js']);
 
 function servirArquivo(res, arquivo) {

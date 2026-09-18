@@ -138,3 +138,11 @@ hr{border:none;border-top:1px solid var(--line);margin:4px 0}
 .cron-cel{margin-left:6px;font-variant-numeric:tabular-nums;color:#b9b8bc}
 .cron-cel.aviso{color:#ffc53d}
 .cron-cel.fim{color:#ff5a5d}
+
+/* ícones (Lucide, em icones.js) */
+.ico{width:1.2em;height:1.2em;flex:none;vertical-align:-.24em;display:inline-block}
+.ico-antes{margin-right:.45em}
+.ico-depois{margin-left:.45em}
+.abas button .ico{width:22px;height:22px;margin:0}
+.lista .item b .ico{width:18px;height:18px}
+button.grande .ico-so{width:26px;height:26px}

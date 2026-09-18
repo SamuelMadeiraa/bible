@@ -45,11 +45,11 @@
         <div class="texto" id="prevTexto"></div>
       </div>
 
-      <button id="btnEnviar" class="enviar">✂ CORTAR PARA O AR</button>
+      <button id="btnEnviar" class="enviar"><i data-i="scissors"></i>CORTAR PARA O AR</button>
 
       <div class="linha botoes">
-        <button id="btnAnterior" class="grande">◀ Anterior</button>
-        <button id="btnProximo" class="grande">Próximo ▶</button>
+        <button id="btnAnterior" class="grande"><i data-i="chevron-left"></i>Anterior</button>
+        <button id="btnProximo" class="grande">Próximo<i data-i="chevron-right"></i></button>
       </div>
 
       <div class="linha">
@@ -66,10 +66,10 @@
         <div class="rotulo">PRÓXIMO (PRÉVIA)</div>
         <div class="ref" id="rotProx">—</div>
       </div>
-      <button id="btnCorte" class="enviar">✂ CORTAR PARA O AR</button>
+      <button id="btnCorte" class="enviar"><i data-i="scissors"></i>CORTAR PARA O AR</button>
       <div class="linha botoes">
-        <button id="btnEvAnt" class="grande">▲ Anterior</button>
-        <button id="btnEvProx" class="grande">Próximo ▼</button>
+        <button id="btnEvAnt" class="grande"><i data-i="chevron-up"></i>Anterior</button>
+        <button id="btnEvProx" class="grande">Próximo<i data-i="chevron-down"></i></button>
       </div>
       <div class="lista" id="roteiroLista"></div>
       <hr />
@@ -78,20 +78,20 @@
       <div class="barra"><div id="midiaBarra"></div></div>
       <div class="tempos"><span id="midiaT">0:00</span><span id="midiaD">0:00</span></div>
       <div class="linha botoes">
-        <button id="mAnterior" class="grande">⏮</button>
-        <button id="mPlay" class="grande destaque">▶</button>
-        <button id="mParar" class="grande">⏹</button>
-        <button id="mProxima" class="grande">⏭</button>
+        <button id="mAnterior" class="grande"><i data-i="skip-back"></i></button>
+        <button id="mPlay" class="grande destaque"><i data-i="play"></i></button>
+        <button id="mParar" class="grande"><i data-i="square"></i></button>
+        <button id="mProxima" class="grande"><i data-i="skip-forward"></i></button>
       </div>
-      <label class="vol">🔊 <input type="range" id="mVol" min="0" max="100" /> <b id="mVolTxt">80%</b></label>
+      <label class="vol"><i data-i="volume-2"></i><input type="range" id="mVol" min="0" max="100" /> <b id="mVolTxt">80%</b></label>
       <p class="dica" id="midiaStatus"></p>
     </section>
 
     <!-- ABA TELA -->
     <section class="pane" data-pane="tela">
-      <button id="btnAoVivo" class="grande cheio">📖 Mostrar versículo</button>
-      <button id="btnLimpar" class="grande cheio">🖼 Só o fundo</button>
-      <button id="btnPreta" class="grande cheio">⬛ Tela preta</button>
+      <button id="btnAoVivo" class="grande cheio"><i data-i="book-open"></i>Mostrar versículo</button>
+      <button id="btnLimpar" class="grande cheio"><i data-i="wallpaper"></i>Só o fundo</button>
+      <button id="btnPreta" class="grande cheio"><i data-i="eye-off"></i>Tela preta</button>
       <hr />
       <label class="switch"><input type="checkbox" id="chkAuto" /> <span>Ao vivo automático</span></label>
       <label class="switch"><input type="checkbox" id="chkProjecao" /> <span>Projeção aberta</span></label>
@@ -99,7 +99,7 @@
       <hr />
       <div class="linha">
         <input type="search" id="busca" placeholder="Buscar na Bíblia" />
-        <button id="btnBuscar">🔍</button>
+        <button id="btnBuscar"><i data-i="search"></i></button>
       </div>
       <div class="lista" id="resultados"></div>
       <button id="btnSair" class="sair">Trocar de senha / sair</button>
@@ -107,13 +107,14 @@
   </main>
 
   <nav class="abas">
-    <button data-tab="versiculo" class="on">📖<span>Versículo</span></button>
-    <button data-tab="midia">📋<span>Roteiro</span></button>
-    <button data-tab="tela">🖥<span>Tela</span></button>
+    <button data-tab="versiculo" class="on"><i data-i="book-open"></i><span>Versículo</span></button>
+    <button data-tab="midia"><i data-i="list-video"></i><span>Roteiro</span></button>
+    <button data-tab="tela"><i data-i="monitor"></i><span>Tela</span></button>
   </nav>
 </div>
 
 <div class="toast" id="toast"></div>
+<script src="icones.js"></script>
 <script src="controle.js"></script>
 </body>
 </html>

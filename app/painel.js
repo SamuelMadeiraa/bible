@@ -67,7 +67,7 @@ function cartao(titulo, descricao, acoes) {
   bt.className = 'c-acoes';
   acoes.forEach(([rotulo, fn, cls]) => {
     const b = document.createElement('button');
-    b.textContent = rotulo;
+    b.innerHTML = rotulo;               // os rótulos são fixos do app (podem ter ícone)
     if (cls) b.className = cls;
     b.onclick = fn;
     bt.appendChild(b);
@@ -82,7 +82,7 @@ function montarPresets() {
   (window.PRESETS_PRONTOS || []).forEach(p => {
     pr.appendChild(cartao(p.nome, `${p.descricao} ${resumoEventos(p.eventos)}.`, [
       ['Usar', () => usarPreset(p.eventos, 'substituir'), 'primary'],
-      ['＋ Adicionar', () => usarPreset(p.eventos, 'adicionar')],
+      [icone('plus', 'ico-antes') + 'Adicionar', () => usarPreset(p.eventos, 'adicionar')],
     ]));
   });
 
@@ -95,8 +95,8 @@ function montarPresets() {
     const data = p.criado ? new Date(p.criado).toLocaleDateString('pt-BR') : '';
     meus.appendChild(cartao(p.nome, `${resumoEventos(p.itens)}${data ? ' • ' + data : ''}`, [
       ['Usar', () => usarPreset(p.itens, 'substituir'), 'primary'],
-      ['＋ Adicionar', () => usarPreset(p.itens, 'adicionar')],
-      ['⬆', () => exportarArquivo(p.nome, p.itens)],
+      [icone('plus', 'ico-antes') + 'Adicionar', () => usarPreset(p.itens, 'adicionar')],
+      [icone('upload'), () => exportarArquivo(p.nome, p.itens), 'so-icone'],
       ['Excluir', () => {
         if (!confirm(`Excluir o roteiro “${p.nome}”?`)) return;
         meusPresets.splice(i, 1);
@@ -165,7 +165,7 @@ $('btnPresets2').onclick = () => abrirPresets();
 function aplicarCfg() {
   document.body.classList.toggle('simples', !!CFG.simples);
   document.body.classList.toggle('sem-dicas', !CFG.dicas);
-  $('btnGo').innerHTML = '✂ CORTE <kbd>' + (CFG.teclaCorte === 'enter' ? 'Enter' : 'Espaço') + '</kbd>';
+  $('btnGo').innerHTML = icone('scissors', 'ico-antes') + 'CORTE <kbd>' + (CFG.teclaCorte === 'enter' ? 'Enter' : 'Espaço') + '</kbd>';
   const chk = $('chkSimples');
   if (chk) chk.checked = !!CFG.simples;
 }

@@ -9,14 +9,14 @@ window.Layout = (function () {
   const CHAVE_MEU = 'bibleStudioMeuLayout';
 
   const PAINEIS = {
-    biblia:   { titulo: '📖 Bíblia',          bloco: 'blocoBiblia' },
-    previa:   { titulo: '🟢 Prévia',          bloco: 'monPrev' },
-    aovivo:   { titulo: '🔴 Ao vivo',         bloco: 'monLive' },
-    comandos: { titulo: '✂ Comandos',        bloco: 'blocoComandos' },
-    palavras: { titulo: '🖍 Palavras',        bloco: 'blocoPalavras' },
-    roteiro:  { titulo: '📋 Roteiro do culto', bloco: 'blocoRoteiro' },
-    midia:    { titulo: '🎬 Mídia',           bloco: 'blocoMidia' },
-    ajustes:  { titulo: '🎨 Ajustes',         bloco: 'blocoAjustes' },
+    biblia:   { titulo: 'Bíblia',          bloco: 'blocoBiblia' },
+    previa:   { titulo: 'Prévia',          bloco: 'monPrev' },
+    aovivo:   { titulo: 'Ao vivo',         bloco: 'monLive' },
+    comandos: { titulo: 'Comandos',        bloco: 'blocoComandos' },
+    palavras: { titulo: 'Palavras',        bloco: 'blocoPalavras' },
+    roteiro:  { titulo: 'Roteiro do culto', bloco: 'blocoRoteiro' },
+    midia:    { titulo: 'Mídia',           bloco: 'blocoMidia' },
+    ajustes:  { titulo: 'Ajustes',         bloco: 'blocoAjustes' },
   };
 
   if (!DV || !DV.createDockview) {
@@ -140,7 +140,7 @@ window.Layout = (function () {
       const aberto = !!api.getPanel(id);
       const b = document.createElement('button');
       b.className = 'painel-item' + (aberto ? ' on' : '');
-      b.innerHTML = `<span class="marca">${aberto ? '✓' : ''}</span>${p.titulo}`;
+      b.innerHTML = `<span class="marca">${aberto ? icone('check') : ''}</span>${p.titulo}`;
       b.onclick = e => {
         e.stopPropagation();
         const painel = api.getPanel(id);

@@ -734,7 +734,7 @@ function atualizarSaida(st) {
   const m = monitores.find(x => x.id === st.displayId);
   pill.querySelector('span').textContent = st.open
     ? `Projetando${m ? ' em ' + m.label : ''}` : 'Projeção fechada';
-  $('btnProjecao').textContent = st.open ? '✕ Fechar projeção' : '🖥 Abrir projeção';
+  $('btnProjecao').innerHTML = st.open ? icone('monitor-off', 'ico-antes') + 'Fechar projeção' : icone('monitor', 'ico-antes') + 'Abrir projeção';
   $('btnProjecao').classList.toggle('primary', !st.open);
   if (st.open && st.width && st.height) definirAspecto(st.width, st.height);
   montarMonitores();
