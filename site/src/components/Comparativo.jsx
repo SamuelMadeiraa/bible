@@ -7,7 +7,7 @@ const LINHAS = [
   ['Qualquer troca de janela aparece na TV', 'Tudo é preparado na prévia antes de ir para o ar'],
   ['Operador preso ao computador', 'Controle pelo celular, com senha'],
   ['Sem saber quanto falta para o vídeo acabar', 'Cronômetro regressivo embaixo do ao vivo'],
-  ['Montar tudo de novo a cada culto', 'Roteiros prontos e roteiros salvos para reabrir'],
+  ['Montar tudo de novo a cada culto', 'Presets de reunião salvos para reabrir'],
 ];
 
 export default function Comparativo() {

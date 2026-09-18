@@ -16,7 +16,7 @@ export default function ParaTodos() {
             <h3>Modo simples</h3>
             <p>Para quem nunca operou projeção. Só a Bíblia, a prévia, o ao vivo e o roteiro — com botões grandes.</p>
             <ul className="lista-check">
-              <li><Check size={16} />Roteiros prontos: abrir e apertar Espaço</li>
+              <li><Check size={16} />Presets de reunião: abrir e apertar Espaço</li>
               <li><Check size={16} />Nada de ajuste técnico à vista</li>
               <li><Check size={16} />Dicas na tela explicando cada parte</li>
             </ul>

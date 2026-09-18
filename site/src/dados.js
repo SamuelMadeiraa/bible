@@ -34,7 +34,7 @@ export const PERGUNTAS = [
   },
   {
     p: 'Quem nunca operou projeção consegue usar?',
-    r: 'Esse é o ponto. O modo simples deixa só o essencial com botões grandes, e os roteiros prontos (Culto de Domingo, Santa Ceia, Batismo, Casamento…) já vêm montados: é abrir e ir apertando Espaço.',
+    r: 'Esse é o ponto. O modo simples deixa só o essencial com botões grandes, e os presets de reunião guardam a sequência de cada culto: é abrir o preset e ir apertando Espaço.',
   },
   {
     p: 'Roda em Mac ou Linux?',

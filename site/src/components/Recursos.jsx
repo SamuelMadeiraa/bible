@@ -25,10 +25,10 @@ const ABAS = [
     titulo: 'O culto inteiro numa lista.',
     texto: 'Versículos, avisos, vídeos, fotos, áudios e lives na ordem em que vão acontecer. O próximo evento fica esperando na prévia; o Espaço coloca no ar e já prepara o seguinte.',
     itens: [
-      '10 roteiros prontos: Culto de Domingo, Santa Ceia, Batismo…',
+      'Presets de reunião: crie com o nome que quiser e reabra quando precisar',
       'Avisos em texto livre, editáveis na hora',
       'Arraste para mudar a ordem',
-      'Salve e reabra o roteiro de cada culto',
+      'Leve um preset para outro computador em arquivo',
     ],
   },
   {

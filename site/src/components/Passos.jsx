@@ -21,8 +21,8 @@ export default function Passos() {
           </li>
           <li className="revelar" style={{ '--atraso': '160ms' }}>
             <span className="passo-num">3</span>
-            <h3>Abra um roteiro e aperte Espaço</h3>
-            <p>Em <b>Roteiros</b>, escolha “Culto de Domingo” e clique em <b>Usar</b>. Cada <Tecla>Espaço</Tecla> coloca o próximo evento no ar.</p>
+            <h3>Abra um preset e aperte Espaço</h3>
+            <p>Monte a reunião uma vez e guarde em <b>Presets</b>. Nas próximas, clique em <b>Usar</b>: cada <Tecla>Espaço</Tecla> coloca o próximo evento no ar.</p>
           </li>
         </ol>
       </div>
