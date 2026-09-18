@@ -1,13 +1,19 @@
-// Presets de roteiro (prontos e salvos pelo operador) e tela de configurações.
+// Presets de reunião (criados pelo operador) e tela de configurações.
 
-// ---------- presets ----------
+// ---------- presets de reunião ----------
+// Cada preset é { id, nome, criado, alterado, itens } e fica guardado neste computador.
 const PRESETS_KEY = 'bibleStudioPresets';
 let meusPresets = [];
 try { meusPresets = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]'); } catch (e) {}
+meusPresets.forEach(p => { if (!p.id) p.id = novoId(); });
+let presetEditando = null;     // id do preset que está sendo renomeado
+
 function salvarPresets() {
-  try { localStorage.setItem(PRESETS_KEY, JSON.stringify(meusPresets)); }
-  catch (e) { toast('Não foi possível salvar o roteiro'); }
+  try { localStorage.setItem(PRESETS_KEY, JSON.stringify(meusPresets)); return true; }
+  catch (e) { toast('Não foi possível salvar o preset'); return false; }
 }
+const acharPreset = id => meusPresets.find(p => p.id === id);
+const nomeRepetido = (nome, id) => meusPresets.some(p => p.id !== id && p.nome.toLowerCase() === nome.toLowerCase());
 
 // transforma os eventos de um preset em eventos do roteiro (resolvendo as referências)
 function eventosDoPreset(lista) {
@@ -26,17 +32,16 @@ function eventosDoPreset(lista) {
   return saida.map(ev => ({ ...ev, id: novoId() }));
 }
 
-function usarPreset(eventos, modo) {
-  const novos = eventosDoPreset(eventos);
-  if (!novos.length) return toast('Esse roteiro está vazio');
+function usarPreset(p, modo) {
+  const novos = eventosDoPreset(p.itens);
+  if (!novos.length) return toast('Esse preset está vazio — use “Atualizar” para guardar o roteiro atual nele');
   if (modo === 'substituir') {
-    if (MP.itens.length && !confirm('Trocar o roteiro atual por este? (o atual será substituído)')) return;
+    if (MP.itens.length && !confirm(`Trocar o roteiro atual pelo preset “${p.nome}”?`)) return;
     pararMidia();
     MP.itens = [];
     MP.idx = R.prevIdx = R.liveIdx = -1;
     esconderPreviaEvento();
   }
-  const inicio = MP.itens.length;
   MP.itens.push(...novos);
   novos.forEach(detectar);
   registrar();
@@ -44,98 +49,161 @@ function usarPreset(eventos, modo) {
   montarLista();
   fecharModal('modalPresets');
   if (modo === 'substituir') selecionarPrevia(0);
-  toast(modo === 'substituir' ? `Roteiro carregado: ${novos.length} eventos` : `${novos.length} eventos adicionados`);
-  return inicio;
+  toast(modo === 'substituir' ? `Preset “${p.nome}” carregado: ${novos.length} eventos` : `${novos.length} eventos adicionados`);
+  analytics('preset_usado', { modo, eventos: novos.length });
 }
 
 function resumoEventos(lista) {
-  const n = { versiculo: 0, texto: 0, midia: 0 };
+  const n = { versiculo: 0, texto: 0, midia: 0, web: 0 };
   (lista || []).forEach(ev => {
     if (ev.ref || ev.tipo === 'versiculo') n.versiculo++;
     else if (ev.tipo === 'texto') n.texto++;
+    else if (ev.tipo === 'web') n.web++;
     else if (TIPOS_MIDIA.includes(ev.tipo)) n.midia++;
   });
-  return [n.versiculo && `${n.versiculo} versículos`, n.texto && `${n.texto} avisos`, n.midia && `${n.midia} mídias`]
-    .filter(Boolean).join(' • ') || 'vazio';
+  const plural = (q, um, varios) => q && `${q} ${q === 1 ? um : varios}`;
+  return [plural(n.versiculo, 'versículo', 'versículos'), plural(n.texto, 'aviso', 'avisos'),
+    plural(n.midia, 'mídia', 'mídias'), plural(n.web, 'link', 'links')].filter(Boolean).join(' • ') || 'vazio';
 }
 
-function cartao(titulo, descricao, acoes) {
+function botao(rotulo, fn, cls, titulo) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.innerHTML = rotulo;               // os rótulos são fixos do app (podem ter ícone)
+  if (cls) b.className = cls;
+  if (titulo) b.title = titulo;
+  b.onclick = fn;
+  return b;
+}
+
+function cartaoPreset(p) {
   const d = document.createElement('div');
   d.className = 'cartao';
-  d.innerHTML = `<div class="c-txt"><b>${esc(titulo)}</b><small>${esc(descricao)}</small></div>`;
-  const bt = document.createElement('div');
-  bt.className = 'c-acoes';
-  acoes.forEach(([rotulo, fn, cls]) => {
-    const b = document.createElement('button');
-    b.innerHTML = rotulo;               // os rótulos são fixos do app (podem ter ícone)
-    if (cls) b.className = cls;
-    b.onclick = fn;
-    bt.appendChild(b);
-  });
-  d.appendChild(bt);
+  const data = new Date(p.alterado || p.criado || Date.now()).toLocaleDateString('pt-BR');
+  const txt = document.createElement('div');
+  txt.className = 'c-txt';
+
+  if (presetEditando === p.id) {
+    // renomear no próprio cartão
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.maxLength = 60;
+    inp.value = p.nome;
+    const confirmar = () => {
+      const nome = inp.value.trim();
+      if (!nome) return toast('Digite um nome');
+      if (nomeRepetido(nome, p.id)) return toast(`Já existe um preset chamado “${nome}”`);
+      p.nome = nome;
+      p.alterado = Date.now();
+      presetEditando = null;
+      salvarPresets();
+      montarPresets();
+      toast('Preset renomeado');
+    };
+    const cancelar = () => { presetEditando = null; montarPresets(); };
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancelar(); }
+    });
+    txt.appendChild(inp);
+    const acoes = document.createElement('div');
+    acoes.className = 'c-acoes';
+    acoes.append(botao(icone('check', 'ico-antes') + 'Salvar nome', confirmar, 'primary'), botao('Cancelar', cancelar));
+    d.append(txt, acoes);
+    setTimeout(() => { inp.focus(); inp.select(); });
+    return d;
+  }
+
+  txt.innerHTML = `<b>${esc(p.nome)}</b><small>${esc(resumoEventos(p.itens))} • alterado em ${data}</small>`;
+  const acoes = document.createElement('div');
+  acoes.className = 'c-acoes';
+  acoes.append(
+    botao('Usar', () => usarPreset(p, 'substituir'), 'primary', 'Troca o roteiro atual por este preset'),
+    botao(icone('plus', 'ico-antes') + 'Adicionar', () => usarPreset(p, 'adicionar'), '', 'Coloca os eventos no fim do roteiro atual'),
+    botao(icone('save'), () => atualizarPreset(p), 'so-icone empurra', 'Atualizar: guarda o roteiro que está aberto agora neste preset'),
+    botao(icone('pencil'), () => { presetEditando = p.id; montarPresets(); }, 'so-icone', 'Renomear'),
+    botao(icone('upload'), () => exportarArquivo(p.nome, p.itens), 'so-icone', 'Exportar para arquivo (levar para outro computador)'),
+    botao(icone('x'), () => excluirPreset(p), 'so-icone danger', 'Excluir'),
+  );
+  d.append(txt, acoes);
   return d;
 }
 
 function montarPresets() {
-  const pr = $('listaProntos');
-  pr.innerHTML = '';
-  (window.PRESETS_PRONTOS || []).forEach(p => {
-    pr.appendChild(cartao(p.nome, `${p.descricao} ${resumoEventos(p.eventos)}.`, [
-      ['Usar', () => usarPreset(p.eventos, 'substituir'), 'primary'],
-      [icone('plus', 'ico-antes') + 'Adicionar', () => usarPreset(p.eventos, 'adicionar')],
-    ]));
-  });
-
-  const meus = $('listaMeus');
-  meus.innerHTML = '';
+  const lista = $('listaMeus');
+  lista.innerHTML = '';
   if (!meusPresets.length) {
-    meus.innerHTML = '<p class="hint">Nenhum roteiro salvo ainda. Monte o roteiro do culto e clique em “Salvar roteiro atual”.</p>';
+    lista.innerHTML = '<p class="hint presets-vazio">Nenhum preset ainda. Monte a reunião no roteiro e clique em <b>Novo preset</b> para guardá-la.</p>';
+    return;
   }
-  meusPresets.forEach((p, i) => {
-    const data = p.criado ? new Date(p.criado).toLocaleDateString('pt-BR') : '';
-    meus.appendChild(cartao(p.nome, `${resumoEventos(p.itens)}${data ? ' • ' + data : ''}`, [
-      ['Usar', () => usarPreset(p.itens, 'substituir'), 'primary'],
-      [icone('plus', 'ico-antes') + 'Adicionar', () => usarPreset(p.itens, 'adicionar')],
-      [icone('upload'), () => exportarArquivo(p.nome, p.itens), 'so-icone'],
-      ['Excluir', () => {
-        if (!confirm(`Excluir o roteiro “${p.nome}”?`)) return;
-        meusPresets.splice(i, 1);
-        salvarPresets();
-        montarPresets();
-      }, 'danger'],
-    ]));
-  });
+  meusPresets.forEach(p => lista.appendChild(cartaoPreset(p)));
 }
 
+// ---------- criar ----------
+function abrirFormPreset() {
+  const n = MP.itens.length;
+  $('presetQtd').textContent = n ? `${n} ${n === 1 ? 'evento' : 'eventos'}` : 'está vazio';
+  $('presetComRoteiro').checked = n > 0;
+  $('presetComRoteiro').disabled = !n;
+  $('presetErro').textContent = '';
+  $('nomePreset').value = '';
+  $('formPreset').hidden = false;
+  $('btnNovoPreset').hidden = true;
+  $('nomePreset').focus();
+}
+function fecharFormPreset() {
+  $('formPreset').hidden = true;
+  $('btnNovoPreset').hidden = false;
+}
+$('btnNovoPreset').onclick = abrirFormPreset;
+$('btnCancelarPreset').onclick = fecharFormPreset;
+$('nomePreset').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fecharFormPreset(); }
+});
+$('formPreset').addEventListener('submit', e => {
+  e.preventDefault();
+  const nome = $('nomePreset').value.trim();
+  if (!nome) { $('presetErro').textContent = 'Digite um nome para o preset.'; return $('nomePreset').focus(); }
+  if (nomeRepetido(nome)) { $('presetErro').textContent = `Já existe um preset chamado “${nome}”.`; return $('nomePreset').focus(); }
+  const agora = Date.now();
+  const itens = $('presetComRoteiro').checked ? MP.itens.map(limparEvento) : [];
+  meusPresets.unshift({ id: novoId(), nome, criado: agora, alterado: agora, itens });
+  if (!salvarPresets()) return;
+  fecharFormPreset();
+  montarPresets();
+  toast('Preset criado: ' + nome);
+  analytics('preset_criado', { eventos: itens.length });
+});
+
+// ---------- atualizar / excluir ----------
+function atualizarPreset(p) {
+  if (!MP.itens.length) return toast('O roteiro está vazio — monte a reunião antes de atualizar o preset');
+  if (!confirm(`Guardar o roteiro que está aberto agora (${MP.itens.length} eventos) no preset “${p.nome}”?\nO conteúdo anterior do preset será substituído.`)) return;
+  p.itens = MP.itens.map(limparEvento);
+  p.alterado = Date.now();
+  salvarPresets();
+  montarPresets();
+  toast('Preset atualizado: ' + p.nome);
+}
+function excluirPreset(p) {
+  if (!confirm(`Excluir o preset “${p.nome}”? Isso não pode ser desfeito.`)) return;
+  meusPresets = meusPresets.filter(x => x.id !== p.id);
+  salvarPresets();
+  montarPresets();
+  toast('Preset excluído');
+}
+
+// ---------- arquivo ----------
 function exportarArquivo(nome, itens) {
-  const dados = { app: 'Bible Studio', tipo: 'roteiro', versao: 1, nome, itens: itens.map(limparEvento) };
+  const dados = { app: 'Bible Studio', tipo: 'preset', versao: 1, nome, itens: itens.map(limparEvento) };
   const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'roteiro-' + (nome || 'culto').normalize('NFD').replace(/[̀-ͯ]/g, '')
+  a.download = 'preset-' + (nome || 'reuniao').normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase() + '.json';
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
 }
-
-$('btnSalvarPreset').onclick = () => {
-  if (!MP.itens.length) return toast('O roteiro está vazio');
-  const nome = $('nomePreset').value.trim() || 'Culto ' + new Date().toLocaleDateString('pt-BR');
-  const existente = meusPresets.findIndex(p => p.nome.toLowerCase() === nome.toLowerCase());
-  const novo = { nome, criado: Date.now(), itens: MP.itens.map(limparEvento) };
-  if (existente >= 0) {
-    if (!confirm(`Já existe “${nome}”. Substituir?`)) return;
-    meusPresets[existente] = novo;
-  } else meusPresets.unshift(novo);
-  salvarPresets();
-  $('nomePreset').value = '';
-  montarPresets();
-  toast('Roteiro salvo: ' + nome);
-};
-$('btnExportar').onclick = () => {
-  if (!MP.itens.length) return toast('O roteiro está vazio');
-  exportarArquivo($('nomePreset').value.trim() || 'culto', MP.itens);
-};
 $('inImportar').addEventListener('change', async e => {
   const f = e.target.files[0];
   e.target.value = '';
@@ -144,18 +212,23 @@ $('inImportar').addEventListener('change', async e => {
     const dados = JSON.parse(await f.text());
     const itens = Array.isArray(dados) ? dados : dados.itens || dados.eventos;
     if (!Array.isArray(itens)) throw new Error('formato');
-    meusPresets.unshift({ nome: dados.nome || f.name.replace(/\.json$/i, ''), criado: Date.now(), itens });
+    let nome = (dados.nome || f.name.replace(/\.json$/i, '')).slice(0, 60);
+    const base = nome;
+    for (let n = 2; nomeRepetido(nome); n++) nome = `${base} (${n})`;
+    const agora = Date.now();
+    meusPresets.unshift({ id: novoId(), nome, criado: agora, alterado: agora, itens });
     salvarPresets();
     montarPresets();
-    toast('Roteiro importado');
+    toast('Preset importado: ' + nome);
   } catch (err) {
-    toast('Arquivo inválido — use um roteiro exportado pelo Bible Studio');
+    toast('Arquivo inválido — use um preset exportado pelo Bible Studio');
   }
 });
 
-function abrirPresets(aba) {
+function abrirPresets() {
+  presetEditando = null;
+  fecharFormPreset();
   montarPresets();
-  if (aba) document.querySelector(`#modalPresets .tabs button[data-tab="${aba}"]`)?.click();
   abrirModal('modalPresets');
 }
 $('btnPresets').onclick = () => abrirPresets();
@@ -210,5 +283,6 @@ $('cfgPadrao').onclick = () => {
 };
 
 $('btnConfig').onclick = () => abrirModal('modalConfig');
+
 
 aplicarCfg();

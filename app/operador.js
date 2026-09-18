@@ -1,6 +1,8 @@
 // Tela do operador: escolhe a passagem, edita o estilo e envia para a projeção.
 const BIBLIA = window.BIBLIA_ACF || [];
 const ponte = window.bridge;
+// estatísticas de uso anônimas (Google Analytics, pelo processo principal)
+const analytics = (nome, params) => { try { if (ponte && ponte.analytics) ponte.analytics(nome, params); } catch (e) {} };
 const $ = id => document.getElementById(id);
 const norm = Engine.norm;
 

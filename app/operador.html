@@ -11,7 +11,6 @@
 <script src="bible_acf.js"></script>
 <script src="fundo.js"></script>
 <script src="engine.js"></script>
-<script src="presets.js"></script>
 <script src="icones.js"></script>
 </head>
 <body>
@@ -37,7 +36,7 @@
   </div>
 
   <div class="hgroup">
-    <button id="btnPresets" title="Roteiros prontos e salvos"><i data-i="folder-open"></i>Roteiros</button>
+    <button id="btnPresets" title="Presets de reunião: criar, usar e editar"><i data-i="folder-open"></i>Presets</button>
     <button id="btnJanelas" data-menu title="Escolher e organizar os painéis"><i data-i="layout-dashboard"></i>Layout<i data-i="chevron-down"></i></button>
     <label class="check simples-toggle" title="Mostra só o essencial, com botões maiores">
       <input type="checkbox" id="chkSimples"> Modo simples
@@ -140,7 +139,7 @@
   <section class="player bloco" id="blocoRoteiro">
     <div class="p-head">
       <button id="btnAddEvento" class="primary" data-menu><i data-i="plus"></i>Adicionar<i data-i="chevron-down"></i></button>
-      <button id="btnPresets2" title="Roteiros prontos e salvos"><i data-i="folder-open"></i>Roteiros</button>
+      <button id="btnPresets2" title="Presets de reunião: criar, usar e editar"><i data-i="folder-open"></i>Presets</button>
       <span class="p-sep"></span>
       <label class="check"><input type="checkbox" id="pOverlay"> Versículo sobre o vídeo</label>
       <label class="check"><input type="checkbox" id="pCover"> Preencher a tela</label>
@@ -150,7 +149,7 @@
     <div class="playlist" id="playlist"></div>
     <div class="roteiro-vazio" id="roteiroVazio">
       <b>O roteiro está vazio.</b>
-      <span>Use <b><i data-i="plus"></i>Adicionar</b> para colocar versículos, avisos, vídeos e fotos, ou abra <b><i data-i="folder-open"></i>Roteiros</b> e escolha um pronto (Culto de Domingo, Santa Ceia, Batismo…).</span>
+      <span>Use <b><i data-i="plus"></i>Adicionar</b> para colocar versículos, avisos, vídeos e fotos, ou abra <b><i data-i="folder-open"></i>Presets</b> para usar uma reunião salva.</span>
     </div>
     <p class="hint" id="pDica"></p>
   </section>
@@ -351,26 +350,32 @@
 <!-- ============ MODAIS ============ -->
 <div class="modal" id="modalPresets">
   <div class="caixa grande">
-    <div class="m-head"><b><i data-i="folder-open"></i>Roteiros</b><button class="fechar" data-fechar><i data-i="x"></i></button></div>
-    <div class="tabs">
-      <button data-tab="prontos" class="on">Roteiros prontos</button>
-      <button data-tab="meus">Meus roteiros</button>
-    </div>
-    <div class="m-body">
-      <div class="tabpane on" data-pane="prontos">
-        <p class="hint">Roteiros montados com versículos da ACF. <b>Usar</b> troca o roteiro atual; <b><i data-i="plus"></i>Adicionar</b> coloca no fim. Depois é só editar os avisos.</p>
-        <div class="cartoes" id="listaProntos"></div>
+    <div class="m-head"><b><i data-i="folder-open"></i>Presets de reunião</b><button class="fechar" data-fechar><i data-i="x"></i></button></div>
+    <div class="m-body stack">
+      <div class="presets-topo">
+        <p class="hint">Um preset guarda a sequência de uma reunião (versículos, avisos, mídias e links).
+          <b>Usar</b> troca o roteiro atual pelo preset; <b>Adicionar</b> coloca no fim.</p>
+        <button id="btnNovoPreset" class="primary"><i data-i="plus"></i>Novo preset</button>
       </div>
-      <div class="tabpane" data-pane="meus">
-        <div class="row">
-          <input type="text" id="nomePreset" placeholder="Nome do roteiro (ex: Culto de domingo 21/09)" />
-          <button id="btnSalvarPreset" class="primary" style="flex:none"><i data-i="save"></i>Salvar roteiro atual</button>
+
+      <!-- criar -->
+      <form class="preset-form" id="formPreset" hidden>
+        <div>
+          <label for="nomePreset">Nome do preset</label>
+          <input type="text" id="nomePreset" maxlength="60" placeholder="ex: Reunião de domingo • Santa Ceia • Culto de jovens" autocomplete="off" />
         </div>
-        <div class="row">
-          <button id="btnExportar" style="flex:none"><i data-i="upload"></i>Exportar roteiro atual (arquivo)</button>
-          <label class="upload" style="flex:1"><i data-i="download"></i>Importar roteiro de arquivo<input type="file" id="inImportar" accept=".json,application/json" hidden></label>
+        <label class="check"><input type="checkbox" id="presetComRoteiro" checked> <span>Começar com o roteiro que está aberto agora (<span id="presetQtd"></span>)</span></label>
+        <p class="erro-form" id="presetErro"></p>
+        <div class="row" style="justify-content:flex-end">
+          <button type="button" id="btnCancelarPreset" style="flex:none">Cancelar</button>
+          <button type="submit" class="primary" style="flex:none"><i data-i="save"></i>Criar preset</button>
         </div>
-        <div class="cartoes" id="listaMeus"></div>
+      </form>
+
+      <div class="cartoes" id="listaMeus"></div>
+
+      <div class="row presets-rodape">
+        <label class="upload" style="flex:none"><i data-i="download"></i>Importar preset de arquivo<input type="file" id="inImportar" accept=".json,application/json" hidden></label>
       </div>
     </div>
   </div>

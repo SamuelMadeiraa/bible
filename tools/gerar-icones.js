@@ -10,6 +10,8 @@ const USADOS = [
   'image', 'music', 'radio-tower', 'wallpaper', 'eye-off', 'panel-top', 'tv-minimal', 'save', 'undo-2',
   'upload', 'download', 'key-round', 'wifi', 'refresh-cw', 'search', 'list-video', 'check', 'pencil',
   'camera', 'keyboard', 'ellipsis-vertical', 'share', 'x', 'square-stop',
+  // abas dos painéis
+  'eye', 'radio', 'sliders-horizontal', 'highlighter', 'palette',
 ];
 
 const PASTA = path.join(__dirname, '..', 'site', 'node_modules', 'lucide-react', 'dist', 'esm', 'icons');

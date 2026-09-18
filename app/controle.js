@@ -176,7 +176,7 @@ function desenharRoteiro(st) {
     box.dataset.chave = chave;
     box.innerHTML = '';
     if (!lista.length) {
-      box.innerHTML = '<p class="dica">O roteiro está vazio. Monte no computador (botões Adicionar ou Roteiros).</p>';
+      box.innerHTML = '<p class="dica">O roteiro está vazio. Monte no computador (botões Adicionar ou Presets).</p>';
     }
     lista.forEach((ev, i) => {
       const d = document.createElement('div');

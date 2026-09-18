@@ -32,6 +32,9 @@ contextBridge.exposeInMainWorld('bridge', {
   putEstado: st => ipcRenderer.send('estado:put', st),
   remoteInfo: () => ipcRenderer.invoke('remote:info'),
 
+  // estatísticas de uso anônimas (Google Analytics)
+  analytics: (nome, params) => ipcRenderer.send('analytics:evento', nome, params),
+
   on: (canal, cb) => {
     if (CANAIS.includes(canal)) ipcRenderer.on(canal, (e, ...args) => cb(...args));
   },

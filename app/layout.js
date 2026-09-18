@@ -9,14 +9,14 @@ window.Layout = (function () {
   const CHAVE_MEU = 'bibleStudioMeuLayout';
 
   const PAINEIS = {
-    biblia:   { titulo: 'Bíblia',          bloco: 'blocoBiblia' },
-    previa:   { titulo: 'Prévia',          bloco: 'monPrev' },
-    aovivo:   { titulo: 'Ao vivo',         bloco: 'monLive' },
-    comandos: { titulo: 'Comandos',        bloco: 'blocoComandos' },
-    palavras: { titulo: 'Palavras',        bloco: 'blocoPalavras' },
-    roteiro:  { titulo: 'Roteiro do culto', bloco: 'blocoRoteiro' },
-    midia:    { titulo: 'Mídia',           bloco: 'blocoMidia' },
-    ajustes:  { titulo: 'Ajustes',         bloco: 'blocoAjustes' },
+    biblia:   { titulo: 'Bíblia',    icone: 'book-open',          bloco: 'blocoBiblia' },
+    previa:   { titulo: 'Prévia',    icone: 'eye',                bloco: 'monPrev' },
+    aovivo:   { titulo: 'Ao vivo',   icone: 'radio',              bloco: 'monLive' },
+    comandos: { titulo: 'Comandos',  icone: 'sliders-horizontal', bloco: 'blocoComandos' },
+    palavras: { titulo: 'Palavras',  icone: 'highlighter',        bloco: 'blocoPalavras' },
+    roteiro:  { titulo: 'Roteiro',   icone: 'list-video',         bloco: 'blocoRoteiro' },
+    midia:    { titulo: 'Mídia',     icone: 'clapperboard',       bloco: 'blocoMidia' },
+    ajustes:  { titulo: 'Ajustes',   icone: 'palette',            bloco: 'blocoAjustes' },
   };
 
   if (!DV || !DV.createDockview) {
@@ -30,6 +30,19 @@ window.Layout = (function () {
   const api = DV.createDockview(doca, {
     theme: DV.themeDark,
     defaultRenderer: 'always',              // mantém todos os controles no documento, mesmo em abas escondidas
+    // aba padrão do dockview (fechar, arrastar) com o ícone do painel na frente do título
+    defaultTabComponent: 'comIcone',
+    createTabComponent: ({ id }) => {
+      const aba = new DV.DefaultTab();
+      const def = PAINEIS[id];
+      aba.element.classList.add('aba-' + id);
+      if (def && def.icone) {
+        const t = document.createElement('template');
+        t.innerHTML = icone(def.icone, 'aba-ico');
+        aba.element.insertBefore(t.content.firstChild, aba.element.firstChild);
+      }
+      return aba;
+    },
     disableFloatingGroups: false,
     createComponent: opcoes => {
       const element = document.createElement('div');
@@ -114,6 +127,8 @@ window.Layout = (function () {
     try {
       api.clear();
       api.fromJSON(json);
+      // layouts salvos por versões antigas guardam o título antigo (com emoji): usa sempre o atual
+      api.panels.forEach(p => { if (PAINEIS[p.id]) p.api.setTitle(PAINEIS[p.id].titulo); });
       // painéis que não vieram no layout salvo continuam disponíveis pelo menu
       montarMenuPaineis();
       return api.panels.length > 0;
@@ -140,7 +155,7 @@ window.Layout = (function () {
       const aberto = !!api.getPanel(id);
       const b = document.createElement('button');
       b.className = 'painel-item' + (aberto ? ' on' : '');
-      b.innerHTML = `<span class="marca">${aberto ? icone('check') : ''}</span>${p.titulo}`;
+      b.innerHTML = `<span class="marca">${aberto ? icone('check') : ''}</span>${icone(p.icone, 'ico-antes painel-ico')}${p.titulo}`;
       b.onclick = e => {
         e.stopPropagation();
         const painel = api.getPanel(id);

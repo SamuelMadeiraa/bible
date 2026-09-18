@@ -3,6 +3,7 @@ const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const os = require('os');
+const analytics = require('./analytics');
 
 let opWin = null;
 let outWin = null;
@@ -14,6 +15,7 @@ const clients = new Set();     // conexões SSE (OBS / navegador / outro PC)
 let serverPort = null;
 let ultimaMidia = null;        // último comando de mídia (para quem conectar depois)
 let estadoRemoto = null;       // resumo do app para o controle no celular
+const celularesVistos = new Set();   // aparelhos que já entraram no controle nesta sessão
 const SITE_CONTROLE = 'https://bible-studio-site.vercel.app/controle/';   // app do celular (PWA)
 
 // senha do controle remoto: fica guardada, para o app instalado no celular continuar entrando
@@ -86,6 +88,7 @@ function openOutput(displayId) {
   fecharWeb();
   if (outWin) outWin.destroy();
   outDisplayId = d.id;
+  analytics.enviar('projecao_aberta', { monitor_externo: external });
 
   const b = d.bounds;
   outWin = new BrowserWindow({
@@ -240,6 +243,8 @@ ipcMain.handle('web:abrir', async (e, { url, cheia = true, volume = 80, embed = 
   if (!outWin) return { erro: 'A projeção está fechada — abra a projeção primeiro.' };
   if (!/^https?:\/\//i.test(url || '')) return { erro: 'Endereço inválido (precisa começar com http:// ou https://)' };
   fecharWeb();
+  const tipoLink = externo ? 'navegador' : (embed && youtubeEmbed(url)) ? 'youtube' : 'pagina';
+  analytics.enviar('transmissao_aberta', { tipo: tipoLink });
   if (externo) return abrirNoNavegador(url, volume);
   fecharNavegador();
   prepararSessaoWeb();
@@ -484,6 +489,9 @@ ipcMain.handle('remote:info', () => {
   return { pin: PIN, nome, urls: lanUrls().map(u => u + 'controle'), enderecos };
 });
 
+// ---------------- estatísticas de uso (Google Analytics) ----------------
+ipcMain.on('analytics:evento', (e, nome, params) => analytics.enviar(nome, params));
+
 ipcMain.handle('server:info', () => ({ port: serverPort, urls: lanUrls(), versao: app.getVersion(), empacotado: app.isPackaged }));
 ipcMain.on('open-external', (e, url) => {
   if (/^http:\/\/(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+):\d+\/?$/.test(url)) shell.openExternal(url);
@@ -609,6 +617,8 @@ function startServer(port, tentativas = 10) {
     if (url === '/api/estado') {
       const pin = new URL(req.url, 'http://x').searchParams.get('pin');
       if (pin !== PIN) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end('{"erro":"pin"}'); }
+      const quem = req.socket.remoteAddress;
+      if (!celularesVistos.has(quem)) { celularesVistos.add(quem); analytics.enviar('celular_conectado', { celulares: celularesVistos.size }); }
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache' });
       return res.end(JSON.stringify(estadoRemoto || {}));
     }
@@ -664,6 +674,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     startServer(7777);
     createOperator();
+    analytics.iniciar();
     const avisar = () => { if (opWin) opWin.webContents.send('displays-changed', listDisplays()); };
     screen.on('display-added', avisar);
     screen.on('display-removed', (e, d) => {

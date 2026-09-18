@@ -8,8 +8,8 @@ no segundo monitor (projetor ou TV). As duas ficam sincronizadas em tempo real.
 
 | Jeito | O que fazer |
 |---|---|
-| Programa instalado | `dist/Bible Studio Setup 3.2.0.exe` (gerado por `npm run dist`) |
-| Sem instalar | `dist/Bible Studio 3.2.0.exe` |
+| Programa instalado | `dist/Bible Studio Setup 3.3.0.exe` (gerado por `npm run dist`) |
+| Sem instalar | `dist/Bible Studio 3.3.0.exe` |
 | Da pasta do projeto | duplo clique em `Abrir Bible Studio.bat`, ou `npm start` |
 | Só no navegador | abra `bible.html` (versão simples, sem projeção ao vivo) |
 
@@ -33,9 +33,8 @@ no segundo monitor (projetor ou TV). As duas ficam sincronizadas em tempo real.
 - **Roteiro do culto**: lista com versículos, avisos (texto livre), vídeos, fotos, áudios,
   transmissões ao vivo, tela preta e só fundo. Clique = prévia, duplo clique = corta direto,
   arraste para reordenar, ↓/↑ andam pela lista.
-- **Roteiros prontos** (📂 Roteiros): Culto de Domingo, Santa Ceia, Batismo, Casamento, Oração,
-  Dízimos e Ofertas, Consolo, Jovens, Natal e Páscoa — com versículos da ACF.
-  **Meus roteiros**: salve o roteiro do culto, reabra depois, exporte e importe em arquivo.
+- **Presets de reunião** (botão Presets): crie um preset com o nome que quiser a partir do roteiro aberto,
+  use (troca o roteiro) ou adicione no fim, atualize com o roteiro atual, renomeie, exporte, importe e exclua.
 - **Mídia**: vídeo e foto cobrem o versículo (ou ficam atrás, com “Versículo sobre o vídeo”);
   o áudio toca sem tapar a tela e continua quando você corta para um versículo.
   “Mídias em sequência” emenda vídeos/fotos seguidos; “Repetir” deixa um vídeo em loop.
@@ -107,11 +106,12 @@ e busca na Bíblia).
 ```
 main.js              processo principal: janelas, monitores e servidor da rede
 preload.js           ponte segura entre as telas e o processo principal
+analytics.js         estatísticas de uso (Google Analytics 4, Measurement Protocol)
 app/operador.*       tela do operador
 app/roteiro.js       roteiro, prévia/corte, mídia e transmissões
-app/painel.js        roteiros prontos/salvos e configurações
+app/painel.js        presets de reunião e configurações
 app/layout.js        layout em blocos (dockview)
-app/presets.js       roteiros prontos
+app/icones.js        ícones (Lucide), gerado por tools/gerar-icones.js
 app/saida.*          tela de projeção (também usada pelo OBS/rede)
 app/engine.js        desenho do versículo, igual na prévia e na projeção
 app/fonts.css        fontes locais (funciona sem internet)
