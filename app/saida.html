@@ -2,14 +2,22 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'; frame-src https:">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Bible ACF Studio — Projeção</title>
+<title>Bible Studio — Projeção</title>
 <link rel="stylesheet" href="fonts.css">
 <style>
   html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none}
-  canvas,#black{position:absolute;inset:0;width:100%;height:100%;opacity:0;will-change:opacity}
+  canvas,#black,#midia{position:absolute;inset:0;width:100%;height:100%;opacity:0;will-change:opacity}
   #black{background:#000;z-index:10}
+  /* mídia: por baixo do versículo (z 3) ou por cima dele (z 8) */
+  #midia{z-index:3;background:#000;transition:opacity .25s ease}
+  #midia.acima{z-index:8}
+  #midia video,#midia img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+  #midia.cover video,#midia.cover img{object-fit:cover}
+  #midia video,#midia img{display:none}
+  #midia.video video{display:block}
+  #midia.imagem img{display:block}
   #status{position:absolute;left:12px;bottom:10px;font:13px system-ui,sans-serif;color:#777;z-index:11;opacity:0;transition:opacity .3s}
   body.offline #status{opacity:1}
   body:hover{cursor:default}
@@ -18,7 +26,9 @@
 </head>
 <body>
 <canvas id="bg0"></canvas><canvas id="bg1"></canvas>
+<div id="midia"><video id="mv" playsinline></video><img id="mi" alt=""></div>
 <canvas id="tx0"></canvas><canvas id="tx1"></canvas>
+<audio id="mau"></audio>
 <div id="black"></div>
 <div id="status">Aguardando o operador…</div>
 <script src="saida.js"></script>

@@ -2,19 +2,21 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: file: https://i.ytimg.com; media-src 'self' data: blob: file:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Bible ACF Studio — Operador</title>
+<title>Bible Studio — Operador</title>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="operador.css">
+<script src="../node_modules/dockview-core/dist/dockview-core.min.js"></script>
 <script src="bible_acf.js"></script>
 <script src="fundo.js"></script>
 <script src="engine.js"></script>
+<script src="presets.js"></script>
 </head>
 <body>
 
 <header>
-  <h1><img src="icon.png" alt="">BIBLE <span>ACF</span> STUDIO</h1>
+  <h1><img src="logo-header.png" alt="Bible Studio"><em id="versao" title="Versão em execução"></em></h1>
 
   <div class="hgroup">
     <select id="selMonitor" title="Monitor da projeção"></select>
@@ -23,7 +25,7 @@
   </div>
 
   <div class="hgroup">
-    <label class="check" title="Qualquer mudança na prévia vai direto para a tela">
+    <label class="check" title="Qualquer mudança na prévia vai direto para a tela (desliga a prévia)">
       <input type="checkbox" id="chkAuto"> Ao vivo automático
     </label>
     <label class="inline" title="Duração da transição">
@@ -31,14 +33,27 @@
       <input type="range" id="rTrans" min="0" max="1500" step="50">
       <b id="vTrans"></b>
     </label>
+  </div>
+
+  <div class="hgroup">
+    <button id="btnPresets" title="Roteiros prontos e salvos">📂 Roteiros</button>
+    <button id="btnJanelas" data-menu title="Escolher e organizar os painéis">▦ Layout ▾</button>
+    <label class="check simples-toggle" title="Mostra só o essencial, com botões maiores">
+      <input type="checkbox" id="chkSimples"> Modo simples
+    </label>
     <button id="btnPng" title="Salvar a prévia como imagem PNG">⬇ PNG</button>
+    <button id="btnConfig" class="icone" title="Configurações">⚙</button>
   </div>
 </header>
 
-<div class="app">
+<!-- área onde os painéis são encaixados (arraste as abas para reorganizar) -->
+<div id="doca" class="doca"></div>
 
-  <!-- ============ ESQUERDA: navegação ============ -->
-  <aside class="left">
+<!-- os blocos ficam aqui até o layout encaixá-los; painéis fechados voltam para cá -->
+<div id="estacionamento">
+
+  <!-- ============ BÍBLIA ============ -->
+  <aside class="left bloco" id="blocoBiblia">
     <div class="quick">
       <input type="text" id="quickRef" placeholder="Ir para… ex: jo 3 16  •  2rs 2:21" autocomplete="off" />
     </div>
@@ -52,7 +67,7 @@
       <select id="selLivro"></select>
       <div class="chapters" id="chapters"></div>
       <div class="verses" id="verses" tabindex="0"></div>
-      <p class="hint">Clique = prévia • Duplo clique = ao vivo • Shift+clique = intervalo</p>
+      <p class="hint">Clique = prévia • Duplo clique = corta para o ar • Shift+clique = intervalo</p>
     </div>
 
     <div class="tabpane" data-pane="busca">
@@ -73,35 +88,93 @@
     </div>
   </aside>
 
-  <!-- ============ CENTRO: monitores ============ -->
-  <main>
-    <div class="monitors">
-      <section class="mon">
-        <div class="mon-h"><b>PRÉVIA</b><span id="prevRef"></span></div>
-        <div class="screen" id="scrPrev"><canvas id="cvPrev"></canvas></div>
-      </section>
-      <section class="mon live" id="monLive">
-        <div class="mon-h"><b><i class="dot"></i>AO VIVO</b><span id="liveRef">—</span></div>
-        <div class="screen" id="scrLive"><canvas id="cvLive"></canvas></div>
-      </section>
+  <!-- ============ PRÉVIA (verde) ============ -->
+  <section class="mon prev bloco" id="monPrev">
+    <div class="mon-h">
+      <b><i class="dot verde"></i>PRÉVIA · PRÓXIMO</b>
+      <span id="prevRef"></span><span id="prevEvNome"></span>
     </div>
-
-    <div class="actions">
-      <button id="btnPrev" title="Versículo anterior (← / PageUp)">◀</button>
-      <button id="btnGo" class="go" title="Enter">▶ ENVIAR AO VIVO <kbd>Enter</kbd></button>
-      <button id="btnNext" title="Próximo versículo (→ / PageDown)">▶</button>
-      <span class="sep"></span>
-      <button id="btnClear" class="mode" title="Mostra só o fundo">Limpar texto <kbd>C</kbd></button>
-      <button id="btnBlack" class="mode" title="Tela totalmente preta">Tela preta <kbd>B</kbd></button>
+    <div class="screen" id="scrPrev">
+      <canvas id="cvPrev"></canvas>
+      <div id="prevEvento" class="prev-evento"></div>
     </div>
+  </section>
 
+  <!-- ============ AO VIVO (vermelho) ============ -->
+  <section class="mon live bloco" id="monLive">
+    <div class="mon-h"><b><i class="dot"></i>AO VIVO</b><span id="liveRef">—</span></div>
+    <div class="screen" id="scrLive">
+      <canvas id="cvLive"></canvas>
+      <video id="mvLive" class="espelho" muted playsinline></video>
+      <img id="miLive" class="espelho" alt="">
+    </div>
+    <div class="cron" id="cron" title="Tempo do que está no ar">
+      <div class="cron-linha">
+        <span class="cron-valor" id="cronValor">00:00</span>
+        <span class="cron-info"><b id="cronRotulo">no ar há</b><small id="cronDetalhe"></small></span>
+      </div>
+      <div class="cron-barra"><i id="cronBarra"></i></div>
+    </div>
+  </section>
+
+  <!-- ============ COMANDOS ============ -->
+  <div class="actions bloco" id="blocoComandos">
+    <button id="btnPrev" title="Versículo anterior (←)">◀</button>
+    <button id="btnGo" class="go" title="Coloca a prévia no ar">✂ CORTE <kbd>Espaço</kbd></button>
+    <button id="btnNext" title="Próximo versículo (→)">▶</button>
+    <span class="sep"></span>
+    <button id="btnAddVers" title="Coloca o versículo da prévia no fim do roteiro">＋ Roteiro</button>
+    <button id="btnClear" class="mode" title="Mostra só o fundo">Só fundo <kbd>C</kbd></button>
+    <button id="btnBlack" class="mode" title="Tela totalmente preta">Tela preta <kbd>B</kbd></button>
+  </div>
+
+  <!-- ============ PALAVRAS (destaque) ============ -->
+  <div class="bloco" id="blocoPalavras">
     <div class="words" id="words"></div>
-    <p class="hint center">Clique nas palavras (aqui ou na prévia) para destacar com a cor selecionada.
-      Setas ←/→ trocam de versículo (funciona com passador de slides).</p>
-  </main>
+    <p class="hint center">Clique nas palavras (aqui ou na prévia) para destacar com a cor selecionada.</p>
+  </div>
 
-  <!-- ============ DIREITA: ajustes ============ -->
-  <aside class="right">
+  <!-- ============ ROTEIRO DO CULTO ============ -->
+  <section class="player bloco" id="blocoRoteiro">
+    <div class="p-head">
+      <button id="btnAddEvento" class="primary" data-menu>＋ Adicionar ▾</button>
+      <button id="btnPresets2" title="Roteiros prontos e salvos">📂 Roteiros</button>
+      <span class="p-sep"></span>
+      <label class="check"><input type="checkbox" id="pOverlay"> Versículo sobre o vídeo</label>
+      <label class="check"><input type="checkbox" id="pCover"> Preencher a tela</label>
+      <span class="p-sep"></span>
+      <button id="btnLimparMidia" title="Tira todos os eventos do roteiro">Limpar</button>
+    </div>
+    <div class="playlist" id="playlist"></div>
+    <div class="roteiro-vazio" id="roteiroVazio">
+      <b>O roteiro está vazio.</b>
+      <span>Use <b>＋ Adicionar</b> para colocar versículos, avisos, vídeos e fotos, ou abra <b>📂 Roteiros</b> e escolha um pronto (Culto de Domingo, Santa Ceia, Batismo…).</span>
+    </div>
+    <p class="hint" id="pDica"></p>
+  </section>
+
+  <!-- ============ CONTROLE DA MÍDIA ============ -->
+  <section class="bloco p-side" id="blocoMidia">
+    <div class="p-now" id="pNow">Nenhuma mídia tocando</div>
+    <input type="range" id="pSeek" min="0" max="1000" value="0" title="Avançar no vídeo">
+    <div class="p-time"><span id="pT">0:00</span><span id="pD">0:00</span></div>
+    <div class="p-status" id="pStatus"></div>
+    <div class="p-ctrls">
+      <button id="pPrev" title="Mídia anterior (Ctrl+←)">⏮</button>
+      <button id="pPlay" class="go" title="Tocar / pausar (Ctrl+Espaço)">▶</button>
+      <button id="pStop" title="Parar a mídia e voltar para o versículo">⏹</button>
+      <button id="pNext" title="Próxima mídia (Ctrl+→)">⏭</button>
+    </div>
+    <label class="inline p-vol">🔊 <input type="range" id="pVol" min="0" max="100"> <b id="vVol"></b></label>
+    <div class="p-opts">
+      <label class="check" title="Quando uma mídia acaba e a próxima do roteiro também é mídia, ela toca sozinha"><input type="checkbox" id="pAuto"> Mídias em sequência</label>
+      <label class="check" title="Repete o vídeo/áudio atual sem parar"><input type="checkbox" id="pLoop"> Repetir (loop)</label>
+      <label class="inline" title="Tempo de cada foto quando as mídias estão em sequência">Fotos <input type="number" id="pImgSeg" min="1" max="600" style="width:56px"> s</label>
+    </div>
+  </section>
+
+  <!-- ============ AJUSTES (texto, estilo, fundo, saída) ============ -->
+  <aside class="right bloco" id="blocoAjustes">
     <div class="tabs" data-group="right">
       <button data-tab="texto" class="on">Texto</button>
       <button data-tab="estilo">Estilo</button>
@@ -227,6 +300,13 @@
         <label>Transmissão pela rede (OBS, outro PC, Smart TV)</label>
         <div id="links" class="stack"></div>
       </div>
+      <hr>
+      <div>
+        <label>📱 Controlar pelo celular</label>
+        <div id="controleInfo" class="stack"></div>
+      </div>
+      <p class="hint">Abra esse endereço no navegador do celular (mesma rede Wi-Fi) e digite a senha.
+        No celular, use “Adicionar à tela inicial” para virar um ícone de app.</p>
       <p class="hint"><b>OBS:</b> Fontes → + → <i>Navegador</i> → cole o link, largura 1920, altura 1080.<br>
         <b>Outro PC/TV</b> na mesma rede Wi-Fi: abra o link no navegador e dê duplo clique para tela cheia.
         Se o Windows perguntar sobre o firewall, permita o acesso em redes privadas.</p>
@@ -242,7 +322,149 @@
   </aside>
 </div>
 
+<!-- ============ MENUS ============ -->
+<div class="menu" id="menuAdd">
+  <button data-add="versiculo">📖 Versículo da prévia<small>o que está na prévia agora</small></button>
+  <button data-add="texto">📝 Aviso / texto livre<small>boas-vindas, avisos, letras curtas</small></button>
+  <button data-add="midia">🎬 Vídeos, fotos ou áudios<small>escolher arquivos do computador</small></button>
+  <button data-add="web">📡 Transmissão ao vivo / link<small>YouTube, Univer Vídeo e outros sites</small></button>
+  <hr>
+  <button data-add="fundo">🌄 Só o fundo<small>tira o texto e deixa o fundo</small></button>
+  <button data-add="preta">⬛ Tela preta<small>apaga toda a projeção</small></button>
+</div>
+
+<div class="menu" id="menuJanelas">
+  <div class="menu-tit">Layouts prontos</div>
+  <button data-layout="padrao">▦ Padrão<small>tudo à mostra</small></button>
+  <button data-layout="simples">▢ Simples<small>só o essencial, para quem está começando</small></button>
+  <button data-layout="transmissao">▣ Transmissão<small>monitores grandes para culto ao vivo</small></button>
+  <hr>
+  <div class="menu-tit">Painéis (clique para mostrar ou esconder)</div>
+  <div id="listaPaineis"></div>
+  <hr>
+  <button id="btnSalvarLayout">💾 Guardar este layout como “Meu layout”</button>
+  <button id="btnMeuLayout">↩ Voltar para “Meu layout”</button>
+</div>
+
+<!-- ============ MODAIS ============ -->
+<div class="modal" id="modalPresets">
+  <div class="caixa grande">
+    <div class="m-head"><b>📂 Roteiros</b><button class="fechar" data-fechar>×</button></div>
+    <div class="tabs">
+      <button data-tab="prontos" class="on">Roteiros prontos</button>
+      <button data-tab="meus">Meus roteiros</button>
+    </div>
+    <div class="m-body">
+      <div class="tabpane on" data-pane="prontos">
+        <p class="hint">Roteiros montados com versículos da ACF. <b>Usar</b> troca o roteiro atual; <b>＋ Adicionar</b> coloca no fim. Depois é só editar os avisos.</p>
+        <div class="cartoes" id="listaProntos"></div>
+      </div>
+      <div class="tabpane" data-pane="meus">
+        <div class="row">
+          <input type="text" id="nomePreset" placeholder="Nome do roteiro (ex: Culto de domingo 21/09)" />
+          <button id="btnSalvarPreset" class="primary" style="flex:none">💾 Salvar roteiro atual</button>
+        </div>
+        <div class="row">
+          <button id="btnExportar" style="flex:none">⬆ Exportar roteiro atual (arquivo)</button>
+          <label class="upload" style="flex:1">⬇ Importar roteiro de arquivo<input type="file" id="inImportar" accept=".json,application/json" hidden></label>
+        </div>
+        <div class="cartoes" id="listaMeus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalConfig">
+  <div class="caixa">
+    <div class="m-head"><b>⚙ Configurações</b><button class="fechar" data-fechar>×</button></div>
+    <div class="m-body stack">
+      <h4>Operação</h4>
+      <div>
+        <label>Tecla de corte (prévia → ao vivo)</label>
+        <div class="seg" id="cfgTecla">
+          <button data-v="ambos">Espaço e Enter</button><button data-v="espaco">Só Espaço</button><button data-v="enter">Só Enter</button>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="cfgAvancar"> Depois do corte, já preparar o próximo evento na prévia</label>
+      <div>
+        <label>Passador de slides (PageDown / PageUp)</label>
+        <div class="seg" id="cfgPassador">
+          <button data-v="cortar">Corta para o próximo</button><button data-v="previa">Só muda a prévia</button>
+        </div>
+      </div>
+
+      <h4>Tela</h4>
+      <label class="check"><input type="checkbox" id="cfgSimples"> Modo simples (só o essencial, botões maiores)</label>
+      <label class="check"><input type="checkbox" id="cfgDicas"> Mostrar dicas de uso</label>
+      <p class="hint">Para mudar a posição dos painéis, arraste a aba do painel (o título dele) para outro lugar.
+        O menu <b>▦ Layout</b> tem layouts prontos e guarda o seu.</p>
+
+      <h4>Atalhos do teclado</h4>
+      <table class="atalhos">
+        <tr><td><kbd>Espaço</kbd> / <kbd>Enter</kbd></td><td>Corte: coloca a prévia no ar</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>↑</kbd></td><td>Próximo / anterior evento do roteiro na prévia</td></tr>
+        <tr><td><kbd>→</kbd> / <kbd>←</kbd></td><td>Próximo / anterior versículo na prévia</td></tr>
+        <tr><td><kbd>PageDown</kbd> / <kbd>PageUp</kbd></td><td>Passador de slides</td></tr>
+        <tr><td><kbd>B</kbd></td><td>Tela preta</td></tr>
+        <tr><td><kbd>C</kbd> / <kbd>Esc</kbd></td><td>Só o fundo</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Espaço</kbd></td><td>Tocar / pausar a mídia</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>←</kbd> / <kbd>→</kbd></td><td>Mídia anterior / próxima</td></tr>
+        <tr><td>Começar a digitar</td><td>Abre o “Ir para” (ex.: jo 3 16)</td></tr>
+      </table>
+
+      <button id="cfgPadrao">↺ Restaurar configurações padrão</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalTexto">
+  <div class="caixa">
+    <div class="m-head"><b id="modalTextoTitulo">Novo aviso</b><button class="fechar" data-fechar>×</button></div>
+    <div class="m-body stack">
+      <div><label>Título (aparece como a referência)</label><input type="text" id="txtTitulo" placeholder="ex: Avisos da semana" /></div>
+      <div><label>Texto</label><textarea id="txtCorpo" rows="6" placeholder="ex: Quarta-feira, 19h30 — Culto de oração"></textarea></div>
+      <div class="row" style="justify-content:flex-end">
+        <button data-fechar style="flex:none">Cancelar</button>
+        <button id="btnSalvarTexto" class="primary" style="flex:none">Salvar no roteiro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalWeb">
+  <div class="caixa">
+    <div class="m-head"><b id="modalWebTitulo">Nova transmissão ao vivo / link</b><button class="fechar" data-fechar>×</button></div>
+    <div class="m-body stack">
+      <div>
+        <label>Endereço (cole o link)</label>
+        <input type="text" id="webUrl" placeholder="https://www.youtube.com/watch?v=…  •  https://univervideo.com/…" />
+      </div>
+      <div><label>Nome no roteiro (opcional)</label><input type="text" id="webNome" placeholder="ex: Culto ao vivo — canal da igreja" /></div>
+      <label class="check"><input type="checkbox" id="webEmbed"> YouTube: usar o player incorporado (tela limpa, sem a página do YouTube)</label>
+      <label class="check"><input type="checkbox" id="webCheia"> Outros sites: deixar o vídeo da página em tela cheia</label>
+      <label class="check"><input type="checkbox" id="webExterno"> Plataforma protegida (Univer Vídeo e outras com assinatura): abrir no Chrome/Edge em tela cheia na TV</label>
+      <p class="hint">Funciona com lives e vídeos do YouTube (link do vídeo, <i>youtu.be</i>, <i>/live/</i> ou <i>/channel/…/live</i>)
+        e com páginas de outras plataformas que tenham o vídeo na própria página. Se o YouTube mostrar
+        “reprodução desativada em outros sites”, desmarque a primeira opção.</p>
+      <p class="hint">Plataformas com assinatura (como a <b>Univer Vídeo</b>) protegem o vídeo contra cópia (DRM), e isso só toca
+        no Chrome/Edge. Com a opção acima marcada, o app abre o navegador em tela cheia na TV e continua controlando
+        (corte, tocar/pausar, volume e tempo). Na primeira vez, clique em <b>🔑 Entrar no site</b>, faça login e feche
+        o navegador — o login fica guardado. Depois use o link da página do vídeo.</p>
+      <div class="row" style="justify-content:space-between">
+        <button id="btnLoginWeb" style="flex:none">🔑 Entrar no site</button>
+        <span style="flex:1"></span>
+        <button data-fechar style="flex:none">Cancelar</button>
+        <button id="btnSalvarWeb" class="primary" style="flex:none">Salvar no roteiro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script src="operador.js"></script>
+<script src="roteiro.js"></script>
+<script src="painel.js"></script>
+<script src="layout.js"></script>
+<script src="remoto.js"></script>
 </body>
 </html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#024E9D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Bible Studio — Controle</title>
+<link rel="icon" href="icon.png" />
+<link rel="apple-touch-icon" href="icon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="stylesheet" href="controle.css" />
+</head>
+<body>
+
+<!-- tela de senha -->
+<div id="login" class="login">
+  <img src="logo-header.png" alt="Bible Studio" class="marca" />
+  <p>Digite a senha que aparece no computador, na aba <b>Saída</b>.</p>
+  <input type="tel" id="pin" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off" />
+  <button id="btnEntrar" class="primary grande">Entrar</button>
+  <p class="erro" id="loginErro"></p>
+</div>
+
+<!-- app -->
+<div id="app" class="app oculto">
+  <header>
+    <div class="status"><i id="dot"></i><span id="statusTxt">conectando…</span></div>
+    <div class="live"><span id="liveRef">—</span> <b id="cronCel" class="cron-cel"></b></div>
+  </header>
+
+  <main>
+    <!-- ABA VERSÍCULO -->
+    <section class="pane on" data-pane="versiculo">
+      <div class="linha">
+        <input type="text" id="quick" placeholder="Ir para… ex: jo 3 16" autocomplete="off" />
+        <button id="btnIr">Ir</button>
+      </div>
+
+      <div class="previa">
+        <div class="rotulo">PRÉVIA</div>
+        <div class="ref" id="prevRef">—</div>
+        <div class="texto" id="prevTexto"></div>
+      </div>
+
+      <button id="btnEnviar" class="enviar">✂ CORTAR PARA O AR</button>
+
+      <div class="linha botoes">
+        <button id="btnAnterior" class="grande">◀ Anterior</button>
+        <button id="btnProximo" class="grande">Próximo ▶</button>
+      </div>
+
+      <div class="linha">
+        <select id="selLivro"></select>
+        <select id="selCap" class="curto"></select>
+      </div>
+
+      <div class="lista" id="versiculos"></div>
+    </section>
+
+    <!-- ABA ROTEIRO -->
+    <section class="pane" data-pane="midia">
+      <div class="previa verde">
+        <div class="rotulo">PRÓXIMO (PRÉVIA)</div>
+        <div class="ref" id="rotProx">—</div>
+      </div>
+      <button id="btnCorte" class="enviar">✂ CORTAR PARA O AR</button>
+      <div class="linha botoes">
+        <button id="btnEvAnt" class="grande">▲ Anterior</button>
+        <button id="btnEvProx" class="grande">Próximo ▼</button>
+      </div>
+      <div class="lista" id="roteiroLista"></div>
+      <hr />
+      <div class="rotulo">MÍDIA</div>
+      <div class="agora" id="midiaAgora">Nada tocando</div>
+      <div class="barra"><div id="midiaBarra"></div></div>
+      <div class="tempos"><span id="midiaT">0:00</span><span id="midiaD">0:00</span></div>
+      <div class="linha botoes">
+        <button id="mAnterior" class="grande">⏮</button>
+        <button id="mPlay" class="grande destaque">▶</button>
+        <button id="mParar" class="grande">⏹</button>
+        <button id="mProxima" class="grande">⏭</button>
+      </div>
+      <label class="vol">🔊 <input type="range" id="mVol" min="0" max="100" /> <b id="mVolTxt">80%</b></label>
+      <p class="dica" id="midiaStatus"></p>
+    </section>
+
+    <!-- ABA TELA -->
+    <section class="pane" data-pane="tela">
+      <button id="btnAoVivo" class="grande cheio">📖 Mostrar versículo</button>
+      <button id="btnLimpar" class="grande cheio">🖼 Só o fundo</button>
+      <button id="btnPreta" class="grande cheio">⬛ Tela preta</button>
+      <hr />
+      <label class="switch"><input type="checkbox" id="chkAuto" /> <span>Ao vivo automático</span></label>
+      <label class="switch"><input type="checkbox" id="chkProjecao" /> <span>Projeção aberta</span></label>
+      <p class="dica" id="infoTela"></p>
+      <hr />
+      <div class="linha">
+        <input type="search" id="busca" placeholder="Buscar na Bíblia" />
+        <button id="btnBuscar">🔍</button>
+      </div>
+      <div class="lista" id="resultados"></div>
+      <button id="btnSair" class="sair">Trocar de senha / sair</button>
+    </section>
+  </main>
+
+  <nav class="abas">
+    <button data-tab="versiculo" class="on">📖<span>Versículo</span></button>
+    <button data-tab="midia">📋<span>Roteiro</span></button>
+    <button data-tab="tela">🖥<span>Tela</span></button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="controle.js"></script>
+</body>
+</html>

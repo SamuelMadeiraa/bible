@@ -1,7 +1,7 @@
 {
   "name": "bible-acf-studio",
-  "version": "2.0.0",
-  "description": "Projeção de versículos (ACF) ao vivo com tela de operador e tela de transmissão",
+  "version": "3.1.0",
+  "description": "Projeção de versículos (ACF) e mídias ao vivo, com tela de operador e tela de projeção",
   "main": "main.js",
   "author": "Samuel Madeira",
   "license": "MIT",
@@ -11,13 +11,14 @@
   },
   "build": {
     "appId": "com.samuelmadeira.bibleacfstudio",
-    "productName": "Bible ACF Studio",
+    "productName": "Bible Studio",
     "files": [
       "main.js",
       "preload.js",
       "app/**/*",
       "node_modules/@fontsource/**/*",
-      "package.json"
+      "package.json",
+      "node_modules/dockview-core/**/*"
     ],
     "win": {
       "target": [
@@ -33,7 +34,7 @@
       "uninstallerIcon": "build/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Bible ACF Studio"
+      "shortcutName": "Bible Studio"
     },
     "directories": {
       "buildResources": "build"
@@ -51,6 +52,8 @@
     "@fontsource/lora": "^5.3.0",
     "@fontsource/montserrat": "^5.3.0",
     "@fontsource/oswald": "^5.3.0",
-    "@fontsource/playfair-display": "^5.3.0"
-  }
+    "@fontsource/playfair-display": "^5.3.0",
+    "dockview-core": "^8.3.1"
+  },
+  "productName": "Bible Studio"
 }

@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-const CANAIS = ['slide', 'displays-changed', 'output:state'];
+const CANAIS = ['slide', 'displays-changed', 'output:state', 'media', 'media:progress', 'remoto', 'web:quadro', 'web:aviso'];
 
 contextBridge.exposeInMainWorld('bridge', {
   displays: () => ipcRenderer.invoke('displays'),
@@ -14,6 +14,24 @@ contextBridge.exposeInMainWorld('bridge', {
   getImage: id => ipcRenderer.invoke('image:get', id),
   serverInfo: () => ipcRenderer.invoke('server:info'),
   openExternal: url => ipcRenderer.send('open-external', url),
+
+  // mídia (player interno)
+  pickMedia: () => ipcRenderer.invoke('media:pick'),
+  registerMedia: lista => ipcRenderer.send('media:register', lista),
+  sendMedia: cmd => ipcRenderer.send('media', cmd),
+  lastMedia: () => ipcRenderer.invoke('media:last'),
+  mediaProgress: info => ipcRenderer.send('media:progress', info),
+
+  // transmissões ao vivo / links
+  webAbrir: opcoes => ipcRenderer.invoke('web:abrir', opcoes),
+  webFechar: () => ipcRenderer.invoke('web:fechar'),
+  webCmd: (cmd, valor) => ipcRenderer.invoke('web:cmd', cmd, valor),
+  webLogin: (url, externo) => ipcRenderer.invoke('web:login', url, externo),
+
+  // controle pelo celular
+  putEstado: st => ipcRenderer.send('estado:put', st),
+  remoteInfo: () => ipcRenderer.invoke('remote:info'),
+
   on: (canal, cb) => {
     if (CANAIS.includes(canal)) ipcRenderer.on(canal, (e, ...args) => cb(...args));
   },

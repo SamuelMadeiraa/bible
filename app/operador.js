@@ -189,17 +189,23 @@ function acharLivro(q) {
     || LIVROS_IDX.find(l => l.nome.startsWith(k))
     || LIVROS_IDX.find(l => l.nome.includes(k)))?.i ?? null;
 }
-function irParaTexto(q) {
-  const m = q.match(/^\s*(.*?\p{L}.*?)\s*(\d+)?(?:\s*[:.,\s]\s*(\d+)(?:\s*-\s*(\d+))?)?\s*$/u);
-  if (!m) return false;
+// "jo 3 16", "2rs 2:21-23", "salmos 23" -> {b, c, v1, v2} (índices a partir de 0) ou null
+function parseRef(q) {
+  const m = String(q || '').match(/^\s*(.*?\p{L}.*?)\s*(\d+)?(?:\s*[:.,\s]\s*(\d+)(?:\s*-\s*(\d+))?)?\s*$/u);
+  if (!m) return null;
   const b = acharLivro(m[1]);
-  if (b === null) return false;
+  if (b === null) return null;
   const livro = BIBLIA[b];
   const c = Math.min(Math.max((+m[2] || 1) - 1, 0), livro.chapters.length - 1);
   const n = livro.chapters[c].length;
   const v1 = Math.min(Math.max((+m[3] || 1) - 1, 0), n - 1);
   const v2 = m[4] ? Math.min(Math.max(+m[4] - 1, v1), n - 1) : v1;
-  irPara(b, c, v1, v2);
+  return { b, c, v1, v2 };
+}
+function irParaTexto(q) {
+  const r = parseRef(q);
+  if (!r) return false;
+  irPara(r.b, r.c, r.v1, r.v2);
   return true;
 }
 $('quickRef').addEventListener('keydown', e => {
@@ -735,6 +741,14 @@ function atualizarSaida(st) {
 }
 async function montarLinks() {
   const info = await ponte.serverInfo();
+  if (info.versao) $('versao').textContent = 'v' + info.versao + (info.empacotado ? '' : ' (dev)');
+  // porta diferente da padrão = outra cópia do app provavelmente está aberta
+  if (info.port && info.port !== 7777) {
+    $('versao').textContent += ' • porta ' + info.port;
+    $('versao').title = 'Outra cópia do Bible ACF Studio parece estar aberta (a porta 7777 já estava em uso). '
+      + 'Feche as outras cópias para não projetar pela janela errada.';
+    $('versao').style.color = '#ff9b9d';
+  }
   const box = $('links');
   box.innerHTML = '';
   if (!info.port) { box.innerHTML = '<p class="hint">Servidor de rede indisponível.</p>'; return; }
@@ -757,20 +771,28 @@ async function montarLinks() {
 
 // ---------- teclado ----------
 document.addEventListener('keydown', e => {
-  const alvo = e.target;
-  const digitando = alvo.matches('input[type=text], input[type=search], textarea, select');
+  const alvo = e.target instanceof Element ? e.target : document.body;
+  const digitando = alvo.matches('input[type=text], input[type=search], input[type=number], textarea, select');
   if (e.key === 'F5' || (e.ctrlKey && e.key.toLowerCase() === 'r')) return;
+  if (document.querySelector('.modal.on')) return;            // janela aberta: atalhos pausados
   if (digitando) {
     if (e.key === 'Escape') alvo.blur();
     return;
   }
+  // setas num controle deslizante continuam mexendo nele
+  if (alvo.matches('input[type=range]') && e.key.startsWith('Arrow')) return;
   if (e.ctrlKey && e.key.toLowerCase() === 'l') { e.preventDefault(); $('quickRef').focus(); return; }
   switch (e.key) {
-    case 'Enter': case ' ': e.preventDefault(); enviarAoVivo(); break;
-    case 'ArrowRight': case 'ArrowDown': case 'PageDown':
-      e.preventDefault(); passo(1); if (!S.autoLive && e.key === 'PageDown' && live.slide?.mode === 'live') enviarAoVivo(); break;
-    case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
-      e.preventDefault(); passo(-1); if (!S.autoLive && e.key === 'PageUp' && live.slide?.mode === 'live') enviarAoVivo(); break;
+    case 'Enter':
+      e.preventDefault(); if (CFG.teclaCorte !== 'espaco') cortar(); break;
+    case ' ':
+      e.preventDefault(); if (CFG.teclaCorte !== 'enter') cortar(); break;
+    case 'ArrowDown': e.preventDefault(); previaRelativa(1); break;
+    case 'ArrowUp': e.preventDefault(); previaRelativa(-1); break;
+    case 'ArrowRight': e.preventDefault(); passo(1); break;
+    case 'ArrowLeft': e.preventDefault(); passo(-1); break;
+    case 'PageDown': e.preventDefault(); if (CFG.passador === 'cortar') cortar(); else previaRelativa(1); break;
+    case 'PageUp': e.preventDefault(); if (CFG.passador === 'cortar') voltarUm(); else previaRelativa(-1); break;
     case 'b': case 'B': case '.': alternarModo('black'); break;
     case 'c': case 'C': case 'Escape': alternarModo('clear'); break;
     case '/': e.preventDefault(); $('quickRef').focus(); break;

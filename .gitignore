@@ -3,3 +3,5 @@ dist/
 *_Zone.Identifier
 Thumbs.db
 .DS_Store
+vendor/
+Bible/

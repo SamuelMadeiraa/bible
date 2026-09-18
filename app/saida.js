@@ -110,15 +110,118 @@ function alternarTelaCheia() {
 addEventListener('dblclick', alternarTelaCheia);
 addEventListener('keydown', e => { if (e.key === 'F11' || e.key === 'f') { e.preventDefault(); alternarTelaCheia(); } });
 
+// ---------------- mídia (vídeo, foto, áudio) ----------------
+const midia = document.getElementById('midia');
+const mv = document.getElementById('mv');
+const mi = document.getElementById('mi');
+const mau = document.getElementById('mau');
+let itemAtual = null;
+
+function urlDe(item) {
+  if (ponte && item.caminho) return 'file:///' + encodeURI(item.caminho.replace(/\\/g, '/')).replace(/#/g, '%23');
+  return 'media/' + encodeURIComponent(item.id);
+}
+function elementoDe(tipo) { return tipo === 'video' ? mv : tipo === 'audio' ? mau : null; }
+
+function avisarProgresso(extra) {
+  if (!ponte || !itemAtual) return;
+  const el = elementoDe(itemAtual.tipo);
+  ponte.mediaProgress({
+    id: itemAtual.id,
+    t: el ? el.currentTime : 0,
+    dur: el && isFinite(el.duration) ? el.duration : 0,
+    tocando: el ? !el.paused : true,
+    ...extra,
+  });
+}
+let ultimoAviso = 0;
+const aoTempo = () => { const agora = Date.now(); if (agora - ultimoAviso > 250) { ultimoAviso = agora; avisarProgresso(); } };
+[mv, mau].forEach(el => {
+  el.addEventListener('timeupdate', aoTempo);
+  el.addEventListener('ended', () => avisarProgresso({ fim: true }));
+  el.addEventListener('play', () => avisarProgresso());
+  el.addEventListener('pause', () => avisarProgresso());
+  el.addEventListener('loadedmetadata', () => avisarProgresso());
+  el.addEventListener('error', () => avisarProgresso({ erro: 'formato não suportado pelo player interno' }));
+});
+
+function pararMidia() {
+  itemAtual = null;
+  midia.style.opacity = 0;
+  midia.className = '';
+  mv.pause(); mau.pause();
+  setTimeout(() => { if (!itemAtual) { mv.removeAttribute('src'); mv.load(); mi.removeAttribute('src'); } }, 300);
+}
+
+function mostrarWeb(url) {
+  let f = document.getElementById('webFrame');
+  if (!url) { if (f) f.remove(); return; }
+  if (!f) {
+    f = document.createElement('iframe');
+    f.id = 'webFrame';
+    f.allow = 'autoplay; fullscreen; encrypted-media';
+    f.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;z-index:9;background:#000';
+    document.body.appendChild(f);
+  }
+  f.src = url;
+}
+
+function receberMidia(cmd) {
+  if (!cmd) return;
+  document.body.classList.remove('offline');
+  switch (cmd.a) {
+    case 'load': {
+      const item = cmd.item;
+      itemAtual = item;
+      midia.className = (item.tipo === 'audio' ? '' : item.tipo) + (cmd.cover ? ' cover' : '') + (cmd.overlay ? '' : ' acima');
+      const url = urlDe(item);
+      if (item.tipo === 'video') {
+        mau.pause();
+        if (mv.getAttribute('src') !== url) { mv.src = url; }
+        mv.loop = !!cmd.loop;
+        mv.volume = (cmd.volume ?? 100) / 100;
+        mv.currentTime = cmd.t || 0;
+        if (cmd.play !== false) mv.play().catch(() => {});
+        midia.style.opacity = 1;
+      } else if (item.tipo === 'imagem') {
+        mv.pause();
+        mi.src = url;
+        midia.style.opacity = 1;
+      } else {                                  // áudio: a tela continua mostrando o versículo
+        mv.pause();
+        midia.style.opacity = 0;
+        midia.className = '';
+        if (mau.getAttribute('src') !== url) mau.src = url;
+        mau.loop = !!cmd.loop;
+        mau.volume = (cmd.volume ?? 100) / 100;
+        mau.currentTime = cmd.t || 0;
+        if (cmd.play !== false) mau.play().catch(() => {});
+      }
+      break;
+    }
+    case 'play': { const el = elementoDe(itemAtual?.tipo); if (el) el.play().catch(() => {}); break; }
+    case 'pause': { const el = elementoDe(itemAtual?.tipo); if (el) el.pause(); break; }
+    case 'seek': { const el = elementoDe(itemAtual?.tipo); if (el) el.currentTime = cmd.t || 0; break; }
+    case 'volume': { mv.volume = mau.volume = Math.min(1, Math.max(0, (cmd.volume ?? 100) / 100)); break; }
+    case 'overlay': midia.classList.toggle('acima', !cmd.overlay); break;
+    case 'cover': midia.classList.toggle('cover', !!cmd.cover); break;
+    case 'stop': pararMidia(); break;
+    // no navegador/OBS a transmissão aparece num iframe (no app ela é uma camada nativa)
+    case 'web': if (!ponte) mostrarWeb(cmd.url); break;
+    case 'webFechar': if (!ponte) mostrarWeb(null); break;
+  }
+}
+
 if (ponte) {
   ponte.on('slide', receber);
+  ponte.on('media', receberMidia);
   ponte.lastSlide().then(s => { if (s) receber(s); else document.body.classList.add('offline'); });
+  ponte.lastMedia().then(m => { if (m) receberMidia(m); });
 } else {
   document.body.classList.add('offline');
-  const conectar = () => {
-    const es = new EventSource('events');
-    es.onmessage = ev => receber(JSON.parse(ev.data));
-    es.onerror = () => document.body.classList.add('offline');
-  };
-  conectar();
+  const es = new EventSource('events');
+  es.addEventListener('slide', ev => receber(JSON.parse(ev.data)));
+  es.addEventListener('media', ev => receberMidia(JSON.parse(ev.data)));
+  es.onmessage = ev => receber(JSON.parse(ev.data));     // compatibilidade
+  es.onerror = () => document.body.classList.add('offline');
 }
