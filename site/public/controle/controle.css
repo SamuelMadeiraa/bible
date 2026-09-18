@@ -1,0 +1,68 @@
+:root {
+  --bg: #0c0e12; --card: #151920; --card-2: #1a1f28; --line: #242a34; --line-2: #2f3642;
+  --text: #eeedea; --text-2: #c8c9cd; --muted: #969595;
+  --azul: #024e9d; --azul-2: #03468b; --azul-claro: #4a90e2; --erro: #ff9b9d;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.5;
+  background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; overscroll-behavior: none;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.topo { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 6px; max-width: 520px; margin: 0 auto; }
+.marca { height: 24px; width: auto; }
+.etiqueta { font-size: .72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--azul-claro); font-weight: 700; }
+main { display: flex; flex-direction: column; gap: 14px; padding: 12px 16px 32px; max-width: 520px; margin: 0 auto; }
+
+.cartao { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.cartao.destaque { background: linear-gradient(160deg, #0d2446, var(--card) 70%); border-color: #1d3b66; }
+h1 { font-size: 1.45rem; line-height: 1.2; font-weight: 800; word-break: break-word; }
+.rotulo { font-size: .7rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.sub { color: var(--text-2); font-size: .92rem; }
+.dica { color: var(--muted); font-size: .86rem; }
+.dica b, .passos b { color: var(--text); }
+.ic { display: inline-block; padding: 0 6px; border: 1px solid var(--line-2); border-radius: 6px; }
+.passos { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--text-2); }
+.erro { color: var(--erro); text-align: center; min-height: 1.5em; font-size: .9rem; }
+
+.btn {
+  font: inherit; font-weight: 600; color: var(--text); background: var(--card-2); border: 1px solid var(--line-2);
+  border-radius: 12px; padding: 13px 16px; cursor: pointer; width: 100%;
+}
+.btn:active { transform: scale(.98); }
+.btn.primario { background: var(--azul); border-color: var(--azul-2); color: #fff; }
+.btn.grande { font-size: 1.15rem; padding: 17px; }
+.acoes { display: flex; gap: 10px; }
+
+.linha-icone { display: flex; gap: 12px; align-items: center; }
+.app-icone { width: 52px; height: 52px; border-radius: 12px; flex: none; }
+
+label { display: flex; flex-direction: column; gap: 6px; font-size: .8rem; color: var(--muted); }
+input {
+  font: inherit; font-size: 1.1rem; color: var(--text); background: var(--card-2); border: 1px solid var(--line-2);
+  border-radius: 10px; padding: 12px; outline: none; width: 100%;
+}
+input:focus { border-color: var(--azul-claro); }
+
+video { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: #000; }
+
+.lista { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.pc { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.pc div { flex: 1; min-width: 0; }
+.pc b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc small { color: var(--muted); }
+.pc button { font: inherit; font-size: .85rem; background: transparent; color: var(--text-2); border: 1px solid var(--line-2); border-radius: 8px; padding: 7px 10px; }
+.pc button.apagar { color: var(--muted); border-color: transparent; font-size: 1.1rem; padding: 4px 8px; }
+
+#telaAuto { align-items: center; text-align: center; }
+.giro { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--line-2); border-top-color: var(--azul-claro); animation: giro .8s linear infinite; }
+@keyframes giro { to { transform: rotate(360deg); } }
+
+/* ícones (Lucide, em icones.js) */
+.ico { width: 1.2em; height: 1.2em; flex: none; vertical-align: -.24em; display: inline-block; }
+.ico-antes { margin-right: .5em; }
+.ico-depois { margin-left: .3em; }
+.ic .ico { width: 1em; height: 1em; vertical-align: -.15em; }
+.pc button.apagar .ico { width: 18px; height: 18px; vertical-align: -.2em; }

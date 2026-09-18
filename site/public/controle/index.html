@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Bible Studio Controle</title>
+<meta name="description" content="Controle o Bible Studio pelo celular: versículos, roteiro, mídia e tela de projeção." />
+<meta name="theme-color" content="#0c0e12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Bible Controle" />
+<link rel="manifest" href="/controle/manifest.webmanifest" />
+<link rel="icon" type="image/png" href="/icon.png" />
+<link rel="apple-touch-icon" href="/icon.png" />
+<link rel="stylesheet" href="/controle/controle.css" />
+</head>
+<body>
+
+<header class="topo">
+  <img src="/logo.png" alt="Bible Studio" class="marca" />
+  <span class="etiqueta">Controle</span>
+</header>
+
+<main>
+  <!-- conectando automaticamente (app instalado) -->
+  <section id="telaAuto" class="cartao destaque" hidden>
+    <div class="giro" aria-hidden="true"></div>
+    <p>Conectando em <b id="autoNome"></b>…</p>
+    <button id="btnCancelarAuto" class="btn">Cancelar</button>
+  </section>
+
+  <!-- computador escolhido -->
+  <section id="telaPc" hidden>
+    <div class="cartao destaque">
+      <small class="rotulo">Computador</small>
+      <h1 id="pcNome"></h1>
+      <p class="sub" id="pcHost"></p>
+      <button id="btnConectar" class="btn primario grande"><i data-i="play"></i>Abrir o controle</button>
+      <p class="dica">O celular precisa estar no <b>mesmo Wi-Fi</b> do computador, com o Bible Studio aberto.</p>
+    </div>
+  </section>
+
+  <!-- instalar -->
+  <section id="telaInstalar" class="cartao" hidden>
+    <div class="linha-icone">
+      <img src="/icon.png" alt="" class="app-icone" />
+      <div>
+        <b>Instale o app Bible Controle</b>
+        <p class="sub">Fica na tela inicial e abre direto no controle, sem escanear de novo.</p>
+      </div>
+    </div>
+    <button id="btnInstalar" class="btn primario" hidden><i data-i="download"></i>Instalar app</button>
+    <div id="instrucoesIos" class="dica" hidden>
+      No iPhone: toque em <b>Compartilhar</b> <span class="ic"><i data-i="share"></i></span> e depois em <b>Adicionar à Tela de Início</b>.
+    </div>
+    <div id="instrucoesOutros" class="dica" hidden>
+      Abra o menu do navegador <span class="ic"><i data-i="ellipsis-vertical"></i></span> e toque em <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.
+    </div>
+  </section>
+
+  <!-- nenhum computador ainda -->
+  <section id="telaVazia" class="cartao" hidden>
+    <h1>Vamos conectar</h1>
+    <ol class="passos">
+      <li>No computador, abra o Bible Studio e clique em <b>Celular</b> <i data-i="smartphone"></i> (no topo da tela).</li>
+      <li>Aponte a câmera do celular para o QR code que aparece.</li>
+    </ol>
+  </section>
+
+  <div class="acoes">
+    <button id="btnLer" class="btn" hidden><i data-i="camera"></i>Ler QR code</button>
+    <button id="btnDigitar" class="btn"><i data-i="keyboard"></i>Digitar endereço</button>
+  </div>
+
+  <!-- leitor de QR -->
+  <section id="telaLeitor" class="cartao" hidden>
+    <video id="video" playsinline muted></video>
+    <p class="dica">Aponte para o QR code na tela do computador.</p>
+    <button id="btnFecharLeitor" class="btn">Fechar câmera</button>
+  </section>
+
+  <!-- endereço digitado -->
+  <form id="telaDigitar" class="cartao" hidden>
+    <label>Endereço do computador
+      <input id="inHost" inputmode="decimal" placeholder="192.168.0.10:7777" autocomplete="off" required />
+    </label>
+    <label>Senha (4 números)
+      <input id="inPin" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off" required />
+    </label>
+    <p class="dica">Os dois aparecem no Bible Studio, no botão <b>Celular</b> <i data-i="smartphone"></i>.</p>
+    <button class="btn primario">Salvar e conectar</button>
+  </form>
+
+  <!-- outros computadores -->
+  <section id="telaLista" hidden>
+    <small class="rotulo">Computadores salvos</small>
+    <div id="lista" class="lista"></div>
+  </section>
+
+  <p class="erro" id="erro"></p>
+</main>
+
+<script src="/controle/icones.js"></script>
+<script src="/controle/app.js"></script>
+</body>
+</html>

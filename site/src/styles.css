@@ -367,6 +367,9 @@ p { margin: 0; }
 .chamada p { position: relative; color: #c9dcf3; font-size: 19px; max-width: 620px; margin: 22px auto 36px; }
 .chamada .btn { position: relative; }
 .chamada small { position: relative; display: block; margin-top: 18px; color: #9fb8d6; font-size: 14px; }
+.chamada-celular { position: relative; margin-top: 34px; padding-top: 28px; border-top: 1px solid rgba(255, 255, 255, .1); }
+.chamada-celular small { max-width: 460px; margin: 12px auto 0; }
+.chamada-celular b { color: #e6effa; }
 
 /* ---------- rodapé ---------- */
 .rodape { border-top: 1px solid var(--line); padding: 40px 0 48px; }
