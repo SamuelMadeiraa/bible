@@ -110,6 +110,7 @@ function montarVersiculos() {
   cap.forEach((t, i) => {
     const d = document.createElement('div');
     d.dataset.i = i;
+    d.draggable = true;
     d.innerHTML = `<b>${i + 1}</b>${esc(t)}`;
     frag.appendChild(d);
   });
@@ -243,6 +244,8 @@ function buscar() {
     // semAcento preserva o comprimento para o português, então o índice vale no texto original
     d.innerHTML = `<strong>${esc(BIBLIA[r.b].name)} ${r.c + 1}:${r.v + 1}</strong>`
       + esc(r.t.slice(0, r.pos)) + '<mark>' + esc(r.t.slice(r.pos, r.pos + q.length)) + '</mark>' + esc(r.t.slice(r.pos + q.length));
+    d.dataset.pos = [r.b, r.c, r.v, r.v].join(',');
+    d.draggable = true;
     d.onclick = () => irPara(r.b, r.c, r.v);
     d.ondblclick = () => { irPara(r.b, r.c, r.v); enviarAoVivo(); };
     frag.appendChild(d);
@@ -259,6 +262,8 @@ function montarHistorico() {
   historico.forEach(h => {
     const d = document.createElement('div');
     d.innerHTML = `<strong>${esc(h.ref)}</strong>${esc(h.texto.slice(0, 90))}${h.texto.length > 90 ? '…' : ''}`;
+    d.dataset.pos = [h.pos.b, h.pos.c, h.pos.v1, h.pos.v2].join(',');
+    d.draggable = true;
     d.onclick = () => irPara(h.pos.b, h.pos.c, h.pos.v1, h.pos.v2);
     d.ondblclick = () => { irPara(h.pos.b, h.pos.c, h.pos.v1, h.pos.v2); enviarAoVivo(); };
     box.appendChild(d);
@@ -774,7 +779,7 @@ async function montarLinks() {
 // ---------- teclado ----------
 document.addEventListener('keydown', e => {
   const alvo = e.target instanceof Element ? e.target : document.body;
-  const digitando = alvo.matches('input[type=text], input[type=search], input[type=number], textarea, select');
+  const digitando = alvo.matches('input[type=text], input[type=search], input[type=number], input[type=time], textarea, select');
   if (e.key === 'F5' || (e.ctrlKey && e.key.toLowerCase() === 'r')) return;
   if (document.querySelector('.modal.on')) return;            // janela aberta: atalhos pausados
   if (digitando) {
@@ -784,6 +789,8 @@ document.addEventListener('keydown', e => {
   // setas num controle deslizante continuam mexendo nele
   if (alvo.matches('input[type=range]') && e.key.startsWith('Arrow')) return;
   if (e.ctrlKey && e.key.toLowerCase() === 'l') { e.preventDefault(); $('quickRef').focus(); return; }
+  if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); desfazerRemocao(); return; }
+  if (e.key === 'Insert') { e.preventDefault(); adicionarVersiculoDaPrevia(); return; }
   switch (e.key) {
     case 'Enter':
       e.preventDefault(); if (CFG.teclaCorte !== 'espaco') cortar(); break;

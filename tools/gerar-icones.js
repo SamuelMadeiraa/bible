@@ -12,6 +12,9 @@ const USADOS = [
   'camera', 'keyboard', 'ellipsis-vertical', 'share', 'x', 'square-stop',
   // abas dos painéis
   'eye', 'radio', 'sliders-horizontal', 'highlighter', 'palette',
+  // menus do botão direito, arrastar arquivos e programação
+  'alarm-clock', 'calendar-clock', 'list-plus', 'copy', 'copy-plus', 'trash-2', 'corner-down-right', 'zap',
+  'list-ordered', 'file-plus-2', 'circle-stop',
 ];
 
 const PASTA = path.join(__dirname, '..', 'site', 'node_modules', 'lucide-react', 'dist', 'esm', 'icons');
@@ -19,7 +22,10 @@ const attrs = o => Object.entries(o).filter(([k]) => k !== 'key').map(([k, v]) =
 
 const icones = {};
 for (const nome of USADOS) {
-  const src = fs.readFileSync(path.join(PASTA, nome + '.mjs'), 'utf8');
+  let src = fs.readFileSync(path.join(PASTA, nome + '.mjs'), 'utf8');
+  // alguns nomes são só apelidos de outro ícone ("export { default } from './trash.mjs'")
+  const apelido = src.match(/export \{ default \} from '\.\/([\w-]+)\.mjs'/);
+  if (apelido) src = fs.readFileSync(path.join(PASTA, apelido[1] + '.mjs'), 'utf8');
   const dados = src.match(/const __iconData = (\{[\s\S]*?\n\});/);
   if (!dados) throw new Error('não entendi o ícone ' + nome);
   const lista = Function('return ' + dados[1])().node;

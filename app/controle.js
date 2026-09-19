@@ -116,10 +116,10 @@ function aplicarEstado(st) {
       const d = document.createElement('div');
       d.className = 'item';
       d.dataset.i = i;
-      d.innerHTML = `<b>${i + 1}</b><span>${t}</span>`;
+      d.innerHTML = `<b>${i + 1}</b><span>${esc(t)}</span>`;
       const b = document.createElement('button');
       b.className = 'tocar';
-      b.textContent = 'AO VIVO';
+      b.textContent = 'NO AR';
       b.onclick = ev => { ev.stopPropagation(); enviar('projetar', { b: st.livroIdx, c: st.cap, v1: i }); };
       d.appendChild(b);
       d.onclick = () => enviar('preview', { b: st.livroIdx, c: st.cap, v1: i });
@@ -136,11 +136,12 @@ function aplicarEstado(st) {
   }
 
   // aba tela
+  document.querySelectorAll('.modo').forEach(b => b.classList.toggle('on', b.dataset.modo === st.modo));
   $('chkAuto').checked = !!st.auto;
   $('chkProjecao').checked = !!st.projecao;
   $('infoTela').textContent = st.projecao
-    ? 'Projetando em ' + (st.monitor || 'monitor') + '.'
-    : 'A projeção está fechada — nada aparece na TV.';
+    ? 'Projetando em ' + (st.monitor || 'monitor')
+    : 'Fechada — nada aparece na TV';
 
   // resultados da busca
   const rb = $('resultados');
@@ -151,19 +152,20 @@ function aplicarEstado(st) {
     res.forEach(r => {
       const d = document.createElement('div');
       d.className = 'item';
-      d.innerHTML = `<span><b>${r.ref}</b><br>${r.t}</span>`;
+      d.innerHTML = `<span><strong class="ref-busca">${esc(r.ref)}</strong>${esc(r.t)}</span>`;
       const b = document.createElement('button');
       b.className = 'tocar';
-      b.textContent = 'AO VIVO';
+      b.textContent = 'NO AR';
       b.onclick = ev => { ev.stopPropagation(); enviar('projetar', { b: r.b, c: r.c, v1: r.v }); };
       d.appendChild(b);
-      d.onclick = () => { enviar('preview', { b: r.b, c: r.c, v1: r.v }); trocarAba('versiculo'); };
+      d.onclick = () => { enviar('preview', { b: r.b, c: r.c, v1: r.v }); trocarSub('nav'); };
       rb.appendChild(d);
     });
   }
 
   desenharMidia(st.midia);
   desenharRoteiro(st);
+  desenharProgramacao(st.programacao);
 }
 
 function desenharRoteiro(st) {
@@ -176,13 +178,13 @@ function desenharRoteiro(st) {
     box.dataset.chave = chave;
     box.innerHTML = '';
     if (!lista.length) {
-      box.innerHTML = '<p class="dica">O roteiro está vazio. Monte no computador (botões Adicionar ou Presets).</p>';
+      box.innerHTML = '<div class="cartao dica">O roteiro está vazio. Monte no computador (Adicionar ou Presets) ou envie vídeos e fotos pela aba <b>Mídia</b>.</div>';
     }
     lista.forEach((ev, i) => {
       const d = document.createElement('div');
       d.className = 'item';
       d.dataset.i = i;
-      d.innerHTML = `<b>${icone(ev.icone)}</b><span>${ev.nome}<i class="selos"></i><small>${ev.sub || ''}</small></span>`;
+      d.innerHTML = `<b>${icone(ev.icone)}</b><span>${esc(ev.nome || '')}<i class="selos"></i><small>${esc(ev.sub || '')}</small></span>`;
       const b = document.createElement('button');
       b.className = 'tocar';
       b.textContent = 'NO AR';
@@ -199,6 +201,18 @@ function desenharRoteiro(st) {
     const s = d.querySelector('.selos');
     if (s) s.innerHTML = (i === st.liveIdx ? '<b class="selo ar">NO AR</b>' : '') + (i === st.prevIdx ? '<b class="selo prox">PRÓXIMO</b>' : '');
   });
+}
+
+function desenharProgramacao(pg) {
+  // aparece quando há algo agendado/rodando, ou quando dá para começar o pré-culto agora
+  const mostrar = !!pg && (pg.fase !== 'parada' || pg.temSequencia);
+  $('progCel').hidden = !mostrar;
+  if (!mostrar) return;
+  $('progCelTxt').textContent = pg.texto || 'Pré-culto pronto para começar';
+  $('progCelIniciar').hidden = !(pg.fase === 'parada' || pg.fase === 'agendada');
+  $('progCelRetomar').hidden = !(pg.fase === 'pausada' || pg.fase === 'aguardando');
+  $('progCelParar').hidden = pg.fase === 'parada';
+  $('progCel').className = 'prog-cel fase-' + pg.fase;
 }
 
 function emVista(el) {
@@ -226,6 +240,15 @@ function trocarAba(nome) {
   document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.dataset.pane === nome));
 }
 document.querySelectorAll('.abas button').forEach(b => b.onclick = () => { vibrar(); trocarAba(b.dataset.tab); });
+const abaAtual = () => document.querySelector('.abas button.on')?.dataset.tab;
+
+// Bíblia: "Capítulo" ou "Buscar palavra"
+function trocarSub(nome) {
+  document.querySelectorAll('#segBiblia button').forEach(b => b.classList.toggle('on', b.dataset.v === nome));
+  document.querySelectorAll('.sub-pane').forEach(p => p.classList.toggle('on', p.dataset.sub === nome));
+  if (nome === 'busca') setTimeout(() => $('busca').focus(), 50);
+}
+document.querySelectorAll('#segBiblia button').forEach(b => b.onclick = () => { vibrar(); trocarSub(b.dataset.v); });
 
 // ---------- botões ----------
 $('btnEntrar').onclick = () => {
@@ -236,17 +259,16 @@ $('btnEntrar').onclick = () => {
 };
 $('pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnEntrar').click(); });
 
-$('btnEnviar').onclick = () => { enviar('corte'); toast('No ar'); };
+// barra de corte: as setas andam nos versículos (aba Bíblia) ou nos eventos do roteiro (outras abas)
 $('btnCorte').onclick = () => { enviar('corte'); toast('No ar'); };
-$('btnEvProx').onclick = () => enviar('previaProx');
-$('btnEvAnt').onclick = () => enviar('previaAnt');
-$('btnProximo').onclick = () => enviar('proximo');
-$('btnAnterior').onclick = () => enviar('anterior');
-$('btnIr').onclick = () => {
+const andaNoRoteiro = () => abaAtual() !== 'versiculo' && E && (E.roteiro || []).length > 0;
+$('btnDepois').onclick = () => enviar(andaNoRoteiro() ? 'previaProx' : 'proximo');
+$('btnAntes').onclick = () => enviar(andaNoRoteiro() ? 'previaAnt' : 'anterior');
+$('formIr').onsubmit = e => {
+  e.preventDefault();
   const ref = $('quick').value.trim();
-  if (ref) { enviar('ir', { ref }); $('quick').blur(); }
+  if (ref) { enviar('ir', { ref }); $('quick').value = ''; $('quick').blur(); trocarSub('nav'); }
 };
-$('quick').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnIr').click(); });
 $('selLivro').onchange = e => enviar('preview', { b: +e.target.value, c: 0, v1: 0 });
 $('selCap').onchange = e => enviar('preview', { b: E ? E.livroIdx : 0, c: +e.target.value, v1: 0 });
 
@@ -256,14 +278,65 @@ $('btnAoVivo').onclick = () => enviar('aoVivo');
 $('chkAuto').onchange = e => enviar('auto', { valor: e.target.checked });
 $('chkProjecao').onchange = e => enviar('projecao', { valor: e.target.checked });
 
-$('btnBuscar').onclick = () => enviar('buscar', { q: $('busca').value });
-$('busca').addEventListener('keydown', e => { if (e.key === 'Enter') { $('btnBuscar').click(); e.target.blur(); } });
+$('formBusca').onsubmit = e => {
+  e.preventDefault();
+  const q = $('busca').value.trim();
+  if (q.length < 3) return toast('Digite pelo menos 3 letras');
+  enviar('buscar', { q });
+  $('busca').blur();
+};
 
 $('mPlay').onclick = () => enviar('midiaPlay');
 $('mParar').onclick = () => enviar('midiaParar');
 $('mProxima').onclick = () => enviar('midiaProxima');
 $('mAnterior').onclick = () => enviar('midiaAnterior');
 $('mVol').addEventListener('change', e => enviar('midiaVolume', { valor: +e.target.value }));
+
+$('progCelIniciar').onclick = () => { enviar('progIniciar'); toast('Pré-culto começando'); };
+$('progCelRetomar').onclick = () => enviar('progRetomar');
+$('progCelParar').onclick = () => { if (confirm('Parar a programação?')) enviar('progParar'); };
+
+// ---------- enviar vídeos, fotos e áudios para o computador ----------
+const tamanho = b => b > 1073741824 ? (b / 1073741824).toFixed(1) + ' GB' : b > 1048576 ? (b / 1048576).toFixed(0) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+let filaEnvio = Promise.resolve();
+function enviarArquivo(arquivo) {
+  const item = document.createElement('div');
+  item.className = 'envio-item';
+  item.innerHTML = '<div class="nome"><span></span><span>na fila</span></div><div class="barra"><div></div></div>';
+  item.querySelector('.nome span').textContent = arquivo.name;
+  const info = item.querySelector('.nome span:last-child');
+  const barra = item.querySelector('.barra div');
+  $('envios').prepend(item);
+  return new Promise(pronto => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'api/upload?pin=' + encodeURIComponent(PIN) + '&nome=' + encodeURIComponent(arquivo.name));
+    xhr.upload.onprogress = e => {
+      if (!e.lengthComputable) return;
+      const pct = Math.round(e.loaded / e.total * 100);
+      barra.style.width = pct + '%';
+      info.textContent = pct + '% de ' + tamanho(e.total);
+    };
+    xhr.onload = () => {
+      let r = {};
+      try { r = JSON.parse(xhr.responseText); } catch (e) {}
+      if (xhr.status === 200) { item.classList.add('ok'); barra.style.width = '100%'; info.textContent = 'no roteiro'; }
+      else if (xhr.status === 401) { item.classList.add('erro'); info.textContent = 'senha incorreta'; pedirSenha('Senha incorreta.'); }
+      else { item.classList.add('erro'); info.textContent = r.erro || 'falhou'; }
+      pronto();
+    };
+    xhr.onerror = () => { item.classList.add('erro'); info.textContent = 'sem conexão com o PC'; pronto(); };
+    info.textContent = 'enviando…';
+    xhr.send(arquivo);
+  });
+}
+$('inArquivos').addEventListener('change', e => {
+  const arquivos = [...e.target.files];
+  e.target.value = '';
+  if (!arquivos.length) return;
+  toast(arquivos.length === 1 ? 'Enviando 1 arquivo' : `Enviando ${arquivos.length} arquivos`);
+  // um por vez, para não travar o Wi-Fi da igreja
+  arquivos.forEach(a => { filaEnvio = filaEnvio.then(() => enviarArquivo(a)); });
+});
 
 $('btnSair').onclick = () => {
   localStorage.removeItem('bibleStudioPin');

@@ -39,6 +39,7 @@ function estadoParaCelular() {
     },
     cron: $('cronValor') ? { valor: $('cronValor').textContent, rotulo: $('cronRotulo').textContent, classe: $('cron').className } : null,
     resultados: ultimosResultados,
+    programacao: window.Programacao ? Programacao.estado() : null,
     em: Date.now(),
   };
 }
@@ -121,6 +122,12 @@ function executarRemoto(cmd) {
       $('pVol').value = cmd.valor;
       $('pVol').dispatchEvent(new Event('input'));
       break;
+    // arquivo que o celular enviou (já gravado no PC)
+    case 'arquivoRecebido': if (cmd.caminho) adicionarArquivos([cmd.caminho]); break;
+    // programação (pré-culto automático)
+    case 'progIniciar': window.Programacao?.iniciar(); break;
+    case 'progRetomar': window.Programacao?.retomar(); break;
+    case 'progParar': window.Programacao?.parar(); break;
     case 'midiaSeek':
       $('pSeek').value = cmd.valor;
       $('pSeek').dispatchEvent(new Event('change'));

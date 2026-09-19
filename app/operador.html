@@ -68,7 +68,7 @@
       <select id="selLivro"></select>
       <div class="chapters" id="chapters"></div>
       <div class="verses" id="verses" tabindex="0"></div>
-      <p class="hint">Clique = prévia • Duplo clique = corta para o ar • Shift+clique = intervalo</p>
+      <p class="hint">Clique = prévia • Duplo clique = no ar • Shift+clique = intervalo • Botão direito = mais opções • Arraste para o roteiro</p>
     </div>
 
     <div class="tabpane" data-pane="busca">
@@ -140,16 +140,27 @@
     <div class="p-head">
       <button id="btnAddEvento" class="primary" data-menu><i data-i="plus"></i>Adicionar<i data-i="chevron-down"></i></button>
       <button id="btnPresets2" title="Presets de reunião: criar, usar e editar"><i data-i="folder-open"></i>Presets</button>
+      <button id="btnProgramacao" title="Pré-culto automático e abertura no horário do culto"><i data-i="alarm-clock"></i>Programação</button>
       <span class="p-sep"></span>
       <label class="check"><input type="checkbox" id="pOverlay"> Versículo sobre o vídeo</label>
       <label class="check"><input type="checkbox" id="pCover"> Preencher a tela</label>
       <span class="p-sep"></span>
       <button id="btnLimparMidia" title="Tira todos os eventos do roteiro">Limpar</button>
     </div>
+    <div class="prog-barra" id="progBarra" hidden>
+      <i data-i="alarm-clock"></i>
+      <span id="progTxt"></span>
+      <button id="progComecar" hidden><i data-i="play"></i>Começar agora</button>
+      <button id="progRetomar" hidden><i data-i="play"></i>Retomar</button>
+      <button id="progConfig" title="Configurar a programação"><i data-i="settings"></i></button>
+      <button id="progBarraParar" class="danger"><i data-i="circle-stop"></i>Parar</button>
+    </div>
     <div class="playlist" id="playlist"></div>
     <div class="roteiro-vazio" id="roteiroVazio">
       <b>O roteiro está vazio.</b>
-      <span>Use <b><i data-i="plus"></i>Adicionar</b> para colocar versículos, avisos, vídeos e fotos, ou abra <b><i data-i="folder-open"></i>Presets</b> para usar uma reunião salva.</span>
+      <span>Arraste vídeos, fotos e áudios do Windows para cá, use <b><i data-i="plus"></i>Adicionar</b>
+        ou abra <b><i data-i="folder-open"></i>Presets</b> para usar uma reunião salva.
+        Versículos também podem ser arrastados da Bíblia.</span>
     </div>
     <p class="hint" id="pDica"></p>
   </section>
@@ -416,6 +427,10 @@
         <tr><td><kbd>C</kbd> / <kbd>Esc</kbd></td><td>Só o fundo</td></tr>
         <tr><td><kbd>Ctrl</kbd>+<kbd>Espaço</kbd></td><td>Tocar / pausar a mídia</td></tr>
         <tr><td><kbd>Ctrl</kbd>+<kbd>←</kbd> / <kbd>→</kbd></td><td>Mídia anterior / próxima</td></tr>
+        <tr><td><kbd>Insert</kbd></td><td>Coloca o versículo da prévia no fim do roteiro</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Desfaz a última remoção do roteiro</td></tr>
+        <tr><td>Botão direito</td><td>Num versículo ou evento do roteiro: prévia, no ar, roteiro, copiar…</td></tr>
+        <tr><td>Arrastar</td><td>Vídeos, fotos e áudios do Windows ou versículos da Bíblia para o roteiro</td></tr>
         <tr><td>Começar a digitar</td><td>Abre o “Ir para” (ex.: jo 3 16)</td></tr>
       </table>
 
@@ -495,11 +510,62 @@
   </div>
 </div>
 
+<div class="modal" id="modalProg">
+  <div class="caixa grande">
+    <div class="m-head"><b><i data-i="alarm-clock"></i>Programação da reunião</b><button class="fechar" data-fechar><i data-i="x"></i></button></div>
+    <div class="m-body stack">
+      <p class="hint">Antes do culto, o app coloca no ar sozinho os eventos marcados, em sequência (testemunhos, fotos, avisos…).
+        No horário do culto ele solta a abertura (ex.: o louvor) e daí em diante tudo fica manual — pelo PC ou pelo celular.
+        Se alguém colocar outra coisa no ar no meio do pré-culto, a sequência pausa.</p>
+      <div class="prog-horarios">
+        <div>
+          <label for="progInicio">Começar o pré-culto às</label>
+          <input type="time" id="progInicio">
+          <small class="hint">Vazio = só com “Começar agora”</small>
+        </div>
+        <div>
+          <label for="progCulto">Horário do culto</label>
+          <input type="time" id="progCulto">
+          <small class="hint">A sequência para nessa hora</small>
+        </div>
+        <div class="largo">
+          <label for="progAbertura">No horário do culto, colocar no ar</label>
+          <select id="progAbertura"></select>
+          <small class="hint">Quando a abertura terminar, nada segue sozinho</small>
+        </div>
+      </div>
+      <div>
+        <label>Pré-culto — o que passa sozinho (na ordem do roteiro)</label>
+        <div class="prog-lista" id="progLista"></div>
+      </div>
+      <div class="prog-opcoes">
+        <label class="check"><input type="checkbox" id="progRepetir"> Repetir a sequência até o horário do culto</label>
+        <label class="check">Fotos, avisos e versículos ficam <input type="number" id="progSeg" min="3" max="600"> segundos</label>
+      </div>
+      <p class="hint" id="progResumo"></p>
+      <div class="row" style="justify-content:flex-end">
+        <button id="progParar" class="danger" style="flex:none"><i data-i="circle-stop"></i>Parar programação</button>
+        <span style="flex:1"></span>
+        <button id="progAgora" style="flex:none"><i data-i="play"></i>Começar agora</button>
+        <button id="progAgendar" class="primary" style="flex:none"><i data-i="calendar-clock"></i>Salvar e agendar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- menu do botão direito (versículos e roteiro) -->
+<div class="menu ctx" id="menuContexto"></div>
+
+<!-- aparece ao arrastar arquivos do Windows para o app -->
+<div class="solte" id="solte"><div><i data-i="file-plus-2"></i><b>Solte para colocar no roteiro</b><small>Vídeos, fotos e áudios • solte em cima de um item para colocar naquela posição</small></div></div>
+
 <div class="toast" id="toast"></div>
 <script src="operador.js"></script>
 <script src="roteiro.js"></script>
 <script src="painel.js"></script>
 <script src="layout.js"></script>
+<script src="programacao.js"></script>
+<script src="atalhos.js"></script>
 <script src="remoto.js"></script>
 </body>
 </html>

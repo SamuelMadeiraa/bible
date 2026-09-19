@@ -136,16 +136,36 @@ function adicionarEvento(ev) {
 async function adicionarMidias() {
   if (!ponte) return toast('Abra pelo aplicativo para usar o player.');
   const paths = await ponte.pickMedia();
-  if (!paths.length) return;
-  for (const caminho of paths) {
-    const item = { id: idDe(caminho), tipo: tipoDe(caminho), caminho, nome: nomeDe(caminho), dur: null };
-    MP.itens.push(item);
-    detectar(item);
-  }
-  registrar();
-  salvarMidia();
-  montarLista();
-  toast(`${paths.length} mídia(s) no roteiro`);
+  if (paths.length) adicionarArquivos(paths);
+}
+
+// coloca eventos no roteiro a partir da posição "pos" (sem pos = no fim)
+function inserirEventos(lista, pos = MP.itens.length) {
+  if (!lista.length) return;
+  pos = Math.max(0, Math.min(pos, MP.itens.length));
+  lista.forEach(ev => { ev.id = ev.id || novoId(); });
+  reindexar(() => MP.itens.splice(pos, 0, ...lista));
+  lista.forEach(detectar);
+  if (lista.some(ehMidia)) registrar();
+  $('playlist')?.children[pos + lista.length - 1]?.scrollIntoView({ block: 'nearest' });
+}
+
+// vídeos, fotos e áudios (do seletor ou arrastados do Windows); o resto é ignorado
+const EXT_ACEITAS = [...EXT_VIDEO, ...EXT_AUDIO, ...EXT_IMG];
+function adicionarArquivos(caminhos, pos) {
+  const aceitos = caminhos.filter(c => EXT_ACEITAS.includes(extDe(c)));
+  const ignorados = caminhos.length - aceitos.length;
+  const usados = new Set(MP.itens.map(ev => ev.id));
+  const novos = aceitos.map(caminho => {
+    let id = idDe(caminho);
+    while (usados.has(id)) id = idDe(caminho) + Math.random().toString(36).slice(2, 5);   // mesmo arquivo duas vezes
+    usados.add(id);
+    return { id, tipo: tipoDe(caminho), caminho, nome: nomeDe(caminho), dur: null };
+  });
+  inserirEventos(novos, pos);
+  if (novos.length) toast(`${novos.length} ${novos.length === 1 ? 'mídia' : 'mídias'} no roteiro` + (ignorados ? ` • ${ignorados} ignorado(s): não é vídeo, foto nem áudio` : ''));
+  else if (ignorados) toast('Só dá para colocar vídeos, fotos e áudios no roteiro');
+  return novos.length;
 }
 
 function adicionarVersiculoDaPrevia() {
@@ -277,12 +297,19 @@ function montarLista() {
     d.onclick = () => selecionarPrevia(i);
     d.ondblclick = () => { selecionarPrevia(i); cortar(); };
 
-    d.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', i); d.classList.add('arrastando'); });
+    d.dataset.i = i;
+    d.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('application/x-roteiro', String(i));
+      e.dataTransfer.effectAllowed = 'move';
+      d.classList.add('arrastando');
+    });
     d.addEventListener('dragend', () => d.classList.remove('arrastando'));
-    d.addEventListener('dragover', e => e.preventDefault());
+    d.addEventListener('dragover', e => { if (e.dataTransfer.types.includes('application/x-roteiro')) e.preventDefault(); });
     d.addEventListener('drop', e => {
+      if (!e.dataTransfer.types.includes('application/x-roteiro')) return;   // arquivo ou versículo: tratado em atalhos.js
       e.preventDefault();
-      const de = +e.dataTransfer.getData('text/plain');
+      e.stopPropagation();
+      const de = +e.dataTransfer.getData('application/x-roteiro');
       if (isNaN(de) || de === i) return;
       moverEvento(de, i);
     });
@@ -306,20 +333,34 @@ function reindexar(fn) {
 function moverEvento(de, para) {
   reindexar(() => { const [mov] = MP.itens.splice(de, 1); MP.itens.splice(para, 0, mov); });
 }
+// o que foi tirado do roteiro, para o Ctrl+Z trazer de volta
+let desfazer = null;
 function removerEvento(i) {
+  if (!MP.itens[i]) return;
   if (i === MP.idx) pararMidia();
   if (i === R.prevIdx) esconderPreviaEvento();
+  desfazer = { itens: [MP.itens[i]], pos: i };
   reindexar(() => MP.itens.splice(i, 1));
+  toast('Removido do roteiro • Ctrl+Z desfaz');
+}
+function desfazerRemocao() {
+  if (!desfazer) return toast('Nada para desfazer');
+  const { itens, pos } = desfazer;
+  desfazer = null;
+  inserirEventos(itens, pos);
+  toast(itens.length === 1 ? 'Evento de volta ao roteiro' : `${itens.length} eventos de volta ao roteiro`);
 }
 function limparRoteiro() {
   if (!MP.itens.length) return;
   if (!confirm('Tirar todos os eventos do roteiro?')) return;
   pararMidia();
+  desfazer = { itens: MP.itens.slice(), pos: 0 };
   MP.itens = [];
   MP.idx = R.prevIdx = R.liveIdx = -1;
   esconderPreviaEvento();
   salvarMidia();
   montarLista();
+  toast('Roteiro limpo • Ctrl+Z desfaz');
 }
 
 // ---------- prévia (verde) ----------
@@ -584,6 +625,7 @@ function proximaMidia(dir = 1) {
 
 function aoFim() {
   const i = MP.idx;
+  if (window.Programacao && Programacao.aoFimDaMidia(i)) return;
   const prox = MP.itens[i + 1];
   if (MP.auto && ehMidia(prox)) {             // sequência de mídias: segue sozinho
     tocarItem(i + 1);

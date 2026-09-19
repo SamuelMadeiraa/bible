@@ -8,8 +8,8 @@ no segundo monitor (projetor ou TV). As duas ficam sincronizadas em tempo real.
 
 | Jeito | O que fazer |
 |---|---|
-| Programa instalado | `dist/Bible Studio Setup 3.3.0.exe` (gerado por `npm run dist`) |
-| Sem instalar | `dist/Bible Studio 3.3.0.exe` |
+| Programa instalado | `dist/Bible Studio Setup 3.4.0.exe` (gerado por `npm run dist`) |
+| Sem instalar | `dist/Bible Studio 3.4.0.exe` |
 | Da pasta do projeto | duplo clique em `Abrir Bible Studio.bat`, ou `npm start` |
 | Só no navegador | abra `bible.html` (versão simples, sem projeção ao vivo) |
 
@@ -33,6 +33,15 @@ no segundo monitor (projetor ou TV). As duas ficam sincronizadas em tempo real.
 - **Roteiro do culto**: lista com versículos, avisos (texto livre), vídeos, fotos, áudios,
   transmissões ao vivo, tela preta e só fundo. Clique = prévia, duplo clique = corta direto,
   arraste para reordenar, ↓/↑ andam pela lista.
+- **Arrastar e soltar**: vídeos, fotos e áudios do Windows entram no roteiro (em cima de um item =
+  naquela posição); versículos da Bíblia, da busca e do histórico também podem ser arrastados.
+- **Botão direito** num versículo: prévia, no ar, adicionar ao roteiro (no fim, logo depois do próximo
+  ou verso a verso) e copiar. Num evento do roteiro: prévia, no ar, duplicar, pré-culto, abertura e remover.
+  **Insert** coloca o versículo da prévia no roteiro; **Ctrl+Z** desfaz a última remoção.
+- **Programação** (botão no roteiro): no horário de início, os eventos marcados passam sozinhos
+  (vídeos e áudios até o fim; fotos, avisos e versículos por alguns segundos), repetindo até o horário
+  do culto. Nessa hora entra a abertura (ex.: o louvor) e depois tudo fica manual. Se o operador puser
+  outra coisa no ar, o pré-culto pausa. Dá para começar, retomar e parar pelo celular.
 - **Presets de reunião** (botão Presets): crie um preset com o nome que quiser a partir do roteiro aberto,
   use (troca o roteiro) ou adicione no fim, atualize com o roteiro atual, renomeie, exporte, importe e exclua.
 - **Mídia**: vídeo e foto cobrem o versículo (ou ficam atrás, com “Versículo sobre o vídeo”);
@@ -83,15 +92,15 @@ dá para escolher a tecla de corte, o comportamento do passador de slides e as d
 
 O app abre um controle remoto em página web, na mesma porta 7777:
 
-1. No PC, aba **Saída** → seção **Controlar pelo celular**: ali ficam o endereço e a **senha de 4 números**.
-2. No celular (mesma rede Wi-Fi), abra o endereço no navegador e digite a senha.
-3. Use "Adicionar à tela inicial" para ficar com um ícone de app, sem barras do navegador.
+1. No PC, clique em **Celular** no topo: aparece o QR code e a **senha de 4 números**.
+2. Escaneie com a câmera do celular (mesma rede Wi-Fi). O QR abre o app **Bible Controle**, que pode
+   ser instalado na tela inicial; o modo "Direto" abre o controle sem precisar de internet.
 
-O controle tem três abas: **Versículo** (ir para, prévia, corte, anterior/próximo,
-lista do capítulo, cada versículo com botão AO VIVO), **Roteiro** (próximo evento, corte,
-anterior/próximo evento, a lista do roteiro com botão NO AR, e tocar/pausar/parar/volume da mídia)
-e **Tela** (mostrar versículo, só o fundo, tela preta, ao vivo automático, abrir/fechar projeção
-e busca na Bíblia).
+No topo ficam sempre o que está **AO VIVO** e o **PRÓXIMO**, e embaixo a barra de **corte** com
+anterior/próximo. Abas: **Bíblia** (ir para, livro e capítulo, busca, cada versículo com botão NO AR),
+**Roteiro** (lista com botão NO AR e a programação do pré-culto), **Mídia** (tocar/pausar/parar/volume
+e **enviar vídeos, fotos e áudios do celular** — vão para `Documentos\Bible Studio\Do celular` e entram
+no roteiro) e **Tela** (texto, só o fundo, tela preta, ao vivo automático, abrir/fechar projeção).
 
 ## Projeção e transmissão
 

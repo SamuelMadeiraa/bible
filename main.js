@@ -571,6 +571,48 @@ const PUBLICOS = new Set(['saida.html', 'saida.js', 'engine.js', 'fonts.css',
   'controle.html', 'controle.js', 'controle.css', 'icones.js', 'logo-header.png', 'icon.png',
   'icon-512.png', 'manifest.webmanifest', 'sw.js']);
 
+// ---------------- arquivos enviados pelo celular ----------------
+const EXT_RECEBIDAS = new Set(['mp4', 'webm', 'mkv', 'avi', 'mov', 'wmv', 'm4v', 'mpg', 'mpeg', 'ts',
+  'mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']);
+const LIMITE_UPLOAD = 4 * 1024 * 1024 * 1024;     // 4 GB por arquivo
+const pastaDoCelular = () => path.join(app.getPath('documents'), 'Bible Studio', 'Do celular');
+
+function receberArquivo(req, res) {
+  const q = new URL(req.url, 'http://x').searchParams;
+  const responder = (codigo, obj) => { res.writeHead(codigo, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); };
+  if (q.get('pin') !== PIN) { req.resume(); return responder(401, { erro: 'pin' }); }
+  // nome limpo (sem pastas nem caracteres proibidos no Windows) e só vídeo, foto ou áudio
+  const original = path.basename(String(q.get('nome') || '')).replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').trim().slice(0, 150);
+  const ext = path.extname(original).slice(1).toLowerCase();
+  if (!original || !EXT_RECEBIDAS.has(ext)) { req.resume(); return responder(415, { erro: 'Só vídeos, fotos e áudios' }); }
+  const tamanho = +req.headers['content-length'] || 0;
+  if (tamanho > LIMITE_UPLOAD) { req.resume(); return responder(413, { erro: 'Arquivo grande demais (máximo 4 GB)' }); }
+
+  const pasta = pastaDoCelular();
+  try { fs.mkdirSync(pasta, { recursive: true }); } catch (e) { req.resume(); return responder(500, { erro: 'Não consegui criar a pasta' }); }
+  const base = path.basename(original, path.extname(original));
+  let destino = path.join(pasta, original);
+  for (let n = 2; fs.existsSync(destino); n++) destino = path.join(pasta, `${base} (${n}).${ext}`);
+  const temp = destino + '.parcial';
+
+  let recebido = 0;
+  const saida = fs.createWriteStream(temp);
+  const cancelar = motivo => { saida.destroy(); fs.rm(temp, { force: true }, () => {}); if (!res.headersSent) responder(400, { erro: motivo }); };
+  req.on('data', d => { recebido += d.length; if (recebido > LIMITE_UPLOAD) { req.destroy(); cancelar('Arquivo grande demais'); } });
+  req.on('aborted', () => cancelar('Envio interrompido'));
+  saida.on('error', () => cancelar('Não consegui gravar o arquivo (disco cheio?)'));
+  saida.on('finish', () => {
+    if (res.headersSent) return;
+    fs.rename(temp, destino, err => {
+      if (err) return responder(500, { erro: 'Não consegui gravar o arquivo' });
+      if (opWin) opWin.webContents.send('remoto', { acao: 'arquivoRecebido', caminho: destino });
+      analytics.enviar('arquivo_do_celular', { tipo: ext, mb: Math.round(recebido / 1048576) });
+      responder(200, { ok: true, nome: path.basename(destino) });
+    });
+  });
+  req.pipe(saida);
+}
+
 function servirArquivo(res, arquivo) {
   fs.readFile(arquivo, (err, data) => {
     if (err) { res.writeHead(404); return res.end(); }
@@ -622,6 +664,9 @@ function startServer(port, tentativas = 10) {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache' });
       return res.end(JSON.stringify(estadoRemoto || {}));
     }
+    // arquivo enviado pelo celular: vai para Documentos\Bible Studio\Do celular e entra no roteiro
+    if (url === '/api/upload' && req.method === 'POST') return receberArquivo(req, res);
+
     if (url === '/api/cmd' && req.method === 'POST') {
       let corpo = '';
       req.on('data', d => { corpo += d; if (corpo.length > 1e6) req.destroy(); });
@@ -630,6 +675,7 @@ function startServer(port, tentativas = 10) {
         try { cmd = JSON.parse(corpo); } catch (e) { res.writeHead(400); return res.end(); }
         if (cmd.pin !== PIN) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end('{"erro":"pin"}'); }
         delete cmd.pin;
+        if (cmd.acao === 'arquivoRecebido') { res.writeHead(400); return res.end(); }   // só o próprio PC avisa isso
         if (opWin) opWin.webContents.send('remoto', cmd);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end('{"ok":true}');

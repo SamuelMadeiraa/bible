@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 const CANAIS = ['slide', 'displays-changed', 'output:state', 'media', 'media:progress', 'remoto', 'web:quadro', 'web:aviso'];
 
@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('bridge', {
   // mídia (player interno)
   pickMedia: () => ipcRenderer.invoke('media:pick'),
   registerMedia: lista => ipcRenderer.send('media:register', lista),
+  // caminho no disco de um arquivo arrastado do Windows para o app
+  caminhoDoArquivo: arquivo => { try { return webUtils.getPathForFile(arquivo); } catch (e) { return ''; } },
   sendMedia: cmd => ipcRenderer.send('media', cmd),
   lastMedia: () => ipcRenderer.invoke('media:last'),
   mediaProgress: info => ipcRenderer.send('media:progress', info),
