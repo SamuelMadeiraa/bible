@@ -8,8 +8,8 @@ no segundo monitor (projetor ou TV). As duas ficam sincronizadas em tempo real.
 
 | Jeito | O que fazer |
 |---|---|
-| Programa instalado | `dist/Bible Studio Setup 3.4.0.exe` (gerado por `npm run dist`) |
-| Sem instalar | `dist/Bible Studio 3.4.0.exe` |
+| Programa instalado | `dist/Bible Studio Setup 3.5.0.exe` (gerado por `npm run dist`) |
+| Sem instalar | `dist/Bible Studio 3.5.0.exe` |
 | Da pasta do projeto | duplo clique em `Abrir Bible Studio.bat`, ou `npm start` |
 | Só no navegador | abra `bible.html` (versão simples, sem projeção ao vivo) |
 
