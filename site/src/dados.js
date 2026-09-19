@@ -22,7 +22,7 @@ export const PERGUNTAS = [
   },
   {
     p: 'Consigo controlar pelo celular?',
-    r: 'Consegue. Com o celular na mesma rede Wi-Fi do computador, abra o endereço que aparece no app e digite a senha de 4 números. Dá para passar versículos, cortar para o ar, tocar vídeos e controlar a tela. Também dá para instalar como ícone na tela inicial.',
+    r: 'Consegue. Com o celular na mesma rede Wi-Fi do computador, clique em Celular no app e aponte a câmera para o QR code. Dá para passar versículos, cortar para o ar, tocar vídeos, controlar a tela, cuidar do pré-culto e até enviar vídeos e fotos do celular para o roteiro. O controle instala como app (Bible Controle) na tela inicial.',
   },
   {
     p: 'Toca vídeo do YouTube e live da igreja?',
@@ -35,6 +35,14 @@ export const PERGUNTAS = [
   {
     p: 'Quem nunca operou projeção consegue usar?',
     r: 'Esse é o ponto. O modo simples deixa só o essencial com botões grandes, e os presets de reunião guardam a sequência de cada culto: é abrir o preset e ir apertando Espaço.',
+  },
+  {
+    p: 'Dá para fazer o vídeo com a letra da música?',
+    r: 'Dá. No Vídeo de louvor você escolhe o MP3, cola a letra e escolhe o fundo. Enquanto a música toca, aperte Espaço no começo de cada estrofe (ou deixe o app distribuir a letra sozinho). O resultado é um MP4 em Full HD, feito no próprio computador, que pode ir direto para o roteiro.',
+  },
+  {
+    p: 'Dá para deixar o pré-culto passando sozinho?',
+    r: 'Dá. Na Playlist programada você marca o que passa antes do culto (testemunhos, fotos, avisos), o horário de começar e o horário do culto. No horário, entra o louvor de abertura e daí em diante tudo fica manual. Se alguém colocar outra coisa no ar, o pré-culto pausa.',
   },
   {
     p: 'Roda em Mac ou Linux?',

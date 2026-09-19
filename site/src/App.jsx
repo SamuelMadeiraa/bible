@@ -1,6 +1,7 @@
 import Nav from './components/Nav.jsx';
 import Hero from './components/Hero.jsx';
 import Problema from './components/Problema.jsx';
+import Novidades from './components/Novidades.jsx';
 import Recursos from './components/Recursos.jsx';
 import Playout from './components/Playout.jsx';
 import Comparativo from './components/Comparativo.jsx';
@@ -19,6 +20,7 @@ export default function App() {
       <Nav />
       <main>
         <Hero />
+        <Novidades />
         <Problema />
         <Recursos />
         <Playout />

@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, WifiOff, MonitorSmartphone, Smartphone, Download } from 'lucide-react';
+import { ArrowRight, BookOpen, WifiOff, MonitorSmartphone, Smartphone, Download, Film } from 'lucide-react';
 import { Rotulo } from './ui.jsx';
 import { MockOperador, MockCelular } from './mockups.jsx';
 import { LINK_DOWNLOAD, VERSAO } from '../config.js';
@@ -14,7 +14,7 @@ export default function Hero() {
             Projeção de culto que <mark>qualquer um</mark> consegue operar.
           </h1>
           <p className="lead">
-            A Bíblia inteira, o roteiro do culto, vídeos, lives e o controle pelo celular num app só.
+            A Bíblia inteira, o roteiro do culto, vídeos, lives, vídeos de louvor com a letra e o controle pelo celular num app só.
             Prévia em verde, ao vivo em vermelho, e o Espaço corta de um para o outro — do voluntário de
             primeira vez ao operador de transmissão.
           </p>
@@ -28,6 +28,7 @@ export default function Hero() {
             <li><WifiOff size={15} />Funciona offline</li>
             <li><MonitorSmartphone size={15} />Operador + TV</li>
             <li><Smartphone size={15} />Controle pelo celular</li>
+            <li><Film size={15} />Vídeo de louvor</li>
           </ul>
         </div>
 

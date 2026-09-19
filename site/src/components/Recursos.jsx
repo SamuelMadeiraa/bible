@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, ListOrdered, Clapperboard, Smartphone, Check, Search, StickyNote, Film, Radio, Image, Music, Timer } from 'lucide-react';
+import { BookOpen, ListOrdered, Clapperboard, Smartphone, Check, Search, StickyNote, Film, Radio, Image, Music, Timer, AlarmClock, Play } from 'lucide-react';
 import { CabecalhoSecao } from './ui.jsx';
 import { Tela, MockCelular } from './mockups.jsx';
 import { VERSICULOS } from '../dados.js';
@@ -26,9 +26,9 @@ const ABAS = [
     texto: 'Versículos, avisos, vídeos, fotos, áudios e lives na ordem em que vão acontecer. O próximo evento fica esperando na prévia; o Espaço coloca no ar e já prepara o seguinte.',
     itens: [
       'Presets de reunião: crie com o nome que quiser e reabra quando precisar',
-      'Avisos em texto livre, editáveis na hora',
-      'Arraste para mudar a ordem',
-      'Leve um preset para outro computador em arquivo',
+      'Arraste vídeos, fotos e áudios do Windows direto para a lista',
+      'Botão direito no versículo: roteiro, logo depois do próximo ou verso a verso',
+      'Avisos em texto livre, editáveis na hora, e Ctrl+Z para desfazer',
     ],
   },
   {
@@ -45,16 +45,42 @@ const ABAS = [
     ],
   },
   {
+    id: 'video',
+    icone: Film,
+    nome: 'Vídeo de louvor',
+    titulo: 'A letra da música, pronta em minutos.',
+    texto: 'Escolha a música, cole a letra e escolha o fundo. Aperte Espaço no começo de cada estrofe enquanto a música toca, e o Bible Studio gera um vídeo MP4 com a letra sincronizada — no mesmo estilo dos vídeos de louvor que a igreja já conhece.',
+    itens: [
+      'Fundos prontos (azul, noite, púrpura…) ou uma imagem sua',
+      'Fonte, posição, cor e rodapé com o logo da igreja',
+      'Sincronize tocando ou distribua a letra automaticamente',
+      'MP4 em Full HD, sem internet, direto para o roteiro',
+    ],
+  },
+  {
+    id: 'programacao',
+    icone: AlarmClock,
+    nome: 'Programação',
+    titulo: 'O pré-culto roda sozinho.',
+    texto: 'Marque os testemunhos, fotos e avisos que passam antes do culto e o horário de começar. No horário do culto entra o louvor de abertura, e daí em diante é tudo manual — pelo computador ou pelo celular.',
+    itens: [
+      'Vídeos e áudios até o fim; fotos e avisos por alguns segundos',
+      'Repete a sequência até a hora do culto',
+      'Pausa sozinho se alguém colocar outra coisa no ar',
+      'Começar, retomar e parar também pelo celular',
+    ],
+  },
+  {
     id: 'celular',
     icone: Smartphone,
     nome: 'Celular',
     titulo: 'O controle vai para o seu bolso.',
-    texto: 'Na mesma rede Wi-Fi, o celular vira controle remoto com senha. O pregador pode passar os próprios versículos do púlpito, ou o operador pode andar pela igreja.',
+    texto: 'Escaneie o QR code que aparece no computador e o celular vira controle remoto, na mesma rede Wi-Fi. O pregador pode passar os próprios versículos do púlpito, ou o operador pode andar pela igreja.',
     itens: [
-      'Senha de 4 números a cada vez que o app abre',
-      'Corte, próximo evento, versículos e busca',
-      'Tocar, pausar e volume da mídia',
-      'Instala como ícone na tela inicial',
+      'QR code e senha de 4 números, sem digitar endereço',
+      'Ao vivo e próximo sempre no topo, corte sempre à mão',
+      'Envie vídeos, fotos e áudios do celular para o roteiro',
+      'Instala como app (Bible Controle) no Android e no iPhone',
     ],
   },
 ];
@@ -116,7 +142,51 @@ function VisualMidia() {
   );
 }
 
-const VISUAIS = { biblia: VisualBiblia, roteiro: VisualRoteiro, midia: VisualMidia, celular: () => <div className="vis vis-cel"><MockCelular /></div> };
+function VisualVideo() {
+  return (
+    <div className="vis vis-video-louvor">
+      <div className="louvor-tela">
+        <div className="louvor-letra">
+          <span>Criou o céu, criou a terra</span>
+          <span>Criou o sol e as estrelas</span>
+          <span>Tudo Ele fez, tudo criou</span>
+          <span>Tudo formou</span>
+        </div>
+        <div className="louvor-rodape">Não há Deus maior</div>
+      </div>
+      <div className="louvor-sinc">
+        <span className="louvor-play"><Play size={14} /></span>
+        <div className="louvor-linha"><i style={{ left: '6%' }} /><i style={{ left: '31%' }} /><i style={{ left: '55%' }} /><i style={{ left: '79%' }} /><b style={{ width: '38%' }} /></div>
+        <span className="louvor-mp4">MP4</span>
+      </div>
+    </div>
+  );
+}
+
+function VisualProgramacao() {
+  const itens = [
+    { h: '18:30', n: 'Testemunho da Maria', s: 'vídeo • 2:40', ic: Film, feito: true },
+    { h: '18:33', n: 'Avisos da semana', s: 'foto • 10 s', ic: Image, feito: true },
+    { h: '18:33', n: 'Testemunho do João', s: 'vídeo • 3:05', ic: Film, ar: true },
+    { h: '19:00', n: 'Louvor de abertura', s: 'áudio • abertura do culto', ic: Music, abertura: true },
+  ];
+  return (
+    <div className="vis vis-prog">
+      <div className="prog-faixa"><AlarmClock size={15} /><b>Pré-culto no ar</b><span>abertura em 12:40</span></div>
+      {itens.map(({ h, n, s, ic: Ic, feito, ar, abertura }) => (
+        <div key={n} className={'prog-ev' + (ar ? ' ar' : '') + (feito ? ' feito' : '') + (abertura ? ' abertura' : '')}>
+          <span className="prog-h">{h}</span>
+          <span className="vis-ico"><Ic size={14} /></span>
+          <span className="vis-ev-txt"><b>{n}</b><small>{s}</small></span>
+          {ar && <em className="sel-ar">NO AR</em>}
+          {abertura && <em className="sel-prox">ABERTURA</em>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const VISUAIS = { biblia: VisualBiblia, roteiro: VisualRoteiro, midia: VisualMidia, video: VisualVideo, programacao: VisualProgramacao, celular: () => <div className="vis vis-cel"><MockCelular /></div> };
 
 export default function Recursos() {
   const [aba, setAba] = useState('biblia');
@@ -128,7 +198,7 @@ export default function Recursos() {
       <div className="container">
         <CabecalhoSecao
           rotulo="Recursos"
-          titulo="Quatro coisas, bem feitas."
+          titulo="Tudo o que o culto precisa, num app só."
           texto="Sem menu escondido e sem configuração para caçar. O que o culto precisa está à vista."
           centro
         />

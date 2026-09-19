@@ -436,3 +436,47 @@ p { margin: 0; }
   .faq-item button { font-size: 16px; padding: 18px; }
   .faq-resp p { padding: 0 18px 18px; }
 }
+
+/* ---------- novidades ---------- */
+.novidades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+.novidade { background: var(--card); border: 1px solid var(--line); border-radius: var(--raio); padding: 26px; transition: border-color .2s, transform .2s; }
+.novidade:hover { border-color: rgba(90, 160, 239, .45); transform: translateY(-3px); }
+.novidade-ico { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: rgba(90, 160, 239, .1); color: var(--azul-marca); margin-bottom: 18px; }
+.novidade h3 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+.novidade h3 em { font-style: normal; font-family: var(--fonte); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; background: var(--amarelo); color: #221a00; padding: 3px 8px; border-radius: 6px; }
+.novidade p { color: var(--text-2); font-size: 15.5px; margin-top: 10px; }
+.novidade.destaque { border-color: rgba(255, 210, 63, .4); background: linear-gradient(160deg, rgba(255, 210, 63, .07), var(--card) 60%); }
+.novidade.destaque .novidade-ico { background: rgba(255, 210, 63, .12); color: var(--amarelo); }
+.novidades-acao { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 34px; }
+.novidades-acao span { color: var(--muted); font-size: 14px; }
+
+/* vídeo de louvor (visual) */
+.vis-video-louvor { gap: 14px; }
+.louvor-tela { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; container-type: inline-size;
+  background: radial-gradient(60% 50% at 80% 80%, rgba(40, 90, 210, .45), transparent 70%), linear-gradient(135deg, #030b26, #08206b 45%, #0b2f8f);
+  border: 1px solid var(--line-2); box-shadow: var(--sombra); }
+.louvor-letra { position: absolute; left: 6%; top: 22%; display: flex; flex-direction: column; font-family: 'Montserrat', sans-serif; font-weight: 800;
+  text-transform: uppercase; color: #fff; font-size: 5.4cqw; line-height: 1.12; letter-spacing: -.01em; text-shadow: 0 .4cqw 1.2cqw rgba(0, 0, 0, .6); }
+.louvor-rodape { position: absolute; left: 6%; bottom: 8%; font-family: Georgia, 'Times New Roman', serif; font-weight: 700; text-transform: uppercase;
+  font-size: 2.6cqw; letter-spacing: .04em; background: linear-gradient(#f6dc8c, #c9962f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.louvor-sinc { display: flex; align-items: center; gap: 10px; }
+.louvor-play { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--vermelho); color: #fff; flex: none; }
+.louvor-linha { position: relative; flex: 1; height: 26px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); overflow: hidden; }
+.louvor-linha b { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(90, 160, 239, .22); border-right: 2px solid var(--azul-marca); }
+.louvor-linha i { position: absolute; top: 5px; bottom: 5px; width: 3px; border-radius: 2px; background: var(--amarelo); }
+.louvor-mp4 { font-size: 12px; font-weight: 800; letter-spacing: .06em; color: var(--azul-tinta); background: var(--azul-marca); padding: 5px 9px; border-radius: 8px; }
+
+/* programação (visual) */
+.vis-prog { gap: 7px; }
+.prog-faixa { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(76, 201, 138, .35);
+  background: rgba(39, 194, 108, .08); font-size: 13.5px; color: #6fdca0; }
+.prog-faixa b { color: var(--text); }
+.prog-faixa span { margin-left: auto; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.prog-ev { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 11px; background: var(--card); border: 1px solid var(--line); }
+.prog-ev.feito { opacity: .55; }
+.prog-ev.ar { border-color: rgba(229, 56, 59, .6); background: rgba(229, 56, 59, .07); }
+.prog-ev.abertura { border-color: rgba(39, 194, 108, .55); }
+.prog-h { font-family: var(--fonte-titulo); font-weight: 700; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 42px; }
+
+@media (max-width: 980px) { .novidades { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .novidades { grid-template-columns: 1fr; } }
