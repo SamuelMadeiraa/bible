@@ -2,7 +2,34 @@
   "redirects": [
     {
       "source": "/((?!controle).*)",
-      "has": [{ "type": "host", "value": "(?<host>bible-studio-site\.vercel\.app|biblelyrics\.vercel\.app|www\.biblelyrics\.com\.br)" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "bible-studio-site.vercel.app"
+        }
+      ],
+      "destination": "https://biblelyrics.com.br/$1",
+      "permanent": true
+    },
+    {
+      "source": "/((?!controle).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "biblelyrics.vercel.app"
+        }
+      ],
+      "destination": "https://biblelyrics.com.br/$1",
+      "permanent": true
+    },
+    {
+      "source": "/((?!controle).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.biblelyrics.com.br"
+        }
+      ],
       "destination": "https://biblelyrics.com.br/$1",
       "permanent": true
     }
