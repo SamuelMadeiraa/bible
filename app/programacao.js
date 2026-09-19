@@ -264,8 +264,15 @@ window.Programacao = (function () {
   setTimeout(tique, 1500);
   atualizar();
 
+  // usado pela tela Início: grava a configuração e agenda (ou começa, se o início já passou)
+  function configurar(cfg) {
+    Object.assign(C, cfg);
+    salvarCfg();
+    atualizar();
+  }
+
   return {
-    aoFimDaMidia, iniciar, parar, retomar, estado, abrir,
+    aoFimDaMidia, iniciar, parar, retomar, estado, abrir, configurar, agendar,
     noPreCulto: id => C.itens.includes(id),
     ehAbertura: id => C.abertura === id,
     alternarItem(id) {

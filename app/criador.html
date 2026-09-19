@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' data: blob:">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bible Studio — Criador de vídeo de louvor</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="criador.css">
+<script src="icones.js"></script>
+<script src="../node_modules/mp4-muxer/build/mp4-muxer.js"></script>
+</head>
+<body>
+
+<header class="topo">
+  <div class="marca"><img src="logo-header.png" alt="Bible Studio"><span>Vídeo de louvor</span></div>
+  <p class="topo-dica">Música + fundo + letra sincronizada → um MP4 pronto para projetar ou postar</p>
+  <button class="btn" id="btnNovo" title="Começar um vídeo novo"><i data-i="file-plus-2"></i>Novo</button>
+  <button class="btn primario" id="btnGerar"><i data-i="film"></i>Gerar vídeo MP4</button>
+</header>
+
+<div class="grade">
+  <!-- ============ PASSOS ============ -->
+  <aside class="passos">
+    <section class="passo">
+      <h3><span>1</span>Música</h3>
+      <button class="btn largo" id="btnMusica"><i data-i="music"></i>Escolher a música (MP3, M4A, WAV…)</button>
+      <div class="arquivo" id="musicaInfo" hidden><i data-i="audio-lines"></i><div><b id="musicaNome"></b><small id="musicaDur"></small></div></div>
+      <div class="campo">
+        <label for="titulo">Nome da música</label>
+        <input type="text" id="titulo" placeholder="ex: Não há Deus maior" maxlength="80">
+      </div>
+    </section>
+
+    <section class="passo">
+      <h3><span>2</span>Letra</h3>
+      <textarea id="letra" rows="10" placeholder="Cole a letra aqui.&#10;&#10;Deixe uma linha em branco entre as estrofes:&#10;cada estrofe vira uma tela do vídeo.&#10;&#10;Criou o céu, criou a terra&#10;Criou o sol e as estrelas"></textarea>
+      <p class="dica" id="letraInfo">Uma linha em branco separa as telas. Até 4 ou 5 linhas por tela ficam melhor.</p>
+    </section>
+
+    <section class="passo">
+      <h3><span>3</span>Fundo</h3>
+      <div class="fundos" id="fundos"></div>
+      <div class="linha-campo">
+        <label for="escurecer">Escurecer</label>
+        <input type="range" id="escurecer" min="0" max="80" value="15"><b id="escurecerVal">15%</b>
+      </div>
+      <label class="check"><input type="checkbox" id="movimento" checked> Movimento suave no fundo</label>
+    </section>
+
+    <section class="passo">
+      <h3><span>4</span>Texto</h3>
+      <div class="campos-2">
+        <div class="campo">
+          <label for="fonte">Fonte</label>
+          <select id="fonte">
+            <option value="Barlow Condensed|800">Condensada forte</option>
+            <option value="Oswald|700">Oswald</option>
+            <option value="Bebas Neue|400">Bebas Neue</option>
+            <option value="Anton|400">Anton</option>
+            <option value="Montserrat|800">Montserrat</option>
+            <option value="Playfair Display|700">Clássica (serifada)</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Posição</label>
+          <div class="seg" id="alinhar"><button data-v="esquerda" class="on"><i data-i="align-left"></i></button><button data-v="centro"><i data-i="align-center"></i></button></div>
+        </div>
+      </div>
+      <div class="linha-campo">
+        <label for="tamanho">Tamanho</label>
+        <input type="range" id="tamanho" min="60" max="130" value="100"><b id="tamanhoVal">100%</b>
+      </div>
+      <div class="linha-campo">
+        <label for="corTexto">Cor</label>
+        <input type="color" id="corTexto" value="#ffffff">
+        <label class="check"><input type="checkbox" id="maiusculas" checked> MAIÚSCULAS</label>
+        <label class="check"><input type="checkbox" id="sombra" checked> Sombra</label>
+      </div>
+    </section>
+
+    <section class="passo">
+      <h3><span>5</span>Rodapé</h3>
+      <div class="campo">
+        <label for="rodape">Texto do rodapé</label>
+        <input type="text" id="rodape" placeholder="ex: NÃO HÁ DEUS MAIOR (vazio = usa o nome da música)" maxlength="60">
+      </div>
+      <div class="linha-campo">
+        <label for="corRodape">Cor</label>
+        <input type="color" id="corRodape" value="#e3b65a">
+        <button class="btn pequeno" id="btnLogo"><i data-i="image"></i>Logo da igreja</button>
+        <button class="btn pequeno" id="btnSemLogo" hidden title="Tirar o logo"><i data-i="x"></i></button>
+      </div>
+      <label class="check"><input type="checkbox" id="intro" checked> Mostrar o nome da música no começo</label>
+    </section>
+
+    <section class="passo">
+      <h3><span>6</span>Qualidade</h3>
+      <div class="seg" id="qualidade"><button data-v="1080" class="on">Full HD 1080p</button><button data-v="720">HD 720p (mais leve)</button></div>
+    </section>
+  </aside>
+
+  <!-- ============ PRÉVIA E SINCRONIA ============ -->
+  <main class="palco">
+    <div class="tela"><canvas id="previa" width="1280" height="720"></canvas>
+      <div class="tela-vazia" id="telaVazia"><i data-i="film"></i><b>Escolha a música e cole a letra</b><span>A prévia aparece aqui</span></div>
+    </div>
+
+    <div class="transporte">
+      <button class="btn redondo" id="btnPlay" title="Tocar / pausar (Espaço)"><i data-i="play"></i></button>
+      <span class="tempo" id="tempo">0:00 / 0:00</span>
+      <div class="linha-tempo" id="linhaTempo"><div class="progresso" id="progresso"></div><div class="marcas" id="marcas"></div></div>
+    </div>
+
+    <section class="sincronia">
+      <div class="sinc-cab">
+        <div>
+          <h3><i data-i="timer"></i>Sincronizar a letra</h3>
+          <p class="dica">Em <b>Sincronizar tocando</b>, a música toca e você aperta <kbd>Espaço</kbd> (ou o botão) no começo de cada estrofe.</p>
+        </div>
+        <div class="sinc-botoes">
+          <button class="btn" id="btnAuto"><i data-i="wand-sparkles"></i>Distribuir automaticamente</button>
+          <button class="btn primario" id="btnSinc"><i data-i="mouse-pointer-click"></i>Sincronizar tocando</button>
+        </div>
+      </div>
+      <div class="sinc-ativa" id="sincAtiva" hidden>
+        <button class="btn grande marcar" id="btnMarcar"><i data-i="mouse-pointer-click"></i><span id="marcarTxt">Começou a estrofe 1</span><kbd>Espaço</kbd></button>
+        <button class="btn" id="btnDesfazerMarca" title="Desfazer a última marcação (Backspace)"><i data-i="undo-2"></i>Voltar uma</button>
+        <button class="btn" id="btnPararSinc"><i data-i="square"></i>Terminar</button>
+      </div>
+      <div class="estrofes" id="estrofes"></div>
+    </section>
+  </main>
+</div>
+
+<!-- gerando o vídeo -->
+<div class="modal" id="modalGerar">
+  <div class="caixa">
+    <div class="m-cab"><b id="gerarTitulo"><i data-i="film"></i>Gerando o vídeo</b></div>
+    <div class="m-corpo">
+      <div class="gerando" id="gerando">
+        <div class="barra"><div id="gerarBarra"></div></div>
+        <div class="gerar-info"><span id="gerarTxt">Preparando…</span><span id="gerarPct">0%</span></div>
+        <button class="btn" id="btnCancelar"><i data-i="x"></i>Cancelar</button>
+      </div>
+      <div class="pronto" id="pronto" hidden>
+        <i data-i="circle-check"></i>
+        <b>Vídeo pronto!</b>
+        <span id="prontoCaminho"></span>
+        <div class="pronto-acoes">
+          <button class="btn" id="btnAbrirPasta"><i data-i="folder-open"></i>Mostrar na pasta</button>
+          <button class="btn primario" id="btnNoRoteiro"><i data-i="list-plus"></i>Colocar no roteiro</button>
+          <button class="btn" id="btnFecharPronto">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="criador.js"></script>
+</body>
+</html>

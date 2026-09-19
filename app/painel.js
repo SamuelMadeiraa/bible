@@ -7,6 +7,22 @@ let meusPresets = [];
 try { meusPresets = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]'); } catch (e) {}
 meusPresets.forEach(p => { if (!p.id) p.id = novoId(); });
 let presetEditando = null;     // id do preset que está sendo renomeado
+// preset aberto para edição: o roteiro montado pode ser salvo nele com um clique
+let presetAtivo = null;
+try { presetAtivo = localStorage.getItem('bibleStudioPresetAtivo') || null; } catch (e) {}
+function definirPresetAtivo(id) {
+  presetAtivo = id || null;
+  try { id ? localStorage.setItem('bibleStudioPresetAtivo', id) : localStorage.removeItem('bibleStudioPresetAtivo'); } catch (e) {}
+  mostrarPresetAtivo();
+}
+function mostrarPresetAtivo() {
+  const p = presetAtivo && meusPresets.find(x => x.id === presetAtivo);
+  if (presetAtivo && !p) presetAtivo = null;
+  const barra = document.getElementById('presetAtivo');
+  if (!barra) return;
+  barra.hidden = !p;
+  if (p) document.getElementById('presetAtivoNome').textContent = p.nome;
+}
 
 function salvarPresets() {
   try { localStorage.setItem(PRESETS_KEY, JSON.stringify(meusPresets)); return true; }
@@ -48,7 +64,7 @@ function usarPreset(p, modo) {
   salvarMidia();
   montarLista();
   fecharModal('modalPresets');
-  if (modo === 'substituir') selecionarPrevia(0);
+  if (modo === 'substituir') { selecionarPrevia(0); definirPresetAtivo(p.id); }
   toast(modo === 'substituir' ? `Preset “${p.nome}” carregado: ${novos.length} eventos` : `${novos.length} eventos adicionados`);
   analytics('preset_usado', { modo, eventos: novos.length });
 }
@@ -183,11 +199,13 @@ function atualizarPreset(p) {
   p.alterado = Date.now();
   salvarPresets();
   montarPresets();
-  toast('Preset atualizado: ' + p.nome);
+  mostrarPresetAtivo();
+  toast('Preset salvo: ' + p.nome);
 }
 function excluirPreset(p) {
   if (!confirm(`Excluir o preset “${p.nome}”? Isso não pode ser desfeito.`)) return;
   meusPresets = meusPresets.filter(x => x.id !== p.id);
+  if (presetAtivo === p.id) definirPresetAtivo(null);
   salvarPresets();
   montarPresets();
   toast('Preset excluído');
@@ -232,6 +250,9 @@ function abrirPresets() {
   abrirModal('modalPresets');
 }
 $('btnPresets').onclick = () => abrirPresets();
+$('presetAtivoSalvar').onclick = () => { const p = acharPreset(presetAtivo); if (p) atualizarPreset(p); };
+$('presetAtivoFechar').onclick = () => definirPresetAtivo(null);
+mostrarPresetAtivo();
 $('btnPresets2').onclick = () => abrirPresets();
 
 // ---------- configurações ----------

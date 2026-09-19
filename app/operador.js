@@ -732,6 +732,11 @@ $('selMonitor').onchange = e => {
   if (saida.open) abrirProjecao(S.monitor);
   else { const m = monitores.find(x => x.id === S.monitor); if (m) definirAspecto(m.width, m.height); }
 };
+$('btnInicio').onclick = () => {
+  if (!ponte || !ponte.navegar) return;
+  if (saida.open && !confirm('A projeção continua aberta mostrando o que está no ar.\nVoltar para a tela Início?')) return;
+  ponte.navegar('home');
+};
 $('btnProjecao').onclick = () => {
   if (!ponte) return toast('Abra pelo aplicativo para projetar.');
   if (saida.open) ponte.closeOutput();

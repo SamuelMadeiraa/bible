@@ -36,6 +36,7 @@
   </div>
 
   <div class="hgroup">
+    <button id="btnInicio" title="Voltar para a tela Início"><i data-i="house"></i>Início</button>
     <button id="btnPresets" title="Presets de reunião: criar, usar e editar"><i data-i="folder-open"></i>Presets</button>
     <button id="btnJanelas" data-menu title="Escolher e organizar os painéis"><i data-i="layout-dashboard"></i>Layout<i data-i="chevron-down"></i></button>
     <label class="check simples-toggle" title="Mostra só o essencial, com botões maiores">
@@ -146,6 +147,12 @@
       <label class="check"><input type="checkbox" id="pCover"> Preencher a tela</label>
       <span class="p-sep"></span>
       <button id="btnLimparMidia" title="Tira todos os eventos do roteiro">Limpar</button>
+    </div>
+    <div class="preset-ativo" id="presetAtivo" hidden>
+      <i data-i="folder-open"></i>
+      <span>Editando o preset <b id="presetAtivoNome"></b></span>
+      <button id="presetAtivoSalvar" class="primary"><i data-i="save"></i>Salvar no preset</button>
+      <button id="presetAtivoFechar" class="so-icone" title="Parar de editar este preset"><i data-i="x"></i></button>
     </div>
     <div class="prog-barra" id="progBarra" hidden>
       <i data-i="alarm-clock"></i>
@@ -566,6 +573,7 @@
 <script src="layout.js"></script>
 <script src="programacao.js"></script>
 <script src="atalhos.js"></script>
+<script src="abertura.js"></script>
 <script src="remoto.js"></script>
 </body>
 </html>

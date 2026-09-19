@@ -42,15 +42,16 @@ function createOperator() {
   opWin = new BrowserWindow({
     width: 1600, height: 950, minWidth: 1100, minHeight: 680,
     backgroundColor: '#0e0e10',
-    title: 'Bible Studio — Operador',
+    title: 'Bible Studio',
     autoHideMenuBar: true,
     show: false,
     icon: ICON,
     webPreferences: { preload: PRELOAD, backgroundThrottling: false },
   });
   opWin.once('ready-to-show', () => { opWin.maximize(); opWin.show(); });
-  opWin.loadFile(path.join(__dirname, 'app', 'operador.html'));
+  opWin.loadFile(path.join(__dirname, 'app', 'home.html'));
   opWin.on('closed', () => {
+    if (criadorWin && !criadorWin.isDestroyed()) criadorWin.destroy();
     opWin = null;
     if (outWin) outWin.destroy();
     app.quit();
@@ -520,6 +521,78 @@ ipcMain.handle('remote:info', () => {
 ipcMain.on('analytics:evento', (e, nome, params) => analytics.enviar(nome, params));
 
 ipcMain.handle('server:info', () => ({ port: serverPort, urls: lanUrls(), versao: app.getVersion(), empacotado: app.isPackaged }));
+// ---------------- tela Início, criador de vídeo e arquivos ----------------
+let criadorWin = null;
+const TELAS = { home: 'home.html', operador: 'operador.html' };
+ipcMain.on('navegar', (e, destino) => {
+  if (opWin && TELAS[destino]) opWin.loadFile(path.join(__dirname, 'app', TELAS[destino]));
+});
+ipcMain.on('janela:criador', () => {
+  if (criadorWin && !criadorWin.isDestroyed()) { if (criadorWin.isMinimized()) criadorWin.restore(); return criadorWin.focus(); }
+  criadorWin = new BrowserWindow({
+    width: 1440, height: 900, minWidth: 1100, minHeight: 700, show: false,
+    title: 'Bible Studio — Criador de vídeo de louvor', autoHideMenuBar: true, icon: ICON,
+    backgroundColor: '#0c0e12',
+    webPreferences: { preload: PRELOAD, backgroundThrottling: false },
+  });
+  criadorWin.once('ready-to-show', () => { criadorWin.maximize(); criadorWin.show(); });
+  criadorWin.loadFile(path.join(__dirname, 'app', 'criador.html'));
+  criadorWin.on('closed', () => { criadorWin = null; });
+  // se a página do criador cair (ex.: falta de memória no vídeo), recarrega em vez de ficar em branco
+  criadorWin.webContents.on('render-process-gone', (e, d) => {
+    console.error('criador caiu:', d.reason, d.exitCode);
+    if (criadorWin && !criadorWin.isDestroyed()) criadorWin.reload();
+  });
+});
+
+const FILTROS = {
+  audio: [{ name: 'Músicas', extensions: ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'm4b', 'oga', 'weba'] }],
+  imagem: [{ name: 'Imagens', extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'] }],
+};
+ipcMain.handle('arquivo:escolher', async (e, tipo) => {
+  const r = await dialog.showOpenDialog(BrowserWindow.fromWebContents(e.sender), {
+    title: tipo === 'audio' ? 'Escolher a música' : 'Escolher a imagem',
+    properties: ['openFile'], filters: FILTROS[tipo] || [],
+  });
+  return r.canceled ? null : r.filePaths[0];
+});
+// lê um arquivo local para a tela (música para o vídeo, imagem de fundo/logo)
+const LIMITE_LEITURA = 400 * 1024 * 1024;
+ipcMain.handle('arquivo:ler', async (e, caminho) => {
+  const st = await fs.promises.stat(caminho);
+  if (st.size > LIMITE_LEITURA) throw new Error('Arquivo grande demais');
+  const buf = await fs.promises.readFile(caminho);
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+});
+const pastaDeVideos = () => path.join(app.getPath('videos'), 'Bible Studio');
+ipcMain.handle('video:destino', async (e, nome) => {
+  const limpo = String(nome || 'Louvor').replace(/[<>:"/\\|?*\x00-\x1f]/g, '').trim().slice(0, 80) || 'Louvor';
+  try { fs.mkdirSync(pastaDeVideos(), { recursive: true }); } catch (err) {}
+  const r = await dialog.showSaveDialog(BrowserWindow.fromWebContents(e.sender), {
+    title: 'Salvar o vídeo', defaultPath: path.join(pastaDeVideos(), limpo + '.mp4'),
+    filters: [{ name: 'Vídeo MP4', extensions: ['mp4'] }],
+  });
+  return r.canceled ? null : r.filePath;
+});
+ipcMain.handle('video:gravar', async (e, caminho, dados) => {
+  await fs.promises.writeFile(caminho, Buffer.from(dados));
+  analytics.enviar('video_louvor_gerado', { mb: Math.round(dados.byteLength / 1048576) });
+  return true;
+});
+ipcMain.on('pasta:mostrar', (e, qual, caminho) => {
+  if (qual === 'arquivo' && caminho) return shell.showItemInFolder(caminho);
+  const pasta = qual === 'celular' ? pastaDoCelular() : pastaDeVideos();
+  try { fs.mkdirSync(pasta, { recursive: true }); } catch (err) {}
+  shell.openPath(pasta);
+});
+// coloca um arquivo no roteiro: na hora, se a operação estiver aberta; senão, o app guarda para depois
+ipcMain.handle('roteiro:adicionar', (e, caminho) => {
+  const naOperacao = opWin && /operador\.html/.test(opWin.webContents.getURL());
+  if (naOperacao) opWin.webContents.send('remoto', { acao: 'arquivoRecebido', caminho });
+  return naOperacao;
+});
+ipcMain.on('abrir-site', () => shell.openExternal(SITE_CONTROLE.replace(/controle\/$/, '')));
+
 ipcMain.on('open-external', (e, url) => {
   if (/^http:\/\/(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+):\d+\/?$/.test(url)) shell.openExternal(url);
 });

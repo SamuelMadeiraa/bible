@@ -31,6 +31,17 @@ contextBridge.exposeInMainWorld('bridge', {
   webCmd: (cmd, valor) => ipcRenderer.invoke('web:cmd', cmd, valor),
   webLogin: (url, externo) => ipcRenderer.invoke('web:login', url, externo),
 
+  // tela Início, criador de vídeo e arquivos
+  navegar: destino => ipcRenderer.send('navegar', destino),
+  abrirCriador: () => ipcRenderer.send('janela:criador'),
+  escolherArquivo: tipo => ipcRenderer.invoke('arquivo:escolher', tipo),
+  lerArquivo: caminho => ipcRenderer.invoke('arquivo:ler', caminho),
+  destinoVideo: nome => ipcRenderer.invoke('video:destino', nome),
+  gravarVideo: (caminho, dados) => ipcRenderer.invoke('video:gravar', caminho, dados),
+  mostrarPasta: (qual, caminho) => ipcRenderer.send('pasta:mostrar', qual, caminho),
+  adicionarAoRoteiro: caminho => ipcRenderer.invoke('roteiro:adicionar', caminho),
+  abrirSite: () => ipcRenderer.send('abrir-site'),
+
   // controle pelo celular
   putEstado: st => ipcRenderer.send('estado:put', st),
   remoteInfo: () => ipcRenderer.invoke('remote:info'),

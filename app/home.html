@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bible Studio</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="home.css">
+<script src="bible_acf.js"></script>
+<script src="icones.js"></script>
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-in">
+    <div class="marca"><img src="logo-header.png" alt="Bible Studio"><em id="versao"></em></div>
+    <nav class="topo-nav">
+      <a href="#ferramentas">Ferramentas</a>
+      <a href="#presets">Presets</a>
+      <a href="#programacao">Programação</a>
+    </nav>
+    <div class="topo-dir">
+      <span class="relogio" id="relogio"></span>
+      <button class="btn fantasma pequeno" id="btnCelularTopo"><i data-i="qr-code"></i>Celular</button>
+      <button class="btn primario pequeno" id="btnOperarTopo"><i data-i="monitor"></i>Operação</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============ ABERTURA ============ -->
+  <section class="hero">
+    <div class="hero-brilho" aria-hidden="true"></div>
+    <div class="container hero-grade">
+      <div class="hero-txt">
+        <span class="etiqueta" id="saudacao">Bem-vindo</span>
+        <h1>O que vamos preparar <span class="destaque">hoje</span>?</h1>
+        <p>Monte a reunião em presets, programe o pré-culto, crie vídeos de louvor com a letra e,
+          na hora do culto, é só abrir a operação e apertar Espaço.</p>
+        <div class="hero-acoes">
+          <button class="btn primario grande" id="btnOperar"><i data-i="monitor"></i>Iniciar operação<i data-i="arrow-right"></i></button>
+          <button class="btn fantasma grande" id="btnCriador"><i data-i="film"></i>Criar vídeo de louvor</button>
+        </div>
+      </div>
+
+      <aside class="status">
+        <div class="status-item" id="stProjecao">
+          <i data-i="monitor-check"></i>
+          <div><small>Projeção</small><b id="stProjecaoTxt">Verificando telas…</b><span id="stProjecaoSub"></span></div>
+        </div>
+        <div class="status-item" id="stRoteiro">
+          <i data-i="list-video"></i>
+          <div><small>Roteiro aberto</small><b id="stRoteiroTxt">—</b><span id="stRoteiroSub"></span></div>
+        </div>
+        <div class="status-item" id="stProg">
+          <i data-i="alarm-clock"></i>
+          <div><small>Programação</small><b id="stProgTxt">Nada agendado</b><span id="stProgSub"></span></div>
+        </div>
+        <div class="status-item" id="stCelular">
+          <i data-i="smartphone"></i>
+          <div><small>Controle pelo celular</small><b id="stCelularTxt">—</b><span id="stCelularSub"></span></div>
+          <button class="btn pequeno" id="btnCelular">QR code</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ FERRAMENTAS ============ -->
+  <section class="secao" id="ferramentas">
+    <div class="container">
+      <div class="secao-cab">
+        <span class="etiqueta">Ferramentas</span>
+        <h2>Tudo o que a equipe de mídia precisa</h2>
+      </div>
+      <div class="ferramentas">
+        <button class="ferramenta" data-acao="operar">
+          <i data-i="monitor"></i><b>Operação ao vivo</b>
+          <span>Bíblia, prévia e ao vivo, roteiro, mídia e transmissões. Espaço corta para o ar.</span>
+        </button>
+        <button class="ferramenta" data-acao="presets">
+          <i data-i="folder-open"></i><b>Presets de reunião</b>
+          <span>Guarde a sequência de cada culto e reabra com um clique.</span>
+        </button>
+        <button class="ferramenta" data-acao="programacao">
+          <i data-i="alarm-clock"></i><b>Playlist programada</b>
+          <span>Pré-culto automático no horário e a abertura na hora do culto.</span>
+        </button>
+        <button class="ferramenta novo" data-acao="criador">
+          <i data-i="film"></i><b>Vídeo de louvor <em>Novo</em></b>
+          <span>Música + fundo + letra sincronizada = um MP4 pronto para projetar.</span>
+        </button>
+        <button class="ferramenta" data-acao="celular">
+          <i data-i="smartphone"></i><b>Controle pelo celular</b>
+          <span>Escaneie o QR code e opere pelo celular, no mesmo Wi-Fi.</span>
+        </button>
+        <button class="ferramenta" data-acao="pastaCelular">
+          <i data-i="folder"></i><b>Arquivos do celular</b>
+          <span>Vídeos, fotos e áudios enviados pelo celular.</span>
+        </button>
+        <button class="ferramenta" data-acao="pastaVideos">
+          <i data-i="captions"></i><b>Vídeos gerados</b>
+          <span>A pasta com os vídeos de louvor criados aqui.</span>
+        </button>
+        <button class="ferramenta" data-acao="atalhos">
+          <i data-i="keyboard"></i><b>Atalhos do teclado</b>
+          <span>Espaço, setas, B, C, Insert, Ctrl+Z e o passador de slides.</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRESETS ============ -->
+  <section class="secao" id="presets">
+    <div class="container">
+      <div class="secao-cab linha-cab">
+        <div>
+          <span class="etiqueta">Presets de reunião</span>
+          <h2>Cada culto, pronto para abrir</h2>
+        </div>
+        <button class="btn primario" id="btnNovoPreset"><i data-i="plus"></i>Novo preset</button>
+      </div>
+
+      <form class="cartao form-preset" id="formPreset" hidden>
+        <div class="campo largo">
+          <label for="nomePreset">Nome do preset</label>
+          <input type="text" id="nomePreset" maxlength="60" placeholder="ex: Reunião de domingo • Santa Ceia • Culto de jovens" autocomplete="off">
+        </div>
+        <div class="campo">
+          <label for="basePreset">Começar</label>
+          <select id="basePreset">
+            <option value="vazio">Vazio (monto na operação)</option>
+            <option value="roteiro">Com o roteiro aberto agora</option>
+          </select>
+        </div>
+        <div class="form-acoes">
+          <button type="button" class="btn" id="btnCancelarPreset">Cancelar</button>
+          <button type="submit" class="btn primario"><i data-i="save"></i>Criar e abrir</button>
+        </div>
+        <p class="erro" id="presetErro"></p>
+      </form>
+
+      <div class="presets" id="listaPresets"></div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRAMAÇÃO ============ -->
+  <section class="secao" id="programacao">
+    <div class="container">
+      <div class="secao-cab">
+        <span class="etiqueta">Playlist programada</span>
+        <h2>O pré-culto roda sozinho</h2>
+        <p>Escolha o que passa antes do culto (testemunhos, fotos, avisos, louvores). No horário do culto
+          entra a abertura e daí em diante tudo fica manual — pelo PC ou pelo celular.
+          A programação roda com a tela de operação aberta.</p>
+      </div>
+
+      <div class="prog">
+        <div class="cartao prog-esq">
+          <div class="campo">
+            <label for="progBase">Usar os eventos de</label>
+            <select id="progBase"></select>
+          </div>
+          <label class="rotulo-lista">Pré-culto — marque o que passa sozinho</label>
+          <div class="prog-lista" id="progLista"></div>
+        </div>
+
+        <div class="cartao prog-dir">
+          <div class="campos-2">
+            <div class="campo">
+              <label for="progInicio">Começar às</label>
+              <input type="time" id="progInicio">
+            </div>
+            <div class="campo">
+              <label for="progCulto">Horário do culto</label>
+              <input type="time" id="progCulto">
+            </div>
+          </div>
+          <div class="campo">
+            <label for="progAbertura">No horário do culto, colocar no ar</label>
+            <select id="progAbertura"></select>
+          </div>
+          <label class="check"><input type="checkbox" id="progRepetir" checked> Repetir a sequência até o horário do culto</label>
+          <label class="check">Fotos, avisos e versículos ficam <input type="number" id="progSeg" min="3" max="600" value="10"> segundos</label>
+          <p class="dica" id="progResumo"></p>
+          <div class="form-acoes">
+            <button class="btn" id="progAgora"><i data-i="play"></i>Começar agora</button>
+            <button class="btn primario" id="progAgendar"><i data-i="calendar-clock"></i>Agendar e abrir a operação</button>
+          </div>
+          <p class="erro" id="progErro"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape">
+  <div class="container rodape-in">
+    <img src="logo-header.png" alt="Bible Studio">
+    <span id="rodapeVersao"></span>
+    <button class="link" id="btnSite"><i data-i="globe"></i>bible-studio-site.vercel.app</button>
+  </div>
+</footer>
+
+<!-- QR code do celular -->
+<div class="modal" id="modalCelular">
+  <div class="caixa">
+    <div class="m-cab"><b><i data-i="smartphone"></i>Controlar pelo celular</b><button class="fechar" data-fechar><i data-i="x"></i></button></div>
+    <div class="m-corpo qr-corpo">
+      <div class="qr" id="qr"></div>
+      <div>
+        <small class="rotulo">Senha</small>
+        <div class="pin" id="pin">----</div>
+        <ol class="passos">
+          <li>Conecte o celular no <b>mesmo Wi-Fi</b> do computador.</li>
+          <li>Aponte a <b>câmera</b> para o QR code.</li>
+          <li>Instale o app <b>Bible Controle</b> para abrir direto das próximas vezes.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- atalhos -->
+<div class="modal" id="modalAtalhos">
+  <div class="caixa">
+    <div class="m-cab"><b><i data-i="keyboard"></i>Atalhos do teclado</b><button class="fechar" data-fechar><i data-i="x"></i></button></div>
+    <div class="m-corpo">
+      <table class="atalhos">
+        <tr><td><kbd>Espaço</kbd> / <kbd>Enter</kbd></td><td>Corte: a prévia vai para o ar</td></tr>
+        <tr><td><kbd>↓</kbd> / <kbd>↑</kbd></td><td>Próximo / anterior evento do roteiro</td></tr>
+        <tr><td><kbd>→</kbd> / <kbd>←</kbd></td><td>Próximo / anterior versículo</td></tr>
+        <tr><td><kbd>PageDown</kbd> / <kbd>PageUp</kbd></td><td>Passador de slides</td></tr>
+        <tr><td><kbd>B</kbd></td><td>Tela preta</td></tr>
+        <tr><td><kbd>C</kbd> / <kbd>Esc</kbd></td><td>Só o fundo</td></tr>
+        <tr><td><kbd>Insert</kbd></td><td>Versículo da prévia no fim do roteiro</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Desfaz a última remoção do roteiro</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Espaço</kbd></td><td>Tocar / pausar a mídia</td></tr>
+        <tr><td>Começar a digitar</td><td>Abre o “Ir para” (ex.: jo 3 16)</td></tr>
+        <tr><td>Botão direito</td><td>Mais opções em versículos e eventos do roteiro</td></tr>
+        <tr><td>Arrastar</td><td>Arquivos do Windows e versículos para o roteiro</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="home.js"></script>
+</body>
+</html>

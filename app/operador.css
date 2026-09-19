@@ -593,3 +593,10 @@ body.arrastando-passagem #blocoRoteiro .playlist,body.arrastando-passagem #bloco
 .prog-item small{color:var(--muted);font-size:.74rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prog-opcoes{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
 .prog-opcoes input[type=number]{width:70px;padding:5px 7px}
+
+/* preset aberto para edição */
+.preset-ativo{display:flex;align-items:center;gap:8px;margin:8px 10px 0;padding:7px 8px 7px 12px;border-radius:12px;border:1px solid rgba(90,160,239,.4);background:rgba(90,160,239,.08);font-size:.84rem}
+.preset-ativo[hidden]{display:none}
+.preset-ativo>.ico{color:var(--accent);margin:0}
+.preset-ativo span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preset-ativo button{padding:5px 10px;font-size:.8rem}

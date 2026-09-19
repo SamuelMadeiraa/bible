@@ -26,6 +26,24 @@ no segundo monitor (projetor ou TV). As duas ficam sincronizadas em tempo real.
   desfoque e escurecimento.
 - **Exportar:** botão PNG, nos formatos 16:9, 1:1, 4:5 e Story.
 
+## Tela Início
+
+O app abre numa tela Início (o botão **Início** na operação volta para ela), com:
+- **Iniciar operação** e o status da TV/projetor, do roteiro, da programação e do celular (QR code);
+- **Presets de reunião**: criar (vazio ou com o roteiro aberto), usar no culto, abrir para editar e excluir.
+  Um preset aberto para edição mostra a faixa “Editando o preset … — Salvar no preset” na operação;
+- **Playlist programada**: escolha a base (roteiro aberto ou um preset), marque o pré-culto, a abertura e
+  os horários e clique em *Agendar e abrir a operação* (a programação roda com a operação aberta);
+- atalhos para o criador de vídeo, as pastas de arquivos do celular e de vídeos gerados, e os atalhos do teclado.
+
+## Criador de vídeo de louvor
+
+Janela própria (Início → *Vídeo de louvor*): escolha a música (MP3, M4A, WAV…), cole a letra (uma linha em
+branco separa as telas), escolha o fundo (prontos, como o *Azul real*, ou uma imagem sua), a fonte, a posição,
+o rodapé (texto dourado e logo da igreja) e sincronize — *Sincronizar tocando* (aperte Espaço no começo de
+cada estrofe) ou *Distribuir automaticamente*. **Gerar vídeo MP4** cria um vídeo H.264 + AAC (1080p ou 720p)
+em `Vídeos\Bible Studio`, sem internet, e o vídeo pode ir direto para o roteiro.
+
 ## Playout: prévia, corte e roteiro do culto
 
 - **Prévia (verde)** mostra o próximo evento; **Ao vivo (vermelho)** é o que está na TV.
@@ -116,6 +134,8 @@ no roteiro) e **Tela** (texto, só o fundo, tela preta, ao vivo automático, abr
 main.js              processo principal: janelas, monitores e servidor da rede
 preload.js           ponte segura entre as telas e o processo principal
 analytics.js         estatísticas de uso (Google Analytics 4, Measurement Protocol)
+app/home.*           tela Início (presets, playlist programada, ferramentas)
+app/criador.*        criador de vídeo de louvor (MP4 com música, fundo e letra)
 app/operador.*       tela do operador
 app/roteiro.js       roteiro, prévia/corte, mídia e transmissões
 app/painel.js        presets de reunião e configurações
