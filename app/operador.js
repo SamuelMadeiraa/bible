@@ -699,7 +699,10 @@ function montarMonitores() {
   const sel = $('selMonitor');
   sel.innerHTML = monitores.map((m, i) =>
     `<option value="${m.id}">${i + 1}. ${esc(m.label)}${m.primary ? ' (principal)' : ''} — ${m.width}×${m.height}</option>`).join('');
-  const preferido = monitores.find(m => m.id === S.monitor) || monitores.find(m => !m.primary) || monitores[0];
+  // com uma segunda tela (TV/projetor) ligada, ela é sempre a escolhida; o monitor principal
+  // (o do operador) só é usado quando não há outra tela
+  const externos = monitores.filter(m => !m.primary);
+  const preferido = externos.find(m => m.id === S.monitor) || externos[0] || monitores[0];
   if (preferido) sel.value = preferido.id;
 
   const box = $('listaMonitores');

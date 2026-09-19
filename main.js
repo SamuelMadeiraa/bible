@@ -77,6 +77,26 @@ function notifyOutputState() {
   if (opWin) opWin.webContents.send('output:state', outputState());
 }
 
+// fade da janela da projeção (aparece e some suavemente na TV)
+const FADE_MS = 700;
+let fadeTimer = null;
+function fadeJanela(win, de, para, ms, fim) {
+  clearInterval(fadeTimer);
+  const ini = Date.now();
+  win.setOpacity(de);
+  fadeTimer = setInterval(() => {
+    if (win.isDestroyed()) { clearInterval(fadeTimer); return; }
+    const k = Math.min(1, (Date.now() - ini) / ms);
+    win.setOpacity(de + (para - de) * k * k * (3 - 2 * k));     // curva suave
+    if (k >= 1) { clearInterval(fadeTimer); if (fim) fim(); }
+  }, 16);
+}
+function fecharProjecao() {
+  if (!outWin || outWin.isDestroyed()) return;
+  const w = outWin;
+  fadeJanela(w, w.getOpacity(), 0, FADE_MS * 0.6, () => { if (!w.isDestroyed()) w.destroy(); });
+}
+
 function openOutput(displayId) {
   const primary = screen.getPrimaryDisplay();
   const all = screen.getAllDisplays();
@@ -98,6 +118,7 @@ function openOutput(displayId) {
     height: external ? b.height : 540,
     frame: !external,
     fullscreen: external,
+    opacity: 0,
     backgroundColor: '#000000',
     title: 'Bible Studio — Projeção',
     autoHideMenuBar: true,
@@ -110,6 +131,7 @@ function openOutput(displayId) {
   outWin.once('ready-to-show', () => {
     if (external) { outWin.setBounds(b); outWin.setFullScreen(true); }
     outWin.showInactive();
+    fadeJanela(outWin, 0, 1, FADE_MS);
     if (opWin) opWin.focus();
     notifyOutputState();
   });
@@ -121,7 +143,7 @@ function openOutput(displayId) {
 // ---------------- IPC ----------------
 ipcMain.handle('displays', () => listDisplays());
 ipcMain.handle('output:open', (e, id) => openOutput(id));
-ipcMain.handle('output:close', () => { if (outWin) outWin.destroy(); return true; });
+ipcMain.handle('output:close', () => { fecharProjecao(); return true; });
 ipcMain.handle('output:state', () => outputState());
 ipcMain.on('output:fullscreen-toggle', () => {
   if (outWin) { outWin.setFullScreen(!outWin.isFullScreen()); notifyOutputState(); }
