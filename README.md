@@ -1,4 +1,4 @@
-# Bible Studio
+# BibleLyrics
 
 Projeção de versículos da Bíblia (Almeida Corrigida Fiel) para cultos e transmissões.
 Tem duas telas: a do **operador**, no monitor do PC, e a da **projeção**, em tela cheia
@@ -8,9 +8,9 @@ no segundo monitor (projetor ou TV). As duas ficam sincronizadas em tempo real.
 
 | Jeito | O que fazer |
 |---|---|
-| Programa instalado | `dist/Bible Studio Setup 3.5.0.exe` (gerado por `npm run dist`) |
-| Sem instalar | `dist/Bible Studio 3.5.0.exe` |
-| Da pasta do projeto | duplo clique em `Abrir Bible Studio.bat`, ou `npm start` |
+| Programa instalado | `dist/BibleLyrics Setup 3.5.0.exe` (gerado por `npm run dist`) |
+| Sem instalar | `dist/BibleLyrics 3.5.0.exe` |
+| Da pasta do projeto | duplo clique em `Abrir BibleLyrics.bat`, ou `npm start` |
 | Só no navegador | abra `bible.html` (versão simples, sem projeção ao vivo) |
 
 ## Na tela do operador
@@ -42,7 +42,7 @@ Janela própria (Início → *Vídeo de louvor*): escolha a música (MP3, M4A, W
 branco separa as telas), escolha o fundo (prontos, como o *Azul real*, ou uma imagem sua), a fonte, a posição,
 o rodapé (texto dourado e logo da igreja) e sincronize — *Sincronizar tocando* (aperte Espaço no começo de
 cada estrofe) ou *Distribuir automaticamente*. **Gerar vídeo MP4** cria um vídeo H.264 + AAC (1080p ou 720p)
-em `Vídeos\Bible Studio`, sem internet, e o vídeo pode ir direto para o roteiro.
+em `Vídeos\BibleLyrics`, sem internet, e o vídeo pode ir direto para o roteiro.
 
 ## Playout: prévia, corte e roteiro do culto
 
@@ -78,7 +78,7 @@ Se o YouTube não liberar o player incorporado de um vídeo, o app abre a págin
 
 **Plataformas protegidas (Univer Vídeo e outras com assinatura):** elas usam proteção contra cópia (DRM
 Widevine), que só existe no Chrome/Edge. Com a opção “Plataforma protegida” (marcada sozinha para links da
-Univer), o app abre o Chrome/Edge em tela cheia no monitor da TV, com um perfil próprio do Bible Studio, e
+Univer), o app abre o Chrome/Edge em tela cheia no monitor da TV, com um perfil próprio do BibleLyrics, e
 continua controlando: corte, tocar/pausar, volume e tempo. Na primeira vez use **🔑 Entrar no site** para fazer login.
 
 **Cronômetro:** embaixo do AO VIVO aparece quanto falta para o vídeo acabar (amarelo nos últimos 30 s,
@@ -111,13 +111,13 @@ dá para escolher a tecla de corte, o comportamento do passador de slides e as d
 O app abre um controle remoto em página web, na mesma porta 7777:
 
 1. No PC, clique em **Celular** no topo: aparece o QR code e a **senha de 4 números**.
-2. Escaneie com a câmera do celular (mesma rede Wi-Fi). O QR abre o app **Bible Controle**, que pode
+2. Escaneie com a câmera do celular (mesma rede Wi-Fi). O QR abre o app **BibleLyrics Controle**, que pode
    ser instalado na tela inicial; o modo "Direto" abre o controle sem precisar de internet.
 
 No topo ficam sempre o que está **AO VIVO** e o **PRÓXIMO**, e embaixo a barra de **corte** com
 anterior/próximo. Abas: **Bíblia** (ir para, livro e capítulo, busca, cada versículo com botão NO AR),
 **Roteiro** (lista com botão NO AR e a programação do pré-culto), **Mídia** (tocar/pausar/parar/volume
-e **enviar vídeos, fotos e áudios do celular** — vão para `Documentos\Bible Studio\Do celular` e entram
+e **enviar vídeos, fotos e áudios do celular** — vão para `Documentos\BibleLyrics\Do celular` e entram
 no roteiro) e **Tela** (texto, só o fundo, tela preta, ao vivo automático, abrir/fechar projeção).
 
 ## Projeção e transmissão

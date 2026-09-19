@@ -111,7 +111,7 @@ async function telas() {
   try {
     const info = await ponte.serverInfo();
     $('versao').textContent = 'v' + info.versao;
-    $('rodapeVersao').textContent = 'Bible Studio ' + info.versao;
+    $('rodapeVersao').textContent = 'BibleLyrics ' + info.versao;
   } catch (e) {}
 }
 
@@ -150,10 +150,12 @@ function montarPresets() {
       <div class="preset-acoes">
         <button class="btn primario" data-a="usar"><i data-i="play"></i>Usar no culto</button>
         <button class="btn" data-a="editar" title="Abrir na operação para editar"><i data-i="pencil"></i></button>
+        <button class="btn so" data-a="exportar" title="Salvar como arquivo .bible (com as mídias)"><i data-i="upload"></i></button>
         <button class="btn perigo" data-a="excluir" title="Excluir"><i data-i="trash-2"></i></button>
       </div>`;
     d.querySelector('[data-a=usar]').onclick = () => usarPreset(p);
     d.querySelector('[data-a=editar]').onclick = () => usarPreset(p, true);
+    d.querySelector('[data-a=exportar]').onclick = () => Biblioteca.exportarPreset(p);
     d.querySelector('[data-a=excluir]').onclick = () => {
       if (!confirm(`Excluir o preset “${p.nome}”? Isso não pode ser desfeito.`)) return;
       presets = presets.filter(x => x.id !== p.id);
@@ -302,6 +304,45 @@ $('btnCelular').onclick = abrirQr;
 $('btnCelularTopo').onclick = abrirQr;
 $('btnSite').onclick = () => ponte && ponte.abrirSite();
 
+// ---------- pasta e backups ----------
+async function montarPasta(info) {
+  if (!ponte || !ponte.pastaInfo) return;
+  info = info || await ponte.pastaInfo();
+  $('pastaCaminho').textContent = info.pasta;
+  $('pastaSub').innerHTML = Object.values(info.subpastas).map(n => `<span>${esc(n)}</span>`).join('');
+  $('optCopiar').checked = info.copiarMidias;
+  $('optBackupAuto').checked = info.backupAuto;
+  $('backupInfo').textContent = info.ultimoBackup
+    ? 'Último backup automático: ' + new Date(info.ultimoBackup).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+    : 'Nenhum backup automático ainda';
+}
+$('btnMudarPasta').onclick = async () => { const info = await ponte.escolherPasta(); montarPasta(info); toast('Pasta: ' + info.pasta); };
+$('btnAbrirPasta').onclick = () => ponte.mostrarPasta('base');
+$('optCopiar').onchange = e => ponte.pastaConfig({ copiarMidias: e.target.checked }).then(montarPasta);
+$('optBackupAuto').onchange = e => ponte.pastaConfig({ backupAuto: e.target.checked }).then(montarPasta);
+$('btnBackup').onclick = async () => {
+  const b = $('btnBackup');
+  b.disabled = true;
+  try { await Biblioteca.fazerBackup($('optMidiasBackup').checked); } catch (e) { toast('Não deu para fazer o backup: ' + (e.message || e)); }
+  b.disabled = false;
+};
+async function abrirBible(caminho) {
+  const r = await Biblioteca.abrir(caminho);
+  if (!r) return;
+  montarPresets(); montarBases(); status(); montarPasta();
+  if (r.tipo === 'preset') $('presets').scrollIntoView({ behavior: 'smooth' });
+}
+$('btnRestaurar').onclick = () => abrirBible();
+$('btnAbrirBible').onclick = () => abrirBible();
+
+// ---------- atualização automática ----------
+function mostrarAtualizacao(a) {
+  if (!a || !a.pronta) return;
+  $('avisoAtualizacao').hidden = false;
+  $('avisoAtualizacaoTxt').textContent = `A versão ${a.pronta} do BibleLyrics já foi baixada. Ela é instalada quando você fechar o app — ou agora:`;
+}
+$('btnReiniciar').onclick = () => ponte.instalarAtualizacao();
+
 // ---------- janelas ----------
 function abrir(id) { $(id).classList.add('on'); }
 document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => {
@@ -329,6 +370,13 @@ addEventListener('keydown', e => {
   telas();
   celular();
   if (ponte) ponte.on('displays-changed', telas);
+  if (ponte && ponte.pastaInfo) {
+    montarPasta();
+    ponte.estadoAtualizacao().then(mostrarAtualizacao);
+    ponte.on('atualizacao', mostrarAtualizacao);
+    Biblioteca.ouvirArquivosAbertos(() => { montarPresets(); montarBases(); status(); });
+    setTimeout(() => Biblioteca.backupAutomatico().then(() => montarPasta()), 4000);
+  }
   // a lista de presets muda se a janela do criador (ou outra) mexer nos dados
   addEventListener('storage', () => { montarPresets(); montarBases(); status(); });
 })();

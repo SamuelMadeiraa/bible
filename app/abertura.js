@@ -9,6 +9,12 @@
   apagar('bibleStudioPendentes');
   if (Array.isArray(pendentes) && pendentes.length) setTimeout(() => adicionarArquivos(pendentes), 300);
 
+  // backup automático do dia (sem as mídias) e aviso de versão nova baixada
+  setTimeout(() => Biblioteca.backupAutomatico(), 5000);
+  if (ponte) ponte.on('atualizacao', a => {
+    if (a.pronta) toast(`BibleLyrics ${a.pronta} baixado — será instalado quando você fechar o app`);
+  });
+
   const pedido = ler('bibleStudioAbrir');
   apagar('bibleStudioAbrir');
   if (!pedido) return;

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!-- Molde do logo BibleLyrics. Gere o PNG transparente com: node tools/gerar-logo.js -->
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @font-face { font-family: M; font-weight: 800; src: url("../node_modules/@fontsource/montserrat/files/montserrat-latin-800-normal.woff2") format("woff2"); }
+  html, body { margin: 0; background: transparent; }
+  .logo { display: inline-flex; align-items: center; gap: 12px; padding: 4px 6px 4px 2px; font-family: M, sans-serif; font-weight: 800;
+    font-size: 50px; letter-spacing: -1.6px; line-height: 1; color: #fff; }
+  .logo svg { height: 52px; width: auto; display: block; }
+  .logo span { color: #5aa0ef; }
+</style>
+</head>
+<body>
+  <div class="logo" id="logo">
+    <svg viewBox="0 0 44 100" xmlns="http://www.w3.org/2000/svg"><path fill="#fff" d="M6 14 Q6 2 18 2 H40 Q43 2 43 5 V78 Q43 81 40 81 H18 V98 H6 Z"/></svg>
+    <div>Bible<span>Lyrics</span></div>
+  </div>
+</body>
+</html>

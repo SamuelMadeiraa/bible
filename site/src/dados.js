@@ -18,11 +18,11 @@ export const PERGUNTAS = [
   },
   {
     p: 'Funciona com projetor e com TV?',
-    r: 'Sim. Ligue o projetor ou a TV no HDMI como segunda tela do Windows (modo Estender). O Bible Studio abre a projeção em tela cheia nela e deixa a tela do operador no seu monitor.',
+    r: 'Sim. Ligue o projetor ou a TV no HDMI como segunda tela do Windows (modo Estender). O BibleLyrics abre a projeção em tela cheia nela e deixa a tela do operador no seu monitor.',
   },
   {
     p: 'Consigo controlar pelo celular?',
-    r: 'Consegue. Com o celular na mesma rede Wi-Fi do computador, clique em Celular no app e aponte a câmera para o QR code. Dá para passar versículos, cortar para o ar, tocar vídeos, controlar a tela, cuidar do pré-culto e até enviar vídeos e fotos do celular para o roteiro. O controle instala como app (Bible Controle) na tela inicial.',
+    r: 'Consegue. Com o celular na mesma rede Wi-Fi do computador, clique em Celular no app e aponte a câmera para o QR code. Dá para passar versículos, cortar para o ar, tocar vídeos, controlar a tela, cuidar do pré-culto e até enviar vídeos e fotos do celular para o roteiro. O controle instala como app (BibleLyrics Controle) na tela inicial.',
   },
   {
     p: 'Toca vídeo do YouTube e live da igreja?',
@@ -30,7 +30,7 @@ export const PERGUNTAS = [
   },
   {
     p: 'E plataformas com assinatura, como a Univer Vídeo?',
-    r: 'Essas plataformas protegem o vídeo contra cópia, e essa proteção só funciona no Chrome e no Edge. Por isso o Bible Studio abre o navegador em tela cheia na TV, com um perfil próprio onde o seu login fica guardado, e continua controlando pelo app: corte, pausa, volume e tempo.',
+    r: 'Essas plataformas protegem o vídeo contra cópia, e essa proteção só funciona no Chrome e no Edge. Por isso o BibleLyrics abre o navegador em tela cheia na TV, com um perfil próprio onde o seu login fica guardado, e continua controlando pelo app: corte, pausa, volume e tempo.',
   },
   {
     p: 'Quem nunca operou projeção consegue usar?',

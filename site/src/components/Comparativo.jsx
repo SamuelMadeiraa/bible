@@ -17,7 +17,7 @@ export default function Comparativo() {
         <CabecalhoSecao
           rotulo="Antes e depois"
           titulo="Menos janelas. Menos susto."
-          texto="O Bible Studio junta num lugar só o que normalmente fica espalhado em três ou quatro programas."
+          texto="O BibleLyrics junta num lugar só o que normalmente fica espalhado em três ou quatro programas."
           centro
         />
         <div className="comparacao revelar">
@@ -26,7 +26,7 @@ export default function Comparativo() {
             <ul>{LINHAS.map(([a]) => <li key={a}><X size={16} />{a}</li>)}</ul>
           </div>
           <div className="comp-col depois">
-            <h3><img src="/logo.png" alt="Bible Studio" height="20" /></h3>
+            <h3><img src="/logo.png" alt="BibleLyrics" height="20" /></h3>
             <ul>{LINHAS.map(([, d]) => <li key={d}><Check size={16} />{d}</li>)}</ul>
           </div>
         </div>

@@ -49,7 +49,7 @@ const ABAS = [
     icone: Film,
     nome: 'Vídeo de louvor',
     titulo: 'A letra da música, pronta em minutos.',
-    texto: 'Escolha a música, cole a letra e escolha o fundo. Aperte Espaço no começo de cada estrofe enquanto a música toca, e o Bible Studio gera um vídeo MP4 com a letra sincronizada — no mesmo estilo dos vídeos de louvor que a igreja já conhece.',
+    texto: 'Escolha a música, cole a letra e escolha o fundo. Aperte Espaço no começo de cada estrofe enquanto a música toca, e o BibleLyrics gera um vídeo MP4 com a letra sincronizada — no mesmo estilo dos vídeos de louvor que a igreja já conhece.',
     itens: [
       'Fundos prontos (azul, noite, púrpura…) ou uma imagem sua',
       'Fonte, posição, cor e rodapé com o logo da igreja',
@@ -80,7 +80,7 @@ const ABAS = [
       'QR code e senha de 4 números, sem digitar endereço',
       'Ao vivo e próximo sempre no topo, corte sempre à mão',
       'Envie vídeos, fotos e áudios do celular para o roteiro',
-      'Instala como app (Bible Controle) no Android e no iPhone',
+      'Instala como app (BibleLyrics Controle) no Android e no iPhone',
     ],
   },
 ];

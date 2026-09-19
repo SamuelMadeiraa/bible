@@ -3,7 +3,23 @@ const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const os = require('os');
+const crypto = require('crypto');
+
+// BibleLyrics se chamava "Bible Studio": na primeira vez, traz os dados (presets, roteiro, estilos,
+// senha do celular…) da pasta antiga. Os caches do navegador ficam para trás.
+(function migrarDados() {
+  try {
+    const nova = app.getPath('userData');
+    const antiga = path.join(app.getPath('appData'), 'Bible Studio');
+    if (fs.existsSync(nova) || !fs.existsSync(antiga)) return;
+    const pular = new Set(['Cache', 'Code Cache', 'GPUCache', 'DawnGraphiteCache', 'DawnWebGPUCache', 'Crashpad', 'blob_storage', 'Shared Dictionary']);
+    fs.cpSync(antiga, nova, { recursive: true, filter: origem => !pular.has(path.basename(origem)) });
+  } catch (e) {}
+})();
+
 const analytics = require('./analytics');
+const biblioteca = require('./biblioteca');
+const atualizacao = require('./atualizacao');
 
 let opWin = null;
 let outWin = null;
@@ -18,18 +34,34 @@ let estadoRemoto = null;       // resumo do app para o controle no celular
 const celularesVistos = new Set();   // aparelhos que já entraram no controle nesta sessão
 const SITE_CONTROLE = 'https://bible-studio-site.vercel.app/controle/';   // app do celular (PWA)
 
-// senha do controle remoto: fica guardada, para o app instalado no celular continuar entrando
-// depois que o Bible Studio for fechado e aberto de novo
-const PIN = (() => {
+// acesso do controle remoto: a senha de 4 números (para digitar) e uma chave longa que só vai
+// dentro do QR code. As duas ficam guardadas, para o app do celular continuar entrando depois.
+const { PIN, CHAVE } = (() => {
   const arq = path.join(app.getPath('userData'), 'controle-remoto.json');
-  try {
-    const p = JSON.parse(fs.readFileSync(arq, 'utf8')).pin;
-    if (/^\d{4}$/.test(p)) return p;
-  } catch (e) {}
-  const novo = String(Math.floor(1000 + Math.random() * 9000));
-  try { fs.mkdirSync(path.dirname(arq), { recursive: true }); fs.writeFileSync(arq, JSON.stringify({ pin: novo })); } catch (e) {}
-  return novo;
+  let d = {};
+  try { d = JSON.parse(fs.readFileSync(arq, 'utf8')); } catch (e) {}
+  let mudou = false;
+  if (!/^\d{4}$/.test(d.pin || '')) { d.pin = String(crypto.randomInt(1000, 10000)); mudou = true; }
+  if (!/^[0-9a-f]{32}$/.test(d.chave || '')) { d.chave = crypto.randomBytes(16).toString('hex'); mudou = true; }
+  if (mudou) try { fs.mkdirSync(path.dirname(arq), { recursive: true }); fs.writeFileSync(arq, JSON.stringify(d)); } catch (e) {}
+  return { PIN: d.pin, CHAVE: d.chave };
 })();
+
+// errar a senha 5 vezes bloqueia aquele aparelho por 1 minuto (e o bloqueio dobra a cada nova rodada)
+const tentativas = new Map();     // ip -> { falhas, ate }
+function autorizar(req, valor) {
+  const ip = req.socket.remoteAddress;
+  const t = tentativas.get(ip);
+  if (t && t.ate > Date.now()) return 'bloqueado';
+  if (valor && (valor === PIN || valor === CHAVE)) { tentativas.delete(ip); return 'ok'; }
+  const falhas = (t ? t.falhas : 0) + 1;
+  tentativas.set(ip, { falhas, ate: falhas >= 5 ? Date.now() + Math.min(30 * 60000, 60000 * 2 ** (falhas - 5)) : 0 });
+  return 'negado';
+}
+function recusar(res, r) {
+  res.writeHead(r === 'bloqueado' ? 429 : 401, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify({ erro: r === 'bloqueado' ? 'Muitas tentativas erradas. Espere um pouco e tente de novo.' : 'pin' }));
+}
 
 // sem isso o Chromium bloqueia tocar áudio/vídeo sem um clique do operador na janela
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
@@ -42,7 +74,7 @@ function createOperator() {
   opWin = new BrowserWindow({
     width: 1600, height: 950, minWidth: 1100, minHeight: 680,
     backgroundColor: '#0e0e10',
-    title: 'Bible Studio',
+    title: 'BibleLyrics',
     autoHideMenuBar: true,
     show: false,
     icon: ICON,
@@ -121,7 +153,7 @@ function openOutput(displayId) {
     fullscreen: external,
     opacity: 0,
     backgroundColor: '#000000',
-    title: 'Bible Studio — Projeção',
+    title: 'BibleLyrics — Projeção',
     autoHideMenuBar: true,
     show: false,
     skipTaskbar: external,
@@ -485,7 +517,7 @@ ipcMain.handle('web:login', (e, url, externo) => {
   }
   prepararSessaoWeb();
   const w = new BrowserWindow({
-    width: 1100, height: 820, parent: opWin, title: 'Entrar no site — Bible Studio', autoHideMenuBar: true, icon: ICON,
+    width: 1100, height: 820, parent: opWin, title: 'Entrar no site — BibleLyrics', autoHideMenuBar: true, icon: ICON,
     webPreferences: { partition: PARTICAO_WEB, sandbox: true, contextIsolation: true },
   });
   w.loadURL(url);
@@ -510,8 +542,8 @@ ipcMain.handle('remote:info', () => {
   const nome = os.hostname();
   const enderecos = !serverPort ? [] : lanUrls().slice(1).map(u => {
     const host = new URL(u).host;                                  // ip:porta
-    const direto = `${u}controle?pin=${PIN}`;
-    const app = `${SITE_CONTROLE}#pc=${encodeURIComponent(host)}&pin=${PIN}&nome=${encodeURIComponent(nome)}`;
+    const direto = `${u}controle?pin=${CHAVE}`;
+    const app = `${SITE_CONTROLE}#pc=${encodeURIComponent(host)}&pin=${CHAVE}&nome=${encodeURIComponent(nome)}`;
     return { host, direto, app, qrApp: qrSvg(app), qrDireto: qrSvg(direto) };
   });
   return { pin: PIN, nome, urls: lanUrls().map(u => u + 'controle'), enderecos };
@@ -531,7 +563,7 @@ ipcMain.on('janela:criador', () => {
   if (criadorWin && !criadorWin.isDestroyed()) { if (criadorWin.isMinimized()) criadorWin.restore(); return criadorWin.focus(); }
   criadorWin = new BrowserWindow({
     width: 1440, height: 900, minWidth: 1100, minHeight: 700, show: false,
-    title: 'Bible Studio — Criador de vídeo de louvor', autoHideMenuBar: true, icon: ICON,
+    title: 'BibleLyrics — Criador de vídeo de louvor', autoHideMenuBar: true, icon: ICON,
     backgroundColor: '#0c0e12',
     webPreferences: { preload: PRELOAD, backgroundThrottling: false },
   });
@@ -564,10 +596,9 @@ ipcMain.handle('arquivo:ler', async (e, caminho) => {
   const buf = await fs.promises.readFile(caminho);
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 });
-const pastaDeVideos = () => path.join(app.getPath('videos'), 'Bible Studio');
+const pastaDeVideos = () => biblioteca.pasta('videos');
 ipcMain.handle('video:destino', async (e, nome) => {
   const limpo = String(nome || 'Louvor').replace(/[<>:"/\\|?*\x00-\x1f]/g, '').trim().slice(0, 80) || 'Louvor';
-  try { fs.mkdirSync(pastaDeVideos(), { recursive: true }); } catch (err) {}
   const r = await dialog.showSaveDialog(BrowserWindow.fromWebContents(e.sender), {
     title: 'Salvar o vídeo', defaultPath: path.join(pastaDeVideos(), limpo + '.mp4'),
     filters: [{ name: 'Vídeo MP4', extensions: ['mp4'] }],
@@ -581,9 +612,7 @@ ipcMain.handle('video:gravar', async (e, caminho, dados) => {
 });
 ipcMain.on('pasta:mostrar', (e, qual, caminho) => {
   if (qual === 'arquivo' && caminho) return shell.showItemInFolder(caminho);
-  const pasta = qual === 'celular' ? pastaDoCelular() : pastaDeVideos();
-  try { fs.mkdirSync(pasta, { recursive: true }); } catch (err) {}
-  shell.openPath(pasta);
+  shell.openPath(biblioteca.pasta(qual === 'base' ? null : qual));
 });
 // coloca um arquivo no roteiro: na hora, se a operação estiver aberta; senão, o app guarda para depois
 ipcMain.handle('roteiro:adicionar', (e, caminho) => {
@@ -591,7 +620,10 @@ ipcMain.handle('roteiro:adicionar', (e, caminho) => {
   if (naOperacao) opWin.webContents.send('remoto', { acao: 'arquivoRecebido', caminho });
   return naOperacao;
 });
-ipcMain.on('abrir-site', () => shell.openExternal(SITE_CONTROLE.replace(/controle\/$/, '')));
+ipcMain.on('abrir-site', (e, pagina) => {
+  const raiz = SITE_CONTROLE.replace(/controle\/$/, '');
+  shell.openExternal(pagina === 'privacidade' ? raiz + 'privacidade/' : raiz);
+});
 
 ipcMain.on('open-external', (e, url) => {
   if (/^http:\/\/(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+):\d+\/?$/.test(url)) shell.openExternal(url);
@@ -626,7 +658,7 @@ function lanUrls() {
 
 function broadcast(dados, evento = 'slide') {
   const msg = `event: ${evento}\ndata: ${JSON.stringify(dados)}\n\n`;
-  for (const res of clients) res.write(msg);
+  for (const res of clients) if (evento !== 'estado' || res.autorizado) res.write(msg);
 }
 
 // Envia o arquivo de mídia aceitando Range (necessário para avançar o vídeo).
@@ -677,12 +709,13 @@ const PUBLICOS = new Set(['saida.html', 'saida.js', 'engine.js', 'fonts.css',
 const EXT_RECEBIDAS = new Set(['mp4', 'webm', 'mkv', 'avi', 'mov', 'wmv', 'm4v', 'mpg', 'mpeg', 'ts',
   'mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'm4b', 'oga', 'weba', 'mka', 'wma', 'aif', 'aiff', 'amr', 'ac3', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']);
 const LIMITE_UPLOAD = 4 * 1024 * 1024 * 1024;     // 4 GB por arquivo
-const pastaDoCelular = () => path.join(app.getPath('documents'), 'Bible Studio', 'Do celular');
+const pastaDoCelular = () => biblioteca.pasta('celular');
 
 function receberArquivo(req, res) {
   const q = new URL(req.url, 'http://x').searchParams;
   const responder = (codigo, obj) => { res.writeHead(codigo, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); };
-  if (q.get('pin') !== PIN) { req.resume(); return responder(401, { erro: 'pin' }); }
+  const acesso = autorizar(req, q.get('pin'));
+  if (acesso !== 'ok') { req.resume(); return recusar(res, acesso); }
   // nome limpo (sem pastas nem caracteres proibidos no Windows) e só vídeo, foto ou áudio
   const original = path.basename(String(q.get('nome') || '')).replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').trim().slice(0, 150);
   const ext = path.extname(original).slice(1).toLowerCase();
@@ -738,8 +771,11 @@ function startServer(port, tentativas = 10) {
         'Access-Control-Allow-Origin': '*',
       });
       res.write('retry: 1000\n\n');
+      // a tela da projeção (OBS, outra TV) é pública; o estado do roteiro só vai para o celular com a senha
+      const chaveEventos = new URL(req.url, 'http://x').searchParams.get('pin');
+      res.autorizado = !!chaveEventos && autorizar(req, chaveEventos) === 'ok';
       if (lastSlide) res.write(`event: slide\ndata: ${JSON.stringify(lastSlide)}\n\n`);
-      if (estadoRemoto) res.write(`event: estado\ndata: ${JSON.stringify(estadoRemoto)}\n\n`);
+      if (estadoRemoto && res.autorizado) res.write(`event: estado\ndata: ${JSON.stringify(estadoRemoto)}\n\n`);
       if (ultimaMidia) res.write(`event: media\ndata: ${JSON.stringify(ultimaMidia)}\n\n`);
       clients.add(res);
       req.on('close', () => clients.delete(res));
@@ -759,14 +795,14 @@ function startServer(port, tentativas = 10) {
       return servirArquivo(res, path.join(__dirname, 'app', 'controle.html'));
     }
     if (url === '/api/estado') {
-      const pin = new URL(req.url, 'http://x').searchParams.get('pin');
-      if (pin !== PIN) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end('{"erro":"pin"}'); }
+      const acesso = autorizar(req, new URL(req.url, 'http://x').searchParams.get('pin'));
+      if (acesso !== 'ok') return recusar(res, acesso);
       const quem = req.socket.remoteAddress;
       if (!celularesVistos.has(quem)) { celularesVistos.add(quem); analytics.enviar('celular_conectado', { celulares: celularesVistos.size }); }
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache' });
       return res.end(JSON.stringify(estadoRemoto || {}));
     }
-    // arquivo enviado pelo celular: vai para Documentos\Bible Studio\Do celular e entra no roteiro
+    // arquivo enviado pelo celular: vai para Documentos\BibleLyrics\Do celular e entra no roteiro
     if (url === '/api/upload' && req.method === 'POST') return receberArquivo(req, res);
 
     if (url === '/api/cmd' && req.method === 'POST') {
@@ -775,7 +811,8 @@ function startServer(port, tentativas = 10) {
       req.on('end', () => {
         let cmd;
         try { cmd = JSON.parse(corpo); } catch (e) { res.writeHead(400); return res.end(); }
-        if (cmd.pin !== PIN) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end('{"erro":"pin"}'); }
+        const acesso = autorizar(req, cmd.pin);
+        if (acesso !== 'ok') return recusar(res, acesso);
         delete cmd.pin;
         if (cmd.acao === 'arquivoRecebido') { res.writeHead(400); return res.end(); }   // só o próprio PC avisa isso
         if (opWin) opWin.webContents.send('remoto', cmd);
@@ -812,17 +849,28 @@ function startServer(port, tentativas = 10) {
 // mantém as conexões SSE vivas
 setInterval(() => { for (const res of clients) res.write(': ping\n\n'); }, 20000);
 
+// ---------------- arquivos .bible abertos pelo Windows (duplo clique) ----------------
+const acharBible = argv => (argv || []).find(a => /\.bible$/i.test(a) && fs.existsSync(a)) || null;
+let bibleParaAbrir = acharBible(process.argv);
+ipcMain.handle('bible:pendente', () => { const c = bibleParaAbrir; bibleParaAbrir = null; return c; });
+
 // ---------------- ciclo de vida ----------------
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => { if (opWin) { if (opWin.isMinimized()) opWin.restore(); opWin.focus(); } });
+  app.on('second-instance', (e, argv) => {
+    const c = acharBible(argv);
+    if (c) { bibleParaAbrir = c; if (opWin) opWin.webContents.send('bible:abrir'); }
+    if (opWin) { if (opWin.isMinimized()) opWin.restore(); opWin.focus(); }
+  });
 
   app.setAppUserModelId('com.samuelmadeira.bibleacfstudio');
   app.whenReady().then(() => {
+    biblioteca.iniciar();
     startServer(7777);
     createOperator();
     analytics.iniciar();
+    atualizacao.iniciar(() => [opWin, criadorWin]);
     const avisar = () => { if (opWin) opWin.webContents.send('displays-changed', listDisplays()); };
     screen.on('display-added', avisar);
     screen.on('display-removed', (e, d) => {

@@ -1,39 +1,39 @@
-import { House, Film, AlarmClock, MousePointerClick, Upload, MonitorPlay, Download } from 'lucide-react';
+import { FileArchive, FolderOpen, RefreshCw, ListChecks, ShieldCheck, Film, Download } from 'lucide-react';
 import { CabecalhoSecao } from './ui.jsx';
 import { LINK_DOWNLOAD, VERSAO } from '../config.js';
 
-// O que chegou nas últimas versões (3.4 e 3.5).
+// O que chegou nas últimas versões (3.5 e 3.6).
 const NOVIDADES = [
   {
-    icone: House,
-    titulo: 'Tela Início',
-    texto: 'O app abre num painel com tudo à mão: iniciar a operação, presets de reunião, a playlist programada, o QR code do celular e o status da TV.',
+    icone: FileArchive,
+    titulo: 'Arquivo .bible',
+    texto: 'Presets e backups viram um arquivo só, com as mídias junto. Leve a reunião pronta para outro computador e abra com dois cliques.',
+    destaque: true,
+  },
+  {
+    icone: FolderOpen,
+    titulo: 'Tudo numa pasta',
+    texto: 'Escolha onde o BibleLyrics guarda mídias, presets, backups e vídeos. Backup automático todo dia, sem você lembrar.',
+  },
+  {
+    icone: RefreshCw,
+    titulo: 'Atualização automática',
+    texto: 'Versão nova baixa sozinha e é instalada quando você fecha o app. Nunca no meio do culto.',
+  },
+  {
+    icone: ListChecks,
+    titulo: 'Vários versículos de uma vez',
+    texto: 'Ctrl + clique marca versículos soltos, Shift + clique marca um intervalo. Botão direito e todos vão para o roteiro.',
+  },
+  {
+    icone: ShieldCheck,
+    titulo: 'Celular mais seguro',
+    texto: 'O QR code traz uma chave longa e senhas erradas seguidas bloqueiam o aparelho por um tempo.',
   },
   {
     icone: Film,
     titulo: 'Vídeo de louvor',
     texto: 'Escolha a música, cole a letra, escolha o fundo e sincronize tocando. O app gera um MP4 com a letra na tela, pronto para projetar ou postar.',
-    destaque: true,
-  },
-  {
-    icone: AlarmClock,
-    titulo: 'Playlist programada',
-    texto: 'Testemunhos, fotos e avisos passam sozinhos antes do culto. No horário, entra o louvor de abertura e daí em diante é tudo manual.',
-  },
-  {
-    icone: MousePointerClick,
-    titulo: 'Arrastar e botão direito',
-    texto: 'Arraste vídeos, fotos e áudios do Windows direto para o roteiro. Botão direito num versículo: prévia, no ar, roteiro ou verso a verso.',
-  },
-  {
-    icone: Upload,
-    titulo: 'Envio pelo celular',
-    texto: 'Escaneie o QR code e mande o vídeo do testemunho do próprio celular: ele cai no roteiro do computador. Controle novo, com o corte sempre à mão.',
-  },
-  {
-    icone: MonitorPlay,
-    titulo: 'Projeção automática',
-    texto: 'Com a TV ligada, a projeção abre sozinha nela, em tela cheia e com fade. Sem escolher monitor, sem janela aparecendo para a igreja.',
   },
 ];
 
@@ -44,7 +44,7 @@ export default function Novidades() {
         <CabecalhoSecao
           rotulo={`Novo na versão ${VERSAO}`}
           titulo="Mais tempo para o culto, menos para a mídia."
-          texto="As novidades que a equipe de mídia pediu: preparar a reunião antes, deixar o pré-culto rodando sozinho e criar o vídeo da letra sem outro programa."
+          texto="Leve a reunião pronta em um arquivo, tenha backup todo dia e receba as versões novas sem baixar nada na mão."
         />
         <div className="novidades">
           {NOVIDADES.map(({ icone: Icone, titulo, texto, destaque }) => (

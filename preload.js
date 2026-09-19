@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
-const CANAIS = ['slide', 'displays-changed', 'output:state', 'media', 'media:progress', 'remoto', 'web:quadro', 'web:aviso'];
+const CANAIS = ['slide', 'displays-changed', 'output:state', 'media', 'media:progress', 'remoto', 'web:quadro', 'web:aviso', 'bible:abrir', 'atualizacao'];
 
 contextBridge.exposeInMainWorld('bridge', {
   displays: () => ipcRenderer.invoke('displays'),
@@ -40,7 +40,18 @@ contextBridge.exposeInMainWorld('bridge', {
   gravarVideo: (caminho, dados) => ipcRenderer.invoke('video:gravar', caminho, dados),
   mostrarPasta: (qual, caminho) => ipcRenderer.send('pasta:mostrar', qual, caminho),
   adicionarAoRoteiro: caminho => ipcRenderer.invoke('roteiro:adicionar', caminho),
-  abrirSite: () => ipcRenderer.send('abrir-site'),
+  abrirSite: pagina => ipcRenderer.send('abrir-site', pagina),
+
+  // pasta do BibleLyrics, arquivos .bible (presets e backups) e atualização automática
+  pastaInfo: () => ipcRenderer.invoke('pasta:info'),
+  escolherPasta: () => ipcRenderer.invoke('pasta:escolher'),
+  pastaConfig: mudancas => ipcRenderer.invoke('pasta:config', mudancas),
+  guardarMidias: caminhos => ipcRenderer.invoke('midia:guardar', caminhos),
+  exportarBible: opcoes => ipcRenderer.invoke('bible:exportar', opcoes),
+  lerBible: caminho => ipcRenderer.invoke('bible:ler', caminho),
+  biblePendente: () => ipcRenderer.invoke('bible:pendente'),
+  estadoAtualizacao: () => ipcRenderer.invoke('atualizacao:estado'),
+  instalarAtualizacao: () => ipcRenderer.send('atualizacao:instalar'),
 
   // controle pelo celular
   putEstado: st => ipcRenderer.send('estado:put', st),

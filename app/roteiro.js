@@ -166,9 +166,14 @@ function inserirEventos(lista, pos = MP.itens.length) {
 
 // vídeos, fotos e áudios (do seletor ou arrastados do Windows); o resto é ignorado
 const EXT_ACEITAS = [...EXT_VIDEO, ...EXT_AUDIO, ...EXT_IMG];
-function adicionarArquivos(caminhos, pos) {
-  const aceitos = caminhos.filter(c => EXT_ACEITAS.includes(extDe(c)));
+async function adicionarArquivos(caminhos, pos) {
+  let aceitos = caminhos.filter(c => EXT_ACEITAS.includes(extDe(c)));
   const ignorados = caminhos.length - aceitos.length;
+  if (aceitos.length && ponte && ponte.guardarMidias) {
+    const aviso = setTimeout(() => toast('Guardando uma cópia na pasta do BibleLyrics…'), 700);
+    try { aceitos = await ponte.guardarMidias(aceitos); } catch (e) {}
+    clearTimeout(aviso);
+  }
   const usados = new Set(MP.itens.map(ev => ev.id));
   const novos = aceitos.map(caminho => {
     let id = idDe(caminho);

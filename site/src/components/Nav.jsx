@@ -24,8 +24,8 @@ export default function Nav() {
   return (
     <header className={'nav' + (rolou ? ' rolou' : '') + (aberto ? ' aberto' : '')}>
       <div className="container nav-in">
-        <a href="#topo" className="marca" aria-label="Bible Studio — início">
-          <img src="/logo.png" alt="Bible Studio" width="172" height="24" />
+        <a href="#topo" className="marca" aria-label="BibleLyrics — início">
+          <img src="/logo.png" alt="BibleLyrics" width="172" height="24" />
         </a>
         <nav className="nav-links" aria-label="Seções">
           {LINKS.map(([t, h]) => <a key={h} href={h} onClick={() => setAberto(false)}>{t}</a>)}

@@ -57,7 +57,7 @@ export function MockOperador() {
     <div className="janela" aria-hidden="true">
       <div className="janela-barra">
         <span className="bolinhas"><i /><i /><i /></span>
-        <b>Bible Studio — Operador</b>
+        <b>BibleLyrics — Operador</b>
         <span className="pill-ok"><i />Projetando</span>
       </div>
 

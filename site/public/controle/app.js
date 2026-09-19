@@ -1,5 +1,5 @@
-// Bible Studio Controle — app instalável (PWA) que guarda os computadores e abre o controle.
-// O controle em si é servido pelo Bible Studio no PC (http://IP:porta/controle): o site é https
+// BibleLyrics Controle — app instalável (PWA) que guarda os computadores e abre o controle.
+// O controle em si é servido pelo BibleLyrics no PC (http://IP:porta/controle): o site é https
 // e o navegador não deixa uma página https falar com o PC da rede local, então o app abre a
 // página do PC já com a senha no endereço.
 const $ = id => document.getElementById(id);
@@ -29,7 +29,9 @@ function normalizarHost(txt) {
   return /^[\w.-]+:\d{2,5}$/.test(h) ? h : null;
 }
 
-// aceita o QR do app (…/controle/#pc=IP:porta&pin=1234&nome=PC) e o QR direto (http://IP:porta/controle?pin=1234)
+// aceita o QR do app (…/controle/#pc=IP:porta&pin=…&nome=PC) e o QR direto (http://IP:porta/controle?pin=…).
+// O QR traz uma chave longa; quem digita usa a senha de 4 números.
+const SENHA_OK = /^(\d{4}|[0-9a-f]{32})$/;
 function lerLink(texto) {
   let u;
   try { u = new URL(texto, location.href); } catch (e) { return null; }
@@ -37,9 +39,9 @@ function lerLink(texto) {
   if (h.get('pc')) {
     const host = normalizarHost(h.get('pc'));
     const pin = h.get('pin') || '';
-    if (host && /^\d{4}$/.test(pin)) return { host, pin, nome: h.get('nome') || host.split(':')[0] };
+    if (host && SENHA_OK.test(pin)) return { host, pin, nome: h.get('nome') || host.split(':')[0] };
   }
-  if (u.protocol === 'http:' && /\/controle\/?$/.test(u.pathname) && /^\d{4}$/.test(u.searchParams.get('pin') || '')) {
+  if (u.protocol === 'http:' && /\/controle\/?$/.test(u.pathname) && SENHA_OK.test(u.searchParams.get('pin') || '')) {
     return { host: u.host, pin: u.searchParams.get('pin'), nome: u.hostname };
   }
   return null;
@@ -119,7 +121,7 @@ $('btnDigitar').onclick = () => {
   const f = $('telaDigitar');
   f.hidden = !f.hidden;
   if (!f.hidden) {
-    if (pcs[0]) { $('inHost').value = pcs[0].host; $('inPin').value = pcs[0].pin; }
+    if (pcs[0]) { $('inHost').value = pcs[0].host; $('inPin').value = /^\d{4}$/.test(pcs[0].pin) ? pcs[0].pin : ''; }
     $('inHost').focus();
   }
 };
@@ -128,7 +130,7 @@ $('telaDigitar').onsubmit = e => {
   const host = normalizarHost($('inHost').value);
   const pin = $('inPin').value.trim();
   if (!host) return erro('Endereço inválido. Exemplo: 192.168.0.10:7777');
-  if (!/^\d{4}$/.test(pin)) return erro('A senha tem 4 números.');
+  if (!SENHA_OK.test(pin)) return erro('A senha tem 4 números.');
   erro('');
   conectar({ host, pin, nome: host.split(':')[0] });
 };

@@ -138,7 +138,7 @@ function cartaoPreset(p) {
     botao(icone('plus', 'ico-antes') + 'Adicionar', () => usarPreset(p, 'adicionar'), '', 'Coloca os eventos no fim do roteiro atual'),
     botao(icone('save'), () => atualizarPreset(p), 'so-icone empurra', 'Atualizar: guarda o roteiro que está aberto agora neste preset'),
     botao(icone('pencil'), () => { presetEditando = p.id; montarPresets(); }, 'so-icone', 'Renomear'),
-    botao(icone('upload'), () => exportarArquivo(p.nome, p.itens), 'so-icone', 'Exportar para arquivo (levar para outro computador)'),
+    botao(icone('upload'), () => Biblioteca.exportarPreset({ nome: p.nome, itens: p.itens.map(limparEvento) }), 'so-icone', 'Salvar como arquivo .bible (com as mídias) para levar a outro computador'),
     botao(icone('x'), () => excluirPreset(p), 'so-icone danger', 'Excluir'),
   );
   d.append(txt, acoes);
@@ -211,36 +211,21 @@ function excluirPreset(p) {
   toast('Preset excluído');
 }
 
-// ---------- arquivo ----------
-function exportarArquivo(nome, itens) {
-  const dados = { app: 'Bible Studio', tipo: 'preset', versao: 1, nome, itens: itens.map(limparEvento) };
-  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'preset-' + (nome || 'reuniao').normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase() + '.json';
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+// ---------- arquivo .bible ----------
+// abre um .bible (preset ou backup) e atualiza a operação
+async function abrirArquivoBible(caminho) {
+  const r = await Biblioteca.abrir(caminho);
+  if (!r) return;
+  if (r.tipo === 'backup') { location.reload(); return; }
+  try { meusPresets = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]'); } catch (e) {}
+  montarPresets();
+  abrirPresets();
 }
-$('inImportar').addEventListener('change', async e => {
-  const f = e.target.files[0];
-  e.target.value = '';
-  if (!f) return;
-  try {
-    const dados = JSON.parse(await f.text());
-    const itens = Array.isArray(dados) ? dados : dados.itens || dados.eventos;
-    if (!Array.isArray(itens)) throw new Error('formato');
-    let nome = (dados.nome || f.name.replace(/\.json$/i, '')).slice(0, 60);
-    const base = nome;
-    for (let n = 2; nomeRepetido(nome); n++) nome = `${base} (${n})`;
-    const agora = Date.now();
-    meusPresets.unshift({ id: novoId(), nome, criado: agora, alterado: agora, itens });
-    salvarPresets();
-    montarPresets();
-    toast('Preset importado: ' + nome);
-  } catch (err) {
-    toast('Arquivo inválido — use um preset exportado pelo Bible Studio');
-  }
+$('btnImportarBible').onclick = () => abrirArquivoBible();
+Biblioteca.ouvirArquivosAbertos(r => {
+  if (r.tipo === 'backup') return location.reload();
+  try { meusPresets = JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]'); } catch (e) {}
+  abrirPresets();
 });
 
 function abrirPresets() {

@@ -1,6 +1,6 @@
-# Site do Bible Studio
+# Site do BibleLyrics
 
-Landing page do Bible Studio feita em React + Vite, com a identidade visual da marca
+Landing page do BibleLyrics feita em React + Vite, com a identidade visual da marca
 (azul #024E9D, Montserrat e Inter).
 
 ```bash

@@ -1,8 +1,8 @@
 {
   "id": "/controle/",
-  "name": "Bible Studio Controle",
-  "short_name": "Bible Controle",
-  "description": "Controle o Bible Studio pelo celular: versículos, roteiro, mídia e tela de projeção.",
+  "name": "BibleLyrics Controle",
+  "short_name": "BL Controle",
+  "description": "Controle o BibleLyrics pelo celular: versículos, roteiro, mídia e tela de projeção.",
   "lang": "pt-BR",
   "start_url": "/controle/",
   "scope": "/controle/",

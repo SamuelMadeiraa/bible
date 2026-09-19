@@ -1,9 +1,11 @@
-// Controle do Bible Studio pelo celular: fala com o PC pela rede (porta 7777).
+// Controle do BibleLyrics pelo celular: fala com o PC pela rede (porta 7777).
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-// o QR code do PC traz a senha no endereço (?pin=1234): entra direto, sem digitar
+// o QR code do PC traz uma chave longa no endereço (?pin=…): entra direto, sem digitar.
+// A senha de 4 números continua valendo para quem digita.
+const SENHA_OK = /^(\d{4}|[0-9a-f]{32})$/;
 const pinDoLink = new URLSearchParams(location.search).get('pin');
-if (/^\d{4}$/.test(pinDoLink || '')) {
+if (SENHA_OK.test(pinDoLink || '')) {
   localStorage.setItem('bibleStudioPin', pinDoLink);
   history.replaceState(null, '', location.pathname);
 }
@@ -35,7 +37,7 @@ async function enviar(acao, extra = {}) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pin: PIN, acao, ...extra }),
     });
-    if (r.status === 401) return pedirSenha('Senha incorreta.');
+    if (r.status === 401 || r.status === 429) return pedirSenha(await motivo(r));
     if (!r.ok) toast('Falha ao enviar');
   } catch (e) {
     conectado(false);
@@ -52,7 +54,7 @@ function conectado(ok, noAr) {
 
 function ouvirEventos() {
   if (es) es.close();
-  es = new EventSource('events');
+  es = new EventSource('events?pin=' + encodeURIComponent(PIN));
   es.addEventListener('estado', ev => {
     try { aplicarEstado(JSON.parse(ev.data)); } catch (e) {}
   });
@@ -62,7 +64,7 @@ function ouvirEventos() {
 async function carregarEstado() {
   try {
     const r = await fetch('api/estado?pin=' + encodeURIComponent(PIN));
-    if (r.status === 401) return pedirSenha('Senha incorreta.');
+    if (r.status === 401 || r.status === 429) return pedirSenha(await motivo(r));
     const st = await r.json();
     if (st && st.livro !== undefined) aplicarEstado(st);
     abrirApp();
@@ -73,6 +75,11 @@ async function carregarEstado() {
 }
 
 // ---------- telas ----------
+// 429: o PC bloqueou este celular por um tempo depois de várias senhas erradas
+async function motivo(r) {
+  if (r.status !== 429) return 'Senha incorreta.';
+  try { return (await r.json()).erro; } catch (e) { return 'Muitas tentativas erradas. Espere um pouco e tente de novo.'; }
+}
 function pedirSenha(msg) {
   $('login').classList.remove('oculto');
   $('app').classList.add('oculto');
@@ -253,7 +260,7 @@ document.querySelectorAll('#segBiblia button').forEach(b => b.onclick = () => { 
 // ---------- botões ----------
 $('btnEntrar').onclick = () => {
   PIN = $('pin').value.trim();
-  if (PIN.length !== 4) return ($('loginErro').textContent = 'A senha tem 4 números.');
+  if (!SENHA_OK.test(PIN)) return ($('loginErro').textContent = 'A senha tem 4 números.');
   localStorage.setItem('bibleStudioPin', PIN);
   carregarEstado();
 };
@@ -321,6 +328,7 @@ function enviarArquivo(arquivo) {
       try { r = JSON.parse(xhr.responseText); } catch (e) {}
       if (xhr.status === 200) { item.classList.add('ok'); barra.style.width = '100%'; info.textContent = 'no roteiro'; }
       else if (xhr.status === 401) { item.classList.add('erro'); info.textContent = 'senha incorreta'; pedirSenha('Senha incorreta.'); }
+      else if (xhr.status === 429) { item.classList.add('erro'); info.textContent = 'bloqueado'; pedirSenha(r.erro); }
       else { item.classList.add('erro'); info.textContent = r.erro || 'falhou'; }
       pronto();
     };
@@ -349,7 +357,7 @@ document.addEventListener('touchstart', () => { ultimoToque = Date.now(); }, { p
 document.addEventListener('visibilitychange', () => { if (!document.hidden && PIN) carregarEstado(); });
 
 // ---------- início ----------
-if (PIN) { $('pin').value = PIN; carregarEstado(); } else pedirSenha('');
+if (PIN) { if (/^\d{4}$/.test(PIN)) $('pin').value = PIN; carregarEstado(); } else pedirSenha('');
 
 // permite instalar o controle como app no Android
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

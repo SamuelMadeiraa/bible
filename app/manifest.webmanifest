@@ -1,7 +1,7 @@
 {
-  "name": "Bible Studio — Controle",
-  "short_name": "Bible Controle",
-  "description": "Controle do Bible Studio: versículos, mídia e tela de projeção",
+  "name": "BibleLyrics — Controle",
+  "short_name": "BL Controle",
+  "description": "Controle do BibleLyrics: versículos, mídia e tela de projeção",
   "lang": "pt-BR",
   "start_url": "controle",
   "scope": "./",

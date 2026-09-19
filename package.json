@@ -1,6 +1,6 @@
 {
   "name": "bible-acf-studio",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "description": "Projeção de versículos (ACF) e mídias ao vivo, com tela de operador e tela de projeção",
   "main": "main.js",
   "author": "Samuel Madeira",
@@ -11,11 +11,13 @@
   },
   "build": {
     "appId": "com.samuelmadeira.bibleacfstudio",
-    "productName": "Bible Studio",
+    "productName": "BibleLyrics",
     "files": [
       "main.js",
       "preload.js",
       "analytics.js",
+      "biblioteca.js",
+      "atualizacao.js",
       "app/**/*",
       "node_modules/@fontsource/**/*",
       "package.json",
@@ -38,10 +40,30 @@
       "uninstallerIcon": "build/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Bible Studio"
+      "shortcutName": "BibleLyrics",
+      "artifactName": "BibleLyrics-Setup-${version}.${ext}"
     },
     "directories": {
       "buildResources": "build"
+    },
+    "fileAssociations": [
+      {
+        "ext": "bible",
+        "name": "BibleLyrics",
+        "description": "Preset ou backup do BibleLyrics",
+        "role": "Editor",
+        "icon": "build/icon.ico"
+      }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "SamuelMadeiraa",
+        "repo": "bible"
+      }
+    ],
+    "portable": {
+      "artifactName": "BibleLyrics-${version}-portatil.${ext}"
     }
   },
   "devDependencies": {
@@ -58,8 +80,10 @@
     "@fontsource/oswald": "^5.3.0",
     "@fontsource/playfair-display": "^5.3.0",
     "dockview-core": "^8.3.1",
+    "electron-updater": "^6.8.9",
+    "fflate": "^0.8.3",
     "mp4-muxer": "^5.2.2",
     "qrcode-generator": "^2.0.4"
   },
-  "productName": "Bible Studio"
+  "productName": "BibleLyrics"
 }

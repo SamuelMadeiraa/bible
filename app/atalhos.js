@@ -54,16 +54,39 @@
     return null;
   }
   const textoDe = p => BIBLIA[p.b].chapters[p.c].slice(p.v1, p.v2 + 1).join(' ');
+  // vários versículos marcados com Ctrl+clique, se o clique caiu num deles
+  function marcadosDe(el) {
+    const v = el.closest('#verses div[data-i]');
+    const lista = v && versiculosMarcados();
+    return lista && v.classList.contains('sel') ? lista : null;
+  }
+  const refsDe = lista => lista.map(refDe).join('; ');
+  const totalDe = lista => lista.reduce((n, p) => n + p.v2 - p.v1 + 1, 0);
 
   // onde entra "logo depois do próximo": depois do evento na prévia (ou do que está no ar)
   const depoisDoProximo = () => (R.prevIdx >= 0 ? R.prevIdx + 1 : R.liveIdx >= 0 ? R.liveIdx + 1 : MP.itens.length);
 
+  // p: uma passagem ou uma lista delas (versículos marcados); cada trecho seguido vira um evento
   function versiculoNoRoteiro(p, pos, versoAVerso) {
-    const lista = versoAVerso
-      ? Array.from({ length: p.v2 - p.v1 + 1 }, (_, k) => ({ tipo: 'versiculo', b: p.b, c: p.c, v1: p.v1 + k, v2: p.v1 + k }))
-      : [{ tipo: 'versiculo', ...p }];
+    const trechos = Array.isArray(p) ? p : [p];
+    const lista = trechos.flatMap(t => versoAVerso
+      ? Array.from({ length: t.v2 - t.v1 + 1 }, (_, k) => ({ tipo: 'versiculo', b: t.b, c: t.c, v1: t.v1 + k, v2: t.v1 + k }))
+      : [{ tipo: 'versiculo', b: t.b, c: t.c, v1: t.v1, v2: t.v2 }]);
     inserirEventos(lista, pos);
-    toast(versoAVerso ? `${lista.length} versículos no roteiro` : 'No roteiro: ' + refDe(p));
+    toast(lista.length > 1 ? `${lista.length} eventos no roteiro` : 'No roteiro: ' + refDe(trechos[0]));
+  }
+
+  function menuMarcados(e, lista) {
+    const n = totalDe(lista), refs = refsDe(lista);
+    const noRoteiro = (pos, versoAVerso) => () => { versiculoNoRoteiro(lista, pos, versoAVerso); limparMarcados(); };
+    abrirMenu(e.clientX, e.clientY, `${n} versículos: ${refs.length > 48 ? refs.slice(0, 46) + '…' : refs}`, [
+      { icone: 'list-plus', texto: lista.length > 1 ? `Adicionar ao roteiro (${lista.length} eventos)` : 'Adicionar ao roteiro', acao: noRoteiro() },
+      MP.itens.length && { icone: 'corner-down-right', texto: 'Adicionar logo depois do próximo', acao: noRoteiro(depoisDoProximo()) },
+      lista.length < n && { icone: 'list-ordered', texto: `Adicionar verso a verso (${n} eventos)`, acao: noRoteiro(undefined, true) },
+      '-',
+      { icone: 'copy', texto: 'Copiar texto com as referências', acao: () => navigator.clipboard.writeText(lista.map(p => `${textoDe(p)}\n${refDe(p)}`).join('\n\n')).then(() => toast('Texto copiado')) },
+      { icone: 'x', texto: 'Desmarcar', acao: limparMarcados },
+    ]);
   }
 
   function menuVersiculo(e, p) {
@@ -104,6 +127,8 @@
     const alvo = e.target instanceof Element ? e.target : null;
     if (!alvo) return;
     if (alvo.closest('input, textarea')) return;           // campos de texto: menu normal (copiar/colar)
+    const marcados = marcadosDe(alvo);
+    if (marcados) { e.preventDefault(); return menuMarcados(e, marcados); }
     const p = passagemDe(alvo);
     if (p) { e.preventDefault(); return menuVersiculo(e, p); }
     const item = alvo.closest('#playlist .mi-item');
@@ -121,12 +146,13 @@
 
   document.addEventListener('dragstart', e => {
     const alvo = e.target instanceof Element ? e.target : null;
-    const p = alvo && passagemDe(alvo);
+    const p = alvo && (marcadosDe(alvo) || passagemDe(alvo));
     if (!p) return;
+    const lista = Array.isArray(p) ? p : [p];
     e.dataTransfer.setData(TIPO_PASSAGEM, JSON.stringify(p));
-    e.dataTransfer.setData('text/plain', `${textoDe(p)}\n${refDe(p)}`);
+    e.dataTransfer.setData('text/plain', lista.map(t => `${textoDe(t)}\n${refDe(t)}`).join('\n\n'));
     e.dataTransfer.effectAllowed = 'copy';
-    solte.querySelector('b').textContent = 'Solte no roteiro: ' + refDe(p);
+    solte.querySelector('b').textContent = 'Solte no roteiro: ' + refsDe(lista);
   });
 
   function limparMarca() {

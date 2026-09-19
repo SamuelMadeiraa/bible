@@ -160,7 +160,7 @@ if (ponte) {
     app: [
       'Conecte o celular no <b>mesmo Wi-Fi</b> do computador.',
       'Abra a <b>câmera</b> do celular e aponte para o QR code.',
-      'Toque em <b>Instalar app</b> (ou “Adicionar à tela inicial”). Das próximas vezes é só abrir o ícone <b>Bible Controle</b>.',
+      'Toque em <b>Instalar app</b> (ou “Adicionar à tela inicial”). Das próximas vezes é só abrir o ícone <b>BibleLyrics Controle</b>.',
     ],
     direto: [
       'Conecte o celular no <b>mesmo Wi-Fi</b> do computador.',
@@ -198,7 +198,7 @@ if (ponte) {
     $('qrRede').innerHTML = info.enderecos.map((x, i) => `<option value="${i}">${x.host}${i === 0 ? ' (recomendado)' : ''}</option>`).join('');
     $('qrRede').value = QR.rede;
     $('qrAviso').innerHTML = 'Não conectou? Confira se o celular está no mesmo Wi-Fi e, se o Windows perguntar sobre o '
-      + '<b>firewall</b>, permita o Bible Studio em redes privadas.';
+      + '<b>firewall</b>, permita o BibleLyrics em redes privadas.';
     document.querySelectorAll('#segQr button').forEach(b => b.classList.toggle('on', b.dataset.v === QR.modo));
   }
 

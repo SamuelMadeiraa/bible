@@ -4,21 +4,23 @@
 <meta charset="UTF-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Bible Studio</title>
+<title>BibleLyrics</title>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="home.css">
 <script src="bible_acf.js"></script>
 <script src="icones.js"></script>
+<script src="biblioteca.js"></script>
 </head>
 <body>
 
 <header class="topo">
   <div class="topo-in">
-    <div class="marca"><img src="logo-header.png" alt="Bible Studio"><em id="versao"></em></div>
+    <div class="marca"><img src="logo-header.png" alt="BibleLyrics"><em id="versao"></em></div>
     <nav class="topo-nav">
       <a href="#ferramentas">Ferramentas</a>
       <a href="#presets">Presets</a>
       <a href="#programacao">Programação</a>
+      <a href="#arquivos">Pasta e backups</a>
     </nav>
     <div class="topo-dir">
       <span class="relogio" id="relogio"></span>
@@ -27,6 +29,14 @@
     </div>
   </div>
 </header>
+
+<div class="aviso-atualizacao" id="avisoAtualizacao" hidden>
+  <div class="container aviso-in">
+    <i data-i="sparkles"></i>
+    <span id="avisoAtualizacaoTxt"></span>
+    <button class="btn primario pequeno" id="btnReiniciar"><i data-i="rotate-cw"></i>Reiniciar e atualizar</button>
+  </div>
+</div>
 
 <main>
   <!-- ============ ABERTURA ============ -->
@@ -118,7 +128,10 @@
           <span class="etiqueta">Presets de reunião</span>
           <h2>Cada culto, pronto para abrir</h2>
         </div>
-        <button class="btn primario" id="btnNovoPreset"><i data-i="plus"></i>Novo preset</button>
+        <div class="form-acoes">
+          <button class="btn" id="btnAbrirBible" title="Abrir um preset ou backup (.bible)"><i data-i="download"></i>Abrir .bible</button>
+          <button class="btn primario" id="btnNovoPreset"><i data-i="plus"></i>Novo preset</button>
+        </div>
       </div>
 
       <form class="cartao form-preset" id="formPreset" hidden>
@@ -192,11 +205,47 @@
       </div>
     </div>
   </section>
+
+  <!-- ============ PASTA E BACKUPS ============ -->
+  <section class="secao" id="arquivos">
+    <div class="container">
+      <div class="secao-cab">
+        <span class="etiqueta">Pasta e backups</span>
+        <h2>Tudo guardado num lugar só</h2>
+        <p>Escolha a pasta onde o BibleLyrics guarda as mídias, os presets, os backups, os vídeos de louvor e o que
+          chega do celular. Presets e backups viram arquivos <b>.bible</b>: dá para levar para outro computador
+          (com as mídias junto) e abrir com dois cliques.</p>
+      </div>
+      <div class="arquivos">
+        <div class="cartao arq">
+          <div class="arq-cab"><i data-i="folder"></i><div><b>Pasta do BibleLyrics</b><small id="pastaCaminho">—</small></div></div>
+          <div class="arq-sub" id="pastaSub"></div>
+          <label class="check"><input type="checkbox" id="optCopiar"> <span>Guardar uma cópia das mídias adicionadas nesta pasta
+            <small>Recomendado: o roteiro e os presets não quebram se o arquivo original mudar de lugar.</small></span></label>
+          <div class="form-acoes">
+            <button class="btn" id="btnAbrirPasta"><i data-i="folder-open"></i>Abrir pasta</button>
+            <button class="btn primario" id="btnMudarPasta"><i data-i="folder"></i>Mudar pasta</button>
+          </div>
+        </div>
+        <div class="cartao arq">
+          <div class="arq-cab"><i data-i="save"></i><div><b>Backup (.bible)</b><small id="backupInfo">—</small></div></div>
+          <label class="check"><input type="checkbox" id="optBackupAuto"> <span>Backup automático todo dia
+            <small>Sem as mídias. Ficam guardados os 10 últimos na pasta Backups.</small></span></label>
+          <label class="check"><input type="checkbox" id="optMidiasBackup"> <span>Incluir as mídias no backup agora
+            <small>O arquivo fica maior, mas leva tudo para outro computador.</small></span></label>
+          <div class="form-acoes">
+            <button class="btn" id="btnRestaurar"><i data-i="download"></i>Restaurar backup</button>
+            <button class="btn primario" id="btnBackup"><i data-i="save"></i>Fazer backup agora</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer class="rodape">
   <div class="container rodape-in">
-    <img src="logo-header.png" alt="Bible Studio">
+    <img src="logo-header.png" alt="BibleLyrics">
     <span id="rodapeVersao"></span>
     <button class="link" id="btnSite"><i data-i="globe"></i>bible-studio-site.vercel.app</button>
   </div>
@@ -214,7 +263,7 @@
         <ol class="passos">
           <li>Conecte o celular no <b>mesmo Wi-Fi</b> do computador.</li>
           <li>Aponte a <b>câmera</b> para o QR code.</li>
-          <li>Instale o app <b>Bible Controle</b> para abrir direto das próximas vezes.</li>
+          <li>Instale o app <b>BibleLyrics Controle</b> para abrir direto das próximas vezes.</li>
         </ol>
       </div>
     </div>

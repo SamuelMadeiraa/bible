@@ -117,22 +117,54 @@ function montarVersiculos() {
   box.appendChild(frag);
   marcarVersiculos(true);
 }
+// seleção de vários versículos soltos (Ctrl+clique) — só vale no capítulo aberto
+let multi = null;              // Set com os índices marcados, ou null
 function marcarVersiculos(rolar) {
   const lp = live.pos;
   $('verses').querySelectorAll('div').forEach(d => {
     const i = +d.dataset.i;
-    d.classList.toggle('sel', i >= P.v1 && i <= P.v2);
+    d.classList.toggle('sel', multi ? multi.has(i) : i >= P.v1 && i <= P.v2);
     d.classList.toggle('live', !!lp && live.slide?.mode !== 'black' && lp.b === P.b && lp.c === P.c && i >= lp.v1 && i <= lp.v2);
   });
   if (rolar) $('verses').querySelector(`div[data-i="${P.v1}"]`)?.scrollIntoView({ block: 'nearest' });
 }
+// Shift+clique: intervalo. Ctrl+clique: marca/desmarca versículos soltos (Ctrl+Shift soma um intervalo).
+// Com vários marcados, o botão direito coloca todos no roteiro.
+let ancora = null;
+$('verses').addEventListener('mousedown', e => { if (e.shiftKey || e.ctrlKey) e.preventDefault(); });   // não seleciona o texto
 $('verses').addEventListener('click', e => {
   const d = e.target.closest('div[data-i]');
   if (!d) return;
   const i = +d.dataset.i;
-  if (e.shiftKey) irPara(P.b, P.c, Math.min(P.v1, i), Math.max(P.v1, i), false);
-  else irPara(P.b, P.c, i, i, false);
+  if (e.ctrlKey || e.metaKey) {
+    const marcados = multi ? new Set(multi) : new Set(Array.from({ length: P.v2 - P.v1 + 1 }, (_, k) => P.v1 + k));
+    if (e.shiftKey) {
+      const de = ancora ?? P.v1;
+      for (let k = Math.min(de, i); k <= Math.max(de, i); k++) marcados.add(k);
+    } else if (marcados.has(i)) marcados.delete(i);
+    else marcados.add(i);
+    ancora = i;
+    const foco = marcados.has(i) ? i : Math.min(...marcados, i);
+    irPara(P.b, P.c, foco, foco, false);
+    multi = marcados.size > 1 ? marcados : null;
+    marcarVersiculos();
+    return;
+  }
+  if (e.shiftKey) irPara(P.b, P.c, Math.min(ancora ?? P.v1, i), Math.max(ancora ?? P.v1, i), false);
+  else { irPara(P.b, P.c, i, i, false); ancora = i; }
 });
+// versículos marcados, agrupados em trechos seguidos (ex.: 1-3, 5, 8) — ou null se não há seleção múltipla
+function versiculosMarcados() {
+  if (!multi) return null;
+  const ord = [...multi].sort((a, b) => a - b), trechos = [];
+  for (const i of ord) {
+    const ult = trechos[trechos.length - 1];
+    if (ult && ult.v2 === i - 1) ult.v2 = i;
+    else trechos.push({ b: P.b, c: P.c, v1: i, v2: i });
+  }
+  return trechos;
+}
+function limparMarcados() { multi = null; marcarVersiculos(); }
 $('verses').addEventListener('dblclick', e => {
   if (e.target.closest('div[data-i]')) enviarAoVivo();
 });
@@ -140,6 +172,8 @@ $('verses').addEventListener('dblclick', e => {
 function irPara(b, c, v1, v2 = v1, rolar = true) {
   const mudouCap = b !== P.b || c !== P.c;
   P = { b, c, v1, v2 };
+  multi = null;
+  if (mudouCap) ancora = null;
   try { localStorage.setItem('bibleStudioPos', JSON.stringify(P)); } catch (e) {}
   $('selLivro').value = b;
   if (mudouCap || !$('verses').children.length) { montarCapitulos(); montarVersiculos(); }

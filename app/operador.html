@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: file: https://i.ytimg.com; media-src 'self' data: blob: file:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Bible Studio — Operador</title>
+<title>BibleLyrics — Operador</title>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="operador.css">
 <script src="../node_modules/dockview-core/dist/dockview-core.min.js"></script>
@@ -12,11 +12,12 @@
 <script src="fundo.js"></script>
 <script src="engine.js"></script>
 <script src="icones.js"></script>
+<script src="biblioteca.js"></script>
 </head>
 <body>
 
 <header>
-  <h1><img src="logo-header.png" alt="Bible Studio"><em id="versao" title="Versão em execução"></em></h1>
+  <h1><img src="logo-header.png" alt="BibleLyrics"><em id="versao" title="Versão em execução"></em></h1>
 
   <div class="hgroup">
     <select id="selMonitor" title="Monitor da projeção"></select>
@@ -325,7 +326,7 @@
         <div id="controleInfo" class="stack"></div>
       </div>
       <p class="hint">Escaneie o QR code com a câmera do celular (na mesma rede Wi-Fi do PC).
-        Ele abre o app <b>Bible Studio Controle</b>, que pode ser instalado na tela inicial.</p>
+        Ele abre o app <b>BibleLyrics Controle</b>, que pode ser instalado na tela inicial.</p>
       <p class="hint"><b>OBS:</b> Fontes → + → <i>Navegador</i> → cole o link, largura 1920, altura 1080.<br>
         <b>Outro PC/TV</b> na mesma rede Wi-Fi: abra o link no navegador e dê duplo clique para tela cheia.
         Se o Windows perguntar sobre o firewall, permita o acesso em redes privadas.</p>
@@ -393,7 +394,7 @@
       <div class="cartoes" id="listaMeus"></div>
 
       <div class="row presets-rodape">
-        <label class="upload" style="flex:none"><i data-i="download"></i>Importar preset de arquivo<input type="file" id="inImportar" accept=".json,application/json" hidden></label>
+        <button type="button" class="upload" id="btnImportarBible" style="flex:none"><i data-i="download"></i>Abrir arquivo .bible (preset ou backup)</button>
       </div>
     </div>
   </div>
