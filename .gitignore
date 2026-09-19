@@ -6,3 +6,6 @@ Thumbs.db
 vendor/
 Bible/
 .claude/
+
+# ferramenta de relatório: fica só no computador
+/ferramentas-locais/
