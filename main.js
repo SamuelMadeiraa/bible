@@ -32,7 +32,7 @@ let serverPort = null;
 let ultimaMidia = null;        // último comando de mídia (para quem conectar depois)
 let estadoRemoto = null;       // resumo do app para o controle no celular
 const celularesVistos = new Set();   // aparelhos que já entraram no controle nesta sessão
-const SITE_CONTROLE = 'https://bible-studio-site.vercel.app/controle/';   // app do celular (PWA)
+const SITE_CONTROLE = 'https://biblelyrics.vercel.app/controle/';   // app do celular (PWA)
 
 // acesso do controle remoto: a senha de 4 números (para digitar) e uma chave longa que só vai
 // dentro do QR code. As duas ficam guardadas, para o app do celular continuar entrando depois.
