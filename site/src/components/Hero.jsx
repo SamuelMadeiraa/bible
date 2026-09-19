@@ -9,14 +9,14 @@ export default function Hero() {
       <div className="hero-brilho" aria-hidden="true" />
       <div className="container hero-grid">
         <div className="hero-texto">
-          <Rotulo>Projeção para igrejas</Rotulo>
+          <Rotulo>Para a equipe de mídia da igreja</Rotulo>
           <h1>
-            Projeção de culto que <mark>qualquer um</mark> consegue operar.
+            O versículo entra na tela <mark>antes</mark> do pastor terminar de falar.
           </h1>
           <p className="lead">
-            A Bíblia inteira, o roteiro do culto, vídeos, lives, vídeos de louvor com a letra e o controle pelo celular num app só.
-            Prévia em verde, ao vivo em vermelho, e o Espaço corta de um para o outro — do voluntário de
-            primeira vez ao operador de transmissão.
+            Digite “jo 3 16”, veja na prévia e aperte Espaço. O louvor, o testemunho e a live entram do
+            mesmo jeito, na mesma tela. Sem procurar arquivo no meio do culto, sem mostrar a área de
+            trabalho no telão.
           </p>
           <div className="hero-acoes">
             <a className="btn btn-primario" href={LINK_DOWNLOAD}><Download size={18} />Baixar para Windows</a>
