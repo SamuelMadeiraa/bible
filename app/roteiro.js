@@ -27,7 +27,7 @@ const MP = {
   imgSeg: 8,
 };
 try { Object.assign(MP, JSON.parse(localStorage.getItem('bibleStudioMidia') || '{}')); } catch (e) {}
-const CAMPOS = ['id', 'tipo', 'caminho', 'nome', 'dur', 'semSuporte', 'b', 'c', 'v1', 'v2', 'titulo', 'texto', 'url', 'cheia', 'embed', 'externo'];
+const CAMPOS = ['id', 'tipo', 'caminho', 'nome', 'dur', 'semSuporte', 'motivo', 'b', 'c', 'v1', 'v2', 'titulo', 'texto', 'url', 'cheia', 'embed', 'externo'];
 const limparEvento = ev => Object.fromEntries(CAMPOS.filter(k => ev[k] !== undefined).map(k => [k, ev[k]]));
 const salvarMidia = () => {
   try {
@@ -54,9 +54,23 @@ const mvLive = $('mvLive'), miLive = $('miLive');
 
 // ---------- utilidades ----------
 const EXT_VIDEO = ['mp4', 'webm', 'mkv', 'avi', 'mov', 'wmv', 'm4v', 'mpg', 'mpeg', 'ts'];
-const EXT_AUDIO = ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac'];
+const EXT_AUDIO = ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'm4b', 'oga', 'weba', 'mka', 'wma', 'aif', 'aiff', 'amr', 'ac3'];
+// formatos que o player (Chromium) não decodifica: entram no roteiro com a dica de converter
+const EXT_SEM_PLAYER = ['wma', 'aif', 'aiff', 'amr', 'ac3', 'wmv'];
 const EXT_IMG = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'];
-const AVISO_FORMATO = 'Formatos que tocam: vídeo MP4 (H.264) e WebM; áudio MP3, M4A, AAC, WAV, OGG; foto JPG, PNG, WebP e GIF.';
+const AVISO_FORMATO = 'Formatos que tocam: vídeo MP4 (H.264) e WebM; áudio MP3, M4A, AAC, WAV, OGG, OPUS e FLAC; foto JPG, PNG, WebP e GIF.';
+
+// por que o arquivo não toca, em palavras do operador
+function motivoDe(ev, curto) {
+  const ext = extDe(ev.caminho || '').toUpperCase();
+  switch (ev.motivo) {
+    case 'vazio': return curto ? 'arquivo vazio' : 'O arquivo está vazio (0 bytes): o download não terminou ou falhou. Baixe de novo.';
+    case 'sumiu': return curto ? 'arquivo não encontrado' : 'O arquivo não foi encontrado: foi movido, renomeado ou apagado. Adicione de novo.';
+    case 'converter': return curto ? `${ext}: converta para ${ev.tipo === 'audio' ? 'MP3' : 'MP4'}`
+      : `Arquivos ${ext} não tocam no player. Converta para ${ev.tipo === 'audio' ? 'MP3' : 'MP4'} (ex.: com o VLC ou um conversor online).`;
+    default: return curto ? 'formato não suportado' : 'O formato ou o codec deste arquivo não toca no player. ' + AVISO_FORMATO;
+  }
+}
 
 const extDe = c => (c.split('.').pop() || '').toLowerCase();
 function tipoDe(caminho) {
@@ -182,6 +196,10 @@ function detectar(item) {
   if (item.tipo === 'web') { item.thumb = miniaturaWeb(item); return; }
   if (!ehMidia(item)) return;
   if (item.tipo === 'imagem') { item.thumb = urlArquivo(item.caminho); return agendarLista(); }
+  if (EXT_SEM_PLAYER.includes(extDe(item.caminho))) {
+    item.semSuporte = true; item.motivo = 'converter';
+    return agendarLista();
+  }
   const el = document.createElement(item.tipo === 'audio' ? 'audio' : 'video');
   el.preload = 'metadata';
   el.muted = true;
@@ -189,6 +207,7 @@ function detectar(item) {
   el.addEventListener('loadedmetadata', () => {
     item.dur = isFinite(el.duration) ? el.duration : null;
     item.semSuporte = false;
+    delete item.motivo;
     if (item.tipo === 'video') {
       el.currentTime = Math.min(2, (el.duration || 4) / 3);
       el.addEventListener('seeked', () => {
@@ -205,8 +224,14 @@ function detectar(item) {
       }, { once: true });
     } else { agendarLista(); salvarMidia(); }
   }, { once: true });
-  el.addEventListener('error', () => {
+  el.addEventListener('error', async () => {
     item.semSuporte = true;
+    item.motivo = 'formato';
+    try {
+      const info = ponte && ponte.infoArquivo ? await ponte.infoArquivo(item.caminho) : null;
+      if (info && !info.existe) item.motivo = 'sumiu';
+      else if (info && info.tamanho === 0) item.motivo = 'vazio';
+    } catch (e) {}
     agendarLista();
     salvarMidia();
   }, { once: true });
@@ -245,7 +270,7 @@ function montarLista() {
 
     const nome = document.createElement('div');
     nome.className = 'nome';
-    nome.innerHTML = `${esc(r.titulo || '')}<small>${esc(r.sub || '')}${ev.semSuporte ? ' • formato não suportado' : ''}</small>`;
+    nome.innerHTML = `${esc(r.titulo || '')}<small>${esc(r.sub || '')}${ev.semSuporte ? ' • ' + esc(motivoDe(ev, true)) : ''}</small>`;
 
     d.append(num, th, nome);
 
@@ -267,7 +292,7 @@ function montarLista() {
       const t = document.createElement('span');
       t.className = 'tag';
       t.textContent = '!';
-      t.title = 'Este arquivo não toca no player. ' + AVISO_FORMATO;
+      t.title = motivoDe(ev);
       d.appendChild(t);
     }
     if (ev.tipo === 'web') {
@@ -544,8 +569,8 @@ function tocarItem(i, t = 0) {
   if (!saida.open) status('A projeção está fechada — clique em “Abrir projeção” no topo para a mídia aparecer na TV.', 'erro');
 
   if (item.semSuporte) {
-    status('“' + item.nome + '” não toca no player. ' + AVISO_FORMATO, 'erro');
-    toast('Formato não suportado');
+    status('“' + item.nome + '”: ' + motivoDe(item), 'erro');
+    toast('Não toca: ' + motivoDe(item, true));
     tocando = false;
     agendarLista();
     return;
@@ -898,9 +923,9 @@ if (ponte) {
   ponte.on('media:progress', info => {
     if (info.erro) {
       const item = itemAtual();
-      if (item) { item.semSuporte = true; salvarMidia(); }
-      status('“' + (item ? item.nome : '') + '” não tocou (codec sem suporte). ' + AVISO_FORMATO, 'erro');
-      toast('Formato não suportado');
+      if (item) { item.semSuporte = true; item.motivo = 'formato'; salvarMidia(); }
+      status('“' + (item ? item.nome : '') + '”: ' + (item ? motivoDe(item) : AVISO_FORMATO), 'erro');
+      toast('Não toca: ' + (item ? motivoDe(item, true) : 'formato não suportado'));
       tocando = false;
       agendarLista();
       return;

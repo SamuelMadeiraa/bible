@@ -165,9 +165,9 @@ ipcMain.handle('media:pick', async () => {
     title: 'Escolher vídeos, fotos ou áudios',
     properties: ['openFile', 'multiSelections'],
     filters: [
-      { name: 'Todas as mídias', extensions: ['mp4', 'webm', 'mkv', 'avi', 'mov', 'wmv', 'm4v', 'mpg', 'mpeg', 'ts', 'mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'] },
+      { name: 'Todas as mídias', extensions: ['mp4', 'webm', 'mkv', 'avi', 'mov', 'wmv', 'm4v', 'mpg', 'mpeg', 'ts', 'mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'm4b', 'oga', 'weba', 'mka', 'wma', 'aif', 'aiff', 'amr', 'ac3', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'] },
       { name: 'Vídeos', extensions: ['mp4', 'webm', 'mkv', 'avi', 'mov', 'wmv', 'm4v', 'mpg', 'mpeg', 'ts'] },
-      { name: 'Áudios', extensions: ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac'] },
+      { name: 'Áudios', extensions: ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'm4b', 'oga', 'weba', 'mka', 'wma', 'aif', 'aiff', 'amr', 'ac3'] },
       { name: 'Fotos', extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'] },
       { name: 'Todos os arquivos', extensions: ['*'] },
     ],
@@ -183,6 +183,11 @@ ipcMain.on('media', (e, cmd) => {
   broadcast(cmd, 'media');
 });
 ipcMain.handle('media:last', () => ultimaMidia);
+// por que um arquivo não toca: sumiu do disco? está vazio (download incompleto)?
+ipcMain.handle('media:info', (e, caminho) => {
+  try { const st = fs.statSync(caminho); return { existe: true, tamanho: st.size }; }
+  catch (err) { return { existe: false, tamanho: 0 }; }
+});
 ipcMain.on('media:progress', (e, info) => { if (opWin) opWin.webContents.send('media:progress', info); });
 
 // ---------------- transmissões ao vivo / links (YouTube, Univer Vídeo, etc.) ----------------
@@ -585,7 +590,9 @@ const TIPOS_MIDIA = {
   '.mov': 'video/quicktime', '.avi': 'video/x-msvideo', '.wmv': 'video/x-ms-wmv',
   '.mpg': 'video/mpeg', '.mpeg': 'video/mpeg', '.ts': 'video/mp2t',
   '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.aac': 'audio/aac', '.wav': 'audio/wav',
-  '.ogg': 'audio/ogg', '.opus': 'audio/ogg', '.flac': 'audio/flac',
+  '.ogg': 'audio/ogg', '.opus': 'audio/ogg', '.flac': 'audio/flac', '.m4b': 'audio/mp4', '.oga': 'audio/ogg',
+  '.weba': 'audio/webm', '.mka': 'audio/x-matroska', '.wma': 'audio/x-ms-wma', '.aif': 'audio/aiff',
+  '.aiff': 'audio/aiff', '.amr': 'audio/amr', '.ac3': 'audio/ac3',
   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp',
   '.gif': 'image/gif', '.bmp': 'image/bmp',
 };
@@ -595,7 +602,7 @@ const PUBLICOS = new Set(['saida.html', 'saida.js', 'engine.js', 'fonts.css',
 
 // ---------------- arquivos enviados pelo celular ----------------
 const EXT_RECEBIDAS = new Set(['mp4', 'webm', 'mkv', 'avi', 'mov', 'wmv', 'm4v', 'mpg', 'mpeg', 'ts',
-  'mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']);
+  'mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'm4b', 'oga', 'weba', 'mka', 'wma', 'aif', 'aiff', 'amr', 'ac3', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']);
 const LIMITE_UPLOAD = 4 * 1024 * 1024 * 1024;     // 4 GB por arquivo
 const pastaDoCelular = () => path.join(app.getPath('documents'), 'Bible Studio', 'Do celular');
 

@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('bridge', {
   // mídia (player interno)
   pickMedia: () => ipcRenderer.invoke('media:pick'),
   registerMedia: lista => ipcRenderer.send('media:register', lista),
+  infoArquivo: caminho => ipcRenderer.invoke('media:info', caminho),
   // caminho no disco de um arquivo arrastado do Windows para o app
   caminhoDoArquivo: arquivo => { try { return webUtils.getPathForFile(arquivo); } catch (e) { return ''; } },
   sendMedia: cmd => ipcRenderer.send('media', cmd),
