@@ -32,7 +32,11 @@
     menu.style.left = Math.max(8, Math.min(x, innerWidth - r.width - 8)) + 'px';
     menu.style.top = Math.max(8, Math.min(y, innerHeight - r.height - 8)) + 'px';
   }
-  addEventListener('keydown', e => { if (e.key === 'Escape' && menu.classList.contains('on')) { e.stopPropagation(); fecharMenu(); } }, true);
+  addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (menu.classList.contains('on')) { e.stopPropagation(); fecharMenu(); }
+    else if (versiculosMarcados()) { e.stopPropagation(); limparMarcados(); }
+  }, true);
   addEventListener('blur', fecharMenu);
   document.addEventListener('scroll', fecharMenu, true);
 
@@ -54,14 +58,13 @@
     return null;
   }
   const textoDe = p => BIBLIA[p.b].chapters[p.c].slice(p.v1, p.v2 + 1).join(' ');
-  // vários versículos marcados com Ctrl+clique, se o clique caiu num deles
+  // vários versículos marcados com Ctrl/Shift+clique, se o clique caiu num deles
   function marcadosDe(el) {
     const v = el.closest('#verses div[data-i]');
     const lista = v && versiculosMarcados();
-    return lista && v.classList.contains('sel') ? lista : null;
+    return lista && v.classList.contains('marc') ? lista : null;
   }
   const refsDe = lista => lista.map(refDe).join('; ');
-  const totalDe = lista => lista.reduce((n, p) => n + p.v2 - p.v1 + 1, 0);
 
   // onde entra "logo depois do próximo": depois do evento na prévia (ou do que está no ar)
   const depoisDoProximo = () => (R.prevIdx >= 0 ? R.prevIdx + 1 : R.liveIdx >= 0 ? R.liveIdx + 1 : MP.itens.length);
@@ -77,12 +80,11 @@
   }
 
   function menuMarcados(e, lista) {
-    const n = totalDe(lista), refs = refsDe(lista);
-    const noRoteiro = (pos, versoAVerso) => () => { versiculoNoRoteiro(lista, pos, versoAVerso); limparMarcados(); };
+    const n = lista.length, refs = refsDe(lista);
+    const naPlaylist = pos => () => { adicionarVersiculos(lista, pos); limparMarcados(); };
     abrirMenu(e.clientX, e.clientY, `${n} versículos: ${refs.length > 48 ? refs.slice(0, 46) + '…' : refs}`, [
-      { icone: 'list-plus', texto: lista.length > 1 ? `Adicionar ao roteiro (${lista.length} eventos)` : 'Adicionar ao roteiro', acao: noRoteiro() },
-      MP.itens.length && { icone: 'corner-down-right', texto: 'Adicionar logo depois do próximo', acao: noRoteiro(depoisDoProximo()) },
-      lista.length < n && { icone: 'list-ordered', texto: `Adicionar verso a verso (${n} eventos)`, acao: noRoteiro(undefined, true) },
+      { icone: 'list-plus', texto: `Adicionar à playlist (${n} versículos)`, acao: naPlaylist() },
+      MP.itens.length && { icone: 'corner-down-right', texto: 'Adicionar logo depois do próximo', acao: naPlaylist(depoisDoProximo()) },
       '-',
       { icone: 'copy', texto: 'Copiar texto com as referências', acao: () => navigator.clipboard.writeText(lista.map(p => `${textoDe(p)}\n${refDe(p)}`).join('\n\n')).then(() => toast('Texto copiado')) },
       { icone: 'x', texto: 'Desmarcar', acao: limparMarcados },

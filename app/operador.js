@@ -123,48 +123,64 @@ function marcarVersiculos(rolar) {
   const lp = live.pos;
   $('verses').querySelectorAll('div').forEach(d => {
     const i = +d.dataset.i;
-    d.classList.toggle('sel', multi ? multi.has(i) : i >= P.v1 && i <= P.v2);
+    d.classList.toggle('sel', i >= P.v1 && i <= P.v2);
+    d.classList.toggle('marc', !!multi && multi.has(i));
     d.classList.toggle('live', !!lp && live.slide?.mode !== 'black' && lp.b === P.b && lp.c === P.c && i >= lp.v1 && i <= lp.v2);
   });
+  if (typeof mostrarBarraMarcados === 'function') mostrarBarraMarcados();
   if (rolar) $('verses').querySelector(`div[data-i="${P.v1}"]`)?.scrollIntoView({ block: 'nearest' });
 }
-// Shift+clique: intervalo. Ctrl+clique: marca/desmarca versículos soltos (Ctrl+Shift soma um intervalo).
-// Com vários marcados, o botão direito coloca todos no roteiro.
+// Marcar vários versículos como arquivos no Windows: Shift+clique marca do último clicado até este,
+// Ctrl+clique marca/desmarca um por um (Ctrl+Shift soma um intervalo). Cada versículo marcado
+// entra na playlist como um evento separado — nada é juntado num texto só.
 let ancora = null;
 $('verses').addEventListener('mousedown', e => { if (e.shiftKey || e.ctrlKey) e.preventDefault(); });   // não seleciona o texto
 $('verses').addEventListener('click', e => {
   const d = e.target.closest('div[data-i]');
   if (!d) return;
   const i = +d.dataset.i;
-  if (e.ctrlKey || e.metaKey) {
-    const marcados = multi ? new Set(multi) : new Set(Array.from({ length: P.v2 - P.v1 + 1 }, (_, k) => P.v1 + k));
-    if (e.shiftKey) {
-      const de = ancora ?? P.v1;
-      for (let k = Math.min(de, i); k <= Math.max(de, i); k++) marcados.add(k);
-    } else if (marcados.has(i)) marcados.delete(i);
-    else marcados.add(i);
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (!ctrl && !e.shiftKey) { irPara(P.b, P.c, i, i, false); ancora = i; return; }
+  const marcados = ctrl ? new Set(multi || [P.v1]) : new Set();
+  if (e.shiftKey) {
+    const de = ancora ?? P.v1;
+    for (let k = Math.min(de, i); k <= Math.max(de, i); k++) marcados.add(k);
+  } else {
+    if (marcados.has(i)) marcados.delete(i); else marcados.add(i);
     ancora = i;
-    const foco = marcados.has(i) ? i : Math.min(...marcados, i);
-    irPara(P.b, P.c, foco, foco, false);
-    multi = marcados.size > 1 ? marcados : null;
-    marcarVersiculos();
-    return;
   }
-  if (e.shiftKey) irPara(P.b, P.c, Math.min(ancora ?? P.v1, i), Math.max(ancora ?? P.v1, i), false);
-  else { irPara(P.b, P.c, i, i, false); ancora = i; }
+  const guardaAncora = ancora;
+  irPara(P.b, P.c, i, i, false);          // a prévia mostra só o versículo clicado
+  ancora = guardaAncora;
+  multi = marcados.size > 1 ? marcados : null;
+  marcarVersiculos();
 });
-// versículos marcados, agrupados em trechos seguidos (ex.: 1-3, 5, 8) — ou null se não há seleção múltipla
+// versículos marcados, um por item e em ordem — ou null se não há seleção múltipla
 function versiculosMarcados() {
   if (!multi) return null;
-  const ord = [...multi].sort((a, b) => a - b), trechos = [];
-  for (const i of ord) {
-    const ult = trechos[trechos.length - 1];
-    if (ult && ult.v2 === i - 1) ult.v2 = i;
-    else trechos.push({ b: P.b, c: P.c, v1: i, v2: i });
-  }
-  return trechos;
+  return [...multi].sort((a, b) => a - b).map(i => ({ b: P.b, c: P.c, v1: i, v2: i }));
 }
 function limparMarcados() { multi = null; marcarVersiculos(); }
+
+// barra embaixo dos versículos: quantos estão marcados + adicionar à playlist
+const barraMarcados = document.createElement('div');
+barraMarcados.className = 'marcados-barra';
+barraMarcados.hidden = true;
+barraMarcados.innerHTML = `<span></span>
+  <button type="button" class="btn-add">${icone('list-plus')}Adicionar à playlist</button>
+  <button type="button" class="btn-limpar" title="Desmarcar (Esc)">${icone('x')}</button>`;
+$('verses').after(barraMarcados);
+barraMarcados.querySelector('.btn-add').onclick = () => { const l = versiculosMarcados(); if (l) { adicionarVersiculos(l); limparMarcados(); } };
+barraMarcados.querySelector('.btn-limpar').onclick = limparMarcados;
+function mostrarBarraMarcados() {
+  barraMarcados.hidden = !multi;
+  if (multi) barraMarcados.querySelector('span').textContent = `${multi.size} marcados`;
+}
+// um evento por versículo, na ordem da Bíblia
+function adicionarVersiculos(lista, pos) {
+  inserirEventos(lista.map(p => ({ tipo: 'versiculo', b: p.b, c: p.c, v1: p.v1, v2: p.v2 })), pos);
+  toast(lista.length > 1 ? `${lista.length} versículos na playlist` : 'Na playlist: ' + refDe(lista[0]));
+}
 $('verses').addEventListener('dblclick', e => {
   if (e.target.closest('div[data-i]')) enviarAoVivo();
 });

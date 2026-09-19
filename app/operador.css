@@ -600,3 +600,14 @@ body.arrastando-passagem #blocoRoteiro .playlist,body.arrastando-passagem #bloco
 .preset-ativo>.ico{color:var(--accent);margin:0}
 .preset-ativo span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .preset-ativo button{padding:5px 10px;font-size:.8rem}
+
+/* vários versículos marcados (Ctrl/Shift+clique) */
+.verses div.marc{background:rgba(90,160,239,.16);border-left-color:var(--azul-claro,#5aa0ef)}
+.verses div.marc.sel{background:rgba(90,160,239,.26)}
+.marcados-barra{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;box-sizing:border-box;min-width:0;padding:8px 10px;margin-top:6px;border-radius:10px;background:rgba(90,160,239,.12);border:1px solid rgba(90,160,239,.35)}
+.marcados-barra[hidden]{display:none}
+.marcados-barra span{flex:1 1 auto;font-weight:600;font-size:.9rem;white-space:nowrap}
+.marcados-barra button{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:8px;padding:7px 12px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer}
+.marcados-barra .btn-add{background:#5aa0ef;color:#06121f;order:2;flex:1 1 100%;justify-content:center}
+.marcados-barra .btn-limpar{background:transparent;color:inherit;padding:7px}
+.marcados-barra .ico{width:16px;height:16px;margin:0}
