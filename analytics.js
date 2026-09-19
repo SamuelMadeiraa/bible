@@ -9,7 +9,7 @@ const os = require('os');
 const crypto = require('crypto');
 
 // Admin do GA4 → Fluxos de dados → (fluxo) → ID da métrica e "Chaves secretas da API do Measurement Protocol"
-const MEASUREMENT_ID = '';      // ex.: 'G-ABC123XYZ'
+const MEASUREMENT_ID = 'G-3PYMYJCBS1';
 const API_SECRET = '';          // ex.: 'aBcDeFgHiJ...'
 
 const INTERVALO_USO = 5 * 60 * 1000;     // a cada 5 min com o app aberto conta tempo de uso
