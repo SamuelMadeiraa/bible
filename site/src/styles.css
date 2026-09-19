@@ -480,3 +480,19 @@ p { margin: 0; }
 
 @media (max-width: 980px) { .novidades { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px) { .novidades { grid-template-columns: 1fr; } }
+
+/* ============ SOBRE E CONTATO ============ */
+.contato { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: start; }
+.contato-sobre .cab-secao { margin-bottom: 28px; }
+.contato-nota { display: flex; gap: 10px; align-items: flex-start; color: var(--text-2); font-size: 16px; background: var(--card); border: 1px solid var(--line); border-radius: var(--raio); padding: 18px 20px; }
+.contato-nota svg { color: var(--vermelho); flex: none; margin-top: 4px; }
+.contato-canais { display: grid; gap: 14px; }
+.canal { display: flex; gap: 18px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: var(--raio); padding: 22px 24px; transition: border-color .2s, transform .2s; }
+.canal:hover { border-color: rgba(90, 160, 239, .45); transform: translateY(-2px); }
+.canal-ico { display: grid; place-items: center; width: 48px; height: 48px; flex: none; border-radius: 14px; background: rgba(90, 160, 239, .1); color: var(--azul-marca); }
+.canal-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.canal-txt b { font-family: var(--fonte-titulo); font-size: 18px; }
+.canal-txt span { color: var(--text-2); font-size: 15px; }
+.canal-txt em { font-style: normal; font-weight: 700; color: var(--azul-marca); margin-top: 4px; overflow-wrap: anywhere; }
+.canal.destaque { border-color: rgba(90, 160, 239, .5); background: linear-gradient(160deg, rgba(90, 160, 239, .1), var(--card) 60%); }
+@media (max-width: 900px) { .contato { grid-template-columns: 1fr; gap: 32px; } }

@@ -9,6 +9,7 @@ import ParaTodos from './components/ParaTodos.jsx';
 import Integracoes from './components/Integracoes.jsx';
 import Passos from './components/Passos.jsx';
 import Perguntas from './components/Perguntas.jsx';
+import Contato from './components/Contato.jsx';
 import ChamadaFinal from './components/ChamadaFinal.jsx';
 import Rodape from './components/Rodape.jsx';
 import { useReveal } from './useReveal.js';
@@ -29,6 +30,7 @@ export default function App() {
         <Integracoes />
         <Passos />
         <Perguntas />
+        <Contato />
         <ChamadaFinal />
       </main>
       <Rodape />

@@ -2,8 +2,8 @@
   "redirects": [
     {
       "source": "/((?!controle).*)",
-      "has": [{ "type": "host", "value": "bible-studio-site.vercel.app" }],
-      "destination": "https://biblelyrics.vercel.app/$1",
+      "has": [{ "type": "host", "value": "(?<host>bible-studio-site\.vercel\.app|biblelyrics\.vercel\.app|www\.biblelyrics\.com\.br)" }],
+      "destination": "https://biblelyrics.com.br/$1",
       "permanent": true
     }
   ]

@@ -8,6 +8,7 @@ export default function Rodape() {
           <a href="#playout">Como funciona</a>
           <a href="#comecar">Começar</a>
           <a href="#perguntas">Perguntas</a>
+          <a href="#contato">Contato</a>
         </nav>
         <small>© 2026 BibleLyrics • Desenvolvido por Samuel Madeira • Texto bíblico: Almeida Corrigida Fiel</small>
       </div>

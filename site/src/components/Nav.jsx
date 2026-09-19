@@ -8,6 +8,7 @@ const LINKS = [
   ['Para quem', '#para-todos'],
   ['Começar', '#comecar'],
   ['Perguntas', '#perguntas'],
+  ['Contato', '#contato'],
 ];
 
 export default function Nav() {
