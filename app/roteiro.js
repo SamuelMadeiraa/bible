@@ -25,9 +25,12 @@ const MP = {
   loop: false,        // repetir a mídia atual
   volume: 80,
   imgSeg: 8,
-  imgFixa: false,     // foto sem tempo: fica no ar até o operador trocar
+  imgFixa: true,      // padrão: a foto fica no ar até o operador trocar
+  imgFixaEscolhido: false,   // vira true quando o operador mexe nessa opção
 };
 try { Object.assign(MP, JSON.parse(localStorage.getItem('bibleStudioMidia') || '{}')); } catch (e) {}
+// quem já usava o app antes desta opção existir também começa com a foto fixa
+if (!MP.imgFixaEscolhido) MP.imgFixa = true;
 const CAMPOS = ['id', 'tipo', 'caminho', 'nome', 'dur', 'semSuporte', 'motivo', 'b', 'c', 'v1', 'v2', 'titulo', 'texto', 'url', 'cheia', 'embed', 'externo', 'destaques'];
 const limparEvento = ev => Object.fromEntries(CAMPOS.filter(k => ev[k] !== undefined).map(k => [k, ev[k]]));
 const salvarMidia = () => {
@@ -941,6 +944,8 @@ function mostrarImgFixa() {
   $('campoImgSeg').classList.toggle('desligado', MP.imgFixa);
 }
 ligarCheck('pImgFixa', 'imgFixa', () => {
+  MP.imgFixaEscolhido = true;      // a partir daqui vale o que o operador escolheu
+  salvarMidia();
   mostrarImgFixa();
   const item = itemAtual();
   if (MP.imgFixa) { clearTimeout(imgTimer); imgTimer = null; durAtual = 0; }

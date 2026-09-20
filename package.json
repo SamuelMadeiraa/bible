@@ -1,6 +1,6 @@
 {
   "name": "bible-acf-studio",
-  "version": "3.6.4",
+  "version": "3.6.5",
   "description": "Projeção de versículos (ACF) e mídias ao vivo, com tela de operador e tela de projeção",
   "main": "main.js",
   "author": "Samuel Madeira",
