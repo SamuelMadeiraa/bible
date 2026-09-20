@@ -209,3 +209,6 @@ kbd{font-family:inherit;font-size:12px;padding:2px 7px;border-radius:6px;border:
 .aviso-barra span{display:block;height:100%;border-radius:99px;background:#4cc98a;transition:width .3s}
 #btnVerificar{gap:6px}
 #btnVerificar .ico{width:14px;height:14px}
+
+/* marca da versão de teste */
+.versao.teste, #versao.teste{background:rgba(255,210,63,.16);border-color:rgba(255,210,63,.5);color:#ffd23f}

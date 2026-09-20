@@ -814,7 +814,10 @@ function atualizarSaida(st) {
 }
 async function montarLinks() {
   const info = await ponte.serverInfo();
-  if (info.versao) $('versao').textContent = 'v' + info.versao + (info.empacotado ? '' : ' (dev)');
+  if (info.versao) {
+    $('versao').textContent = 'v' + info.versao + (info.teste ? ' TESTE' : info.empacotado ? '' : ' (dev)');
+    $('versao').classList.toggle('teste', !!info.teste);
+  }
   // porta diferente da padrão = outra cópia do app provavelmente está aberta
   if (info.port && info.port !== 7777) {
     $('versao').textContent += ' • porta ' + info.port;

@@ -618,3 +618,6 @@ body.arrastando-passagem #blocoRoteiro .playlist,body.arrastando-passagem #bloco
 
 /* selo do versículo com palavras destacadas */
 .badge.dest{width:9px;height:9px;padding:0;border-radius:50%;border:0}
+
+/* marca da versão de teste (BibleLyrics DEV) */
+#versao.teste{background:rgba(255,210,63,.16);border-color:rgba(255,210,63,.5);color:#ffd23f}

@@ -1,0 +1,36 @@
+{
+  "appId": "com.samuelmadeira.biblelyrics.teste",
+  "productName": "BibleLyrics DEV",
+  "files": [
+    "main.js",
+    "preload.js",
+    "analytics.js",
+    "biblioteca.js",
+    "atualizacao.js",
+    "app/**/*",
+    "node_modules/@fontsource/**/*",
+    "package.json",
+    "node_modules/dockview-core/**/*",
+    "node_modules/qrcode-generator/**/*",
+    "node_modules/mp4-muxer/build/**/*",
+    "node_modules/mp4-muxer/package.json"
+  ],
+  "win": {
+    "target": [
+      "portable"
+    ],
+    "icon": "build/icon.ico"
+  },
+  "directories": {
+    "buildResources": "build",
+    "output": "dist-teste"
+  },
+  "publish": null,
+  "portable": {
+    "artifactName": "BibleLyrics-DEV-${version}-portatil.${ext}"
+  },
+  "extraMetadata": {
+    "name": "biblelyrics-dev",
+    "productName": "BibleLyrics DEV"
+  }
+}

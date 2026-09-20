@@ -21,7 +21,8 @@ function iniciar(janelas) {
     return { ...estado };
   });
 
-  if (!app.isPackaged || process.env.PORTABLE_EXECUTABLE_DIR) return;
+  // a versão de teste (BibleLyrics DEV) nunca se atualiza sozinha
+  if (!app.isPackaged || process.env.PORTABLE_EXECUTABLE_DIR || /dev/i.test(app.getName())) return;
   try { atualizador = require('electron-updater').autoUpdater; } catch (e) { return; }
   atualizador.autoDownload = true;
   atualizador.autoInstallOnAppQuit = true;

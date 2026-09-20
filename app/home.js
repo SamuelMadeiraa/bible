@@ -110,7 +110,8 @@ async function telas() {
   } catch (e) {}
   try {
     const info = await ponte.serverInfo();
-    $('versao').textContent = 'v' + info.versao;
+    $('versao').textContent = 'v' + info.versao + (info.teste ? ' TESTE' : '');
+    $('versao').classList.toggle('teste', !!info.teste);
     $('rodapeVersao').textContent = 'BibleLyrics ' + info.versao;
   } catch (e) {}
 }

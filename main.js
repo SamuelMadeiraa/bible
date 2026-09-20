@@ -7,10 +7,18 @@ const crypto = require('crypto');
 
 // BibleLyrics se chamava "Bible Studio": na primeira vez, traz os dados (presets, roteiro, estilos,
 // senha do celular…) da pasta antiga. Os caches do navegador ficam para trás.
+// Versão de teste (BibleLyrics DEV): mesmo programa, mas com dados, pasta e porta
+// separados, sem atualização automática e sem estatísticas. Serve para experimentar
+// coisas novas sem estragar nada da versão que a igreja usa.
+const EH_TESTE = /dev/i.test(app.getName());
+
 (function migrarDados() {
   try {
     const nova = app.getPath('userData');
-    const antiga = path.join(app.getPath('appData'), 'Bible Studio');
+    // a versão de teste começa com uma cópia dos dados reais, para testar com o que já existe
+    const antiga = EH_TESTE
+      ? path.join(app.getPath('appData'), 'BibleLyrics')
+      : path.join(app.getPath('appData'), 'Bible Studio');
     if (fs.existsSync(nova) || !fs.existsSync(antiga)) return;
     const pular = new Set(['Cache', 'Code Cache', 'GPUCache', 'DawnGraphiteCache', 'DawnWebGPUCache', 'Crashpad', 'blob_storage', 'Shared Dictionary']);
     fs.cpSync(antiga, nova, { recursive: true, filter: origem => !pular.has(path.basename(origem)) });
@@ -552,7 +560,7 @@ ipcMain.handle('remote:info', () => {
 // ---------------- estatísticas de uso (Google Analytics) ----------------
 ipcMain.on('analytics:evento', (e, nome, params) => analytics.enviar(nome, params));
 
-ipcMain.handle('server:info', () => ({ port: serverPort, urls: lanUrls(), versao: app.getVersion(), empacotado: app.isPackaged }));
+ipcMain.handle('server:info', () => ({ port: serverPort, urls: lanUrls(), versao: app.getVersion(), empacotado: app.isPackaged, teste: EH_TESTE }));
 // ---------------- tela Início, criador de vídeo e arquivos ----------------
 let criadorWin = null;
 const TELAS = { home: 'home.html', operador: 'operador.html' };

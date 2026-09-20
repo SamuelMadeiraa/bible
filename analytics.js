@@ -34,7 +34,8 @@ function gravar() {
 
 const configurado = () => !!(MEASUREMENT_ID && API_SECRET);
 // em desenvolvimento (npm start) só envia se BIBLE_ANALYTICS=1, para não sujar os números
-const liberado = () => configurado() && (app.isPackaged || process.env.BIBLE_ANALYTICS === '1');
+// a versão de teste (BibleLyrics DEV) nunca envia nada, para não sujar os números
+const liberado = () => configurado() && !/dev/i.test(app.getName()) && (app.isPackaged || process.env.BIBLE_ANALYTICS === '1');
 
 // o GA4 aceita nomes com letras, números e _, até 40 letras; valores de texto até 100
 const nomeValido = n => String(n).replace(/[^\w]/g, '_').replace(/^(\d)/, '_$1').slice(0, 40);

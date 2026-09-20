@@ -16,7 +16,8 @@ const arqConfig = () => path.join(app.getPath('userData'), 'biblioteca.json');
 let cfg = null;
 function config() {
   if (cfg) return cfg;
-  cfg = { pasta: path.join(app.getPath('documents'), 'BibleLyrics'), copiarMidias: true, backupAuto: true, ultimoBackup: 0 };
+  const nomePasta = /dev/i.test(app.getName()) ? 'BibleLyrics TESTE' : 'BibleLyrics';
+  cfg = { pasta: path.join(app.getPath('documents'), nomePasta), copiarMidias: true, backupAuto: true, ultimoBackup: 0 };
   try { Object.assign(cfg, JSON.parse(fs.readFileSync(arqConfig(), 'utf8'))); } catch (e) {}
   return cfg;
 }

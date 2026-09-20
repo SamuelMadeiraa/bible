@@ -162,3 +162,23 @@ npm run dist     # gera instalador e versão portátil em dist/
 ```
 
 Se mudar `bible_acf.json` ou `fundo.jpg`, rode `node tools/gerar-dados.js`.
+
+## Versão de teste (BibleLyrics DEV)
+
+Para experimentar coisas novas sem mexer na versão que a igreja usa:
+
+    npm run teste
+
+Isso gera dist-teste/BibleLyrics-DEV-<versao>-portatil.exe. É portátil: abre com dois
+cliques, sem instalar.
+
+A versão de teste é separada da oficial:
+
+- dados próprios em `%APPDATA%\BibleLyrics DEV` (presets, estilos, senha do celular);
+- mídias em `Documentos\BibleLyrics TESTE`;
+- porta própria, então as duas podem ficar abertas ao mesmo tempo;
+- não se atualiza sozinha e não entra nas estatísticas;
+- não assume os arquivos .bible do Windows;
+- mostra a marca TESTE ao lado do número da versão.
+
+Na primeira vez ela copia os dados da versão oficial, para você testar com presets de verdade.
