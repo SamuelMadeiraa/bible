@@ -28,7 +28,7 @@ const MP = {
   imgFixa: false,     // foto sem tempo: fica no ar até o operador trocar
 };
 try { Object.assign(MP, JSON.parse(localStorage.getItem('bibleStudioMidia') || '{}')); } catch (e) {}
-const CAMPOS = ['id', 'tipo', 'caminho', 'nome', 'dur', 'semSuporte', 'motivo', 'b', 'c', 'v1', 'v2', 'titulo', 'texto', 'url', 'cheia', 'embed', 'externo'];
+const CAMPOS = ['id', 'tipo', 'caminho', 'nome', 'dur', 'semSuporte', 'motivo', 'b', 'c', 'v1', 'v2', 'titulo', 'texto', 'url', 'cheia', 'embed', 'externo', 'destaques'];
 const limparEvento = ev => Object.fromEntries(CAMPOS.filter(k => ev[k] !== undefined).map(k => [k, ev[k]]));
 const salvarMidia = () => {
   try {
@@ -189,8 +189,33 @@ async function adicionarArquivos(caminhos, pos) {
 }
 
 function adicionarVersiculoDaPrevia() {
-  adicionarEvento({ tipo: 'versiculo', b: P.b, c: P.c, v1: P.v1, v2: P.v2 });
-  toast('No roteiro: ' + refDe(P));
+  adicionarEvento({ tipo: 'versiculo', b: P.b, c: P.c, v1: P.v1, v2: P.v2, destaques: destaquesDaPrevia() });
+  toast('No roteiro: ' + refDe(P) + (destaquesDaPrevia() ? ' (com as palavras destacadas)' : ''));
+}
+
+// ---------- palavras destacadas guardadas no evento ----------
+// cliques = { índice da palavra: cor }. Guardamos uma cópia no evento para o destaque
+// voltar igual quando aquele versículo for usado de novo.
+const temDestaques = ev => !!ev && ev.tipo === 'versiculo' && !!ev.destaques && Object.keys(ev.destaques).length > 0;
+const corDoDestaque = ev => Object.values(ev.destaques || {}).find(c => c && c !== 'off') || '#ffd23f';
+function destaquesDaPrevia() {
+  const d = { ...cliques };
+  return Object.keys(d).length ? d : undefined;
+}
+function aplicarDestaques(d) {
+  cliques = { ...(d || {}) };
+  if (typeof montarRegras === 'function') montarRegras();
+  mudou(false);
+}
+// enquanto o versículo do roteiro está na prévia, destacar/limpar palavras já salva nele
+function salvarDestaquesDoEvento() {
+  if (aplicandoEvento) return;
+  const ev = MP.itens[R.prevIdx];
+  if (!ev || ev.tipo !== 'versiculo') return;
+  const d = destaquesDaPrevia();
+  if (d) ev.destaques = d; else delete ev.destaques;
+  salvarMidia();
+  agendarLista();
 }
 function adicionarEspecial(tipo) {
   adicionarEvento({ tipo });
@@ -286,6 +311,8 @@ function montarLista() {
     if (i === R.prevIdx) selos.insertAdjacentHTML('beforeend', '<b class="badge prox">PRÓXIMO</b>');
     if (i === MP.idx && tocando && ev.tipo === 'audio') selos.insertAdjacentHTML('beforeend', '<b class="badge som">' + icone('music') + '</b>');
     if (ev.tipo === 'web') selos.insertAdjacentHTML('beforeend', '<b class="badge web">LINK</b>');
+    if (temDestaques(ev)) selos.insertAdjacentHTML('beforeend',
+      `<b class="badge dest" title="Com palavras destacadas" style="background:${corDoDestaque(ev)}"></b>`);
     d.appendChild(selos);
 
     if (ehMidia(ev)) {
@@ -415,7 +442,7 @@ function selecionarPrevia(i) {
   R.prevIdx = i;
   aplicandoEvento = true;
   try {
-    if (ev.tipo === 'versiculo') irPara(ev.b, ev.c, ev.v1, ev.v2);
+    if (ev.tipo === 'versiculo') { irPara(ev.b, ev.c, ev.v1, ev.v2); aplicarDestaques(ev.destaques); }
     else if (ev.tipo === 'texto') definirTextoLivre(ev.titulo, ev.texto);
   } finally { aplicandoEvento = false; }
   mostrarPreviaEvento(ev);

@@ -615,3 +615,6 @@ body.arrastando-passagem #blocoRoteiro .playlist,body.arrastando-passagem #bloco
 /* campo de segundos da foto desligado (quando a foto fica até trocar) */
 .p-opts .inline.desligado{opacity:.45}
 .p-opts .inline.desligado input{cursor:not-allowed}
+
+/* selo do versículo com palavras destacadas */
+.badge.dest{width:9px;height:9px;padding:0;border-radius:50%;border:0}

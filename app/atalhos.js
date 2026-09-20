@@ -58,6 +58,8 @@
     return null;
   }
   const textoDe = p => BIBLIA[p.b].chapters[p.c].slice(p.v1, p.v2 + 1).join(' ');
+  // se a passagem é a que está na prévia, leva as palavras destacadas junto
+  const destaquesDe = p => (p.b === P.b && p.c === P.c && p.v1 === P.v1 && p.v2 === P.v2 ? destaquesDaPrevia() : undefined);
   // vários versículos marcados com Ctrl/Shift+clique, se o clique caiu num deles
   function marcadosDe(el) {
     const v = el.closest('#verses div[data-i]');
@@ -74,7 +76,7 @@
     const trechos = Array.isArray(p) ? p : [p];
     const lista = trechos.flatMap(t => versoAVerso
       ? Array.from({ length: t.v2 - t.v1 + 1 }, (_, k) => ({ tipo: 'versiculo', b: t.b, c: t.c, v1: t.v1 + k, v2: t.v1 + k }))
-      : [{ tipo: 'versiculo', b: t.b, c: t.c, v1: t.v1, v2: t.v2 }]);
+      : [{ tipo: 'versiculo', b: t.b, c: t.c, v1: t.v1, v2: t.v2, destaques: destaquesDe(t) }]);
     inserirEventos(lista, pos);
     toast(lista.length > 1 ? `${lista.length} eventos no roteiro` : 'No roteiro: ' + refDe(trechos[0]));
   }

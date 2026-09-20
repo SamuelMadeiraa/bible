@@ -178,7 +178,9 @@ function mostrarBarraMarcados() {
 }
 // um evento por versículo, na ordem da Bíblia
 function adicionarVersiculos(lista, pos) {
-  inserirEventos(lista.map(p => ({ tipo: 'versiculo', b: p.b, c: p.c, v1: p.v1, v2: p.v2 })), pos);
+  const daPrevia = typeof destaquesDaPrevia === 'function' ? destaquesDaPrevia() : undefined;
+  const ehDaPrevia = p => daPrevia && p.b === P.b && p.c === P.c && p.v1 === P.v1 && p.v2 === P.v2;
+  inserirEventos(lista.map(p => ({ tipo: 'versiculo', b: p.b, c: p.c, v1: p.v1, v2: p.v2, destaques: ehDaPrevia(p) ? daPrevia : undefined })), pos);
   toast(lista.length > 1 ? `${lista.length} versículos na playlist` : 'Na playlist: ' + refDe(lista[0]));
 }
 $('verses').addEventListener('dblclick', e => {
@@ -352,6 +354,7 @@ function alternarPalavra(i) {
     else cliques[i] = S.hlColor;
   }
   mudou(false);
+  if (typeof salvarDestaquesDoEvento === 'function') salvarDestaquesDoEvento();
 }
 function addRegra() {
   const v = $('novaPalavra').value.trim();
@@ -384,7 +387,12 @@ function montarRegras() {
     const b = document.createElement('button');
     b.textContent = 'Limpar destaques';
     b.style.padding = '3px 10px';
-    b.onclick = () => { regras = []; cliques = {}; montarRegras(); mudou(false); };
+    b.onclick = () => {
+      regras = []; cliques = {};
+      montarRegras();
+      mudou(false);
+      if (typeof salvarDestaquesDoEvento === 'function') salvarDestaquesDoEvento();
+    };
     box.appendChild(b);
   }
 }
