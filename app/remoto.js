@@ -127,12 +127,19 @@ function executarRemoto(cmd) {
     case 'midiaParar': pararMidia(); break;
     case 'midiaProxima': proximaMidia(1); break;
     case 'midiaAnterior': proximaMidia(-1); break;
-    case 'midiaVolume':
-      $('pVol').value = cmd.valor;
+    case 'midiaVolume': {
+      // o celular manda o valor certo (barra) ou um passo de +5/-5 (botões)
+      const v = cmd.d != null ? MP.volume + cmd.d : cmd.valor;
+      $('pVol').value = Math.max(0, Math.min(100, Math.round(v)));
       $('pVol').dispatchEvent(new Event('input'));
       break;
+    }
     // arquivo que o celular enviou (já gravado no PC)
-    case 'arquivoRecebido': if (cmd.caminho) adicionarArquivos([cmd.caminho]); break;
+    case 'arquivoRecebido':
+      if (!cmd.caminho) break;
+      if (cmd.destino === 'musica' && window.Musicas) Musicas.adicionar([cmd.caminho]);
+      else adicionarArquivos([cmd.caminho]);
+      break;
     // programação (pré-culto automático)
     case 'progIniciar': window.Programacao?.iniciar(); break;
     case 'progRetomar': window.Programacao?.retomar(); break;
@@ -176,6 +183,22 @@ function executarRemoto(cmd) {
       }
       usarPreset(p, 'juntar');
       if (trocar) { selecionarPrevia(0); definirPresetAtivo(p.id); }
+      break;
+    }
+    // roteiro montado no celular sem conexão: vira um preset aqui
+    case 'presetDoCelular': {
+      const limpos = (cmd.itens || []).filter(ev => ev && ['versiculo', 'texto', 'preta', 'fundo'].includes(ev.tipo))
+        .map(ev => limparEvento({ ...ev, id: novoId() }))
+        .slice(0, 300);
+      if (!limpos.length) break;
+      let nome = (cmd.nome || 'Do celular').slice(0, 60);
+      const base = nome;
+      for (let n = 2; typeof nomeRepetido === 'function' && nomeRepetido(nome); n++) nome = `${base} (${n})`;
+      const agora = Date.now();
+      meusPresets.unshift({ id: novoId(), nome, criado: agora, alterado: agora, itens: limpos });
+      salvarPresets();
+      if (typeof montarPresets === 'function') montarPresets();
+      toast(`Preset "${nome}" criado com o roteiro do celular (${limpos.length} eventos)`);
       break;
     }
     case 'presetSalvar': {

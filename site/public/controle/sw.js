@@ -1,7 +1,8 @@
 // Guarda o app no celular para ele abrir mesmo sem internet (só com o Wi-Fi da igreja).
 // Busca a versão nova quando tem internet; sem internet usa a cópia guardada.
-const CACHE = 'bible-controle-v2';
+const CACHE = 'bible-controle-v3';
 const ARQUIVOS = ['/controle/', '/controle/app.js', '/controle/icones.js', '/controle/controle.css', '/controle/manifest.webmanifest',
+  '/controle/bible_acf.js', '/controle/rascunho.js',
   '/icon.png', '/icon-512.png', '/logo.png'];
 
 self.addEventListener('install', e => {

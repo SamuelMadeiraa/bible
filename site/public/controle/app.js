@@ -51,7 +51,9 @@ function conectar(pc) {
   clearTimeout(timerAuto);
   salvarPc(pc);
   try { sessionStorage.setItem('conectou', '1'); } catch (e) {}
-  location.href = `http://${pc.host}/controle?pin=${encodeURIComponent(pc.pin)}`;
+  // leva o roteiro montado no celular para o computador (vira preset lá)
+  const extra = window.Rascunho ? Rascunho.paraLink() : '';
+  location.href = `http://${pc.host}/controle?pin=${encodeURIComponent(pc.pin)}${extra}`;
 }
 
 // ---------- telas ----------

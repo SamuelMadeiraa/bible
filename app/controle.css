@@ -251,3 +251,12 @@ main{flex:1;overflow:hidden;min-height:0}
 #roteiroLista .item .edit button{background:none;border:0;color:var(--fraco);padding:8px 6px}
 #roteiroLista .item .edit .ico{width:18px;height:18px}
 #listaPresets .linha small{display:block;color:var(--fraco);font-size:.75rem}
+
+/* botão de pôr o versículo no roteiro, na lista da Bíblia */
+.por-no-roteiro{background:rgba(90,160,239,.14);border:1px solid rgba(90,160,239,.35);color:var(--azul,#5aa0ef);border-radius:10px;padding:8px 10px;margin-right:6px}
+.por-no-roteiro .ico{width:18px;height:18px;display:block}
+
+/* roteiro que veio montado do celular */
+.rascunho-recebido{position:fixed;left:12px;right:12px;bottom:86px;z-index:60;box-shadow:0 20px 60px -20px #000}
+.rascunho-recebido[hidden]{display:none}
+.rascunho-recebido b{display:block;margin-bottom:4px}

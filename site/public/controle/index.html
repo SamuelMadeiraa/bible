@@ -92,6 +92,43 @@
     <button class="btn primario">Salvar e conectar</button>
   </form>
 
+  <!-- montar o roteiro sem estar conectado -->
+  <button id="rAbrir" class="btn largo"><i data-i="list-plus"></i>Montar o roteiro sem conectar</button>
+
+  <section id="telaRascunho" class="cartao" hidden>
+    <small class="rotulo">Roteiro montado no celular</small>
+    <p class="sub">Monte a lista agora, mesmo longe do computador. Quando você abrir o controle de um PC, ela vira um <b>preset</b> lá.</p>
+
+    <label class="campo">Nome
+      <input id="rNome" placeholder="ex: Culto de domingo" maxlength="60" />
+    </label>
+
+    <div class="escolha">
+      <label>Livro<select id="rLivro"></select></label>
+      <label>Cap.<select id="rCap"></select></label>
+      <label>De<select id="rV1"></select></label>
+      <label>Até<select id="rV2"></select></label>
+    </div>
+    <p class="r-ref" id="rRef"></p>
+    <p class="r-previa" id="rPrevia"></p>
+    <div class="acoes-linha">
+      <button id="rPor" class="btn primario"><i data-i="list-plus"></i>Pôr na lista</button>
+      <button id="rPreta" class="btn">Tela preta</button>
+      <button id="rFundo" class="btn">Só o fundo</button>
+    </div>
+
+    <label class="campo">Aviso
+      <input id="rAvisoTitulo" placeholder="Título (opcional)" maxlength="80" />
+    </label>
+    <textarea id="rAvisoTexto" rows="2" placeholder="Escreva o aviso…" maxlength="600"></textarea>
+    <button id="rAviso" class="btn largo"><i data-i="type"></i>Pôr aviso na lista</button>
+
+    <div class="r-cab"><b>Na lista: <span id="rQuantos">0</span></b>
+      <button id="rLimpar" class="btn pequeno" hidden>Limpar</button></div>
+    <div id="rLista" class="r-lista"></div>
+    <p class="dica">Ao abrir o controle de um computador, o app pergunta se você quer criar o preset lá.</p>
+  </section>
+
   <!-- outros computadores -->
   <section id="telaLista" hidden>
     <small class="rotulo">Computadores salvos</small>
@@ -102,6 +139,8 @@
 </main>
 
 <script src="/controle/icones.js"></script>
+<script src="/controle/bible_acf.js"></script>
+<script src="/controle/rascunho.js"></script>
 <script src="/controle/app.js"></script>
 </body>
 </html>

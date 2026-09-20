@@ -19,8 +19,7 @@ window.Layout = (function () {
     ajustes:  { titulo: 'Ajustes',   icone: 'palette',            bloco: 'blocoAjustes' },
     musicas:  { titulo: 'Músicas',   icone: 'music',              bloco: 'blocoMusicas' },
   };
-  // a playlist de músicas está em teste: só aparece no BibleLyrics DEV
-  if (!(window.bridge && window.bridge.teste)) { delete PAINEIS.musicas; $('blocoMusicas')?.remove(); }
+
 
   if (!DV || !DV.createDockview) {
     // sem a biblioteca: mostra os blocos empilhados, para o app continuar funcionando
@@ -82,6 +81,7 @@ window.Layout = (function () {
       add('palavras', { referencePanel: 'comandos', direction: 'below' });
       add('roteiro', { direction: 'below' });
       add('midia', { referencePanel: 'roteiro', direction: 'right' });
+      add('musicas', { referencePanel: 'midia', direction: 'within' }, { inactive: true });
       add('biblia', { direction: 'left' });
       add('ajustes', { direction: 'right' });
       largura('biblia', 300); largura('ajustes', 320); largura('midia', 290);
@@ -93,6 +93,7 @@ window.Layout = (function () {
       add('comandos', { direction: 'below' });
       add('roteiro', { direction: 'below' });
       add('midia', { referencePanel: 'roteiro', direction: 'within' }, { inactive: true });
+      add('musicas', { referencePanel: 'midia', direction: 'within' }, { inactive: true });
       add('biblia', { direction: 'left' });
       largura('biblia', 320);
       altura('comandos', 76); altura('roteiro', 340);
@@ -198,6 +199,10 @@ window.Layout = (function () {
   let salvo = null;
   try { salvo = JSON.parse(localStorage.getItem(CHAVE) || 'null'); } catch (e) {}
   if (!(salvo && restaurar(salvo))) aplicarLayout(CFG.simples ? 'simples' : 'padrao');
+  // painel novo: entra junto da Mídia nos layouts que foram salvos antes dele existir
+  if (!api.getPanel('musicas') && api.getPanel('midia')) {
+    try { add('musicas', { referencePanel: 'midia', direction: 'within' }, { inactive: true }); salvarAuto(); } catch (e) {}
+  }
   montarMenuPaineis();
 
   return { aplicarModo, aplicarLayout, api };

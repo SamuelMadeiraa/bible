@@ -757,12 +757,32 @@ function receberArquivo(req, res) {
     if (res.headersSent) return;
     fs.rename(temp, destino, err => {
       if (err) return responder(500, { erro: 'Não consegui gravar o arquivo' });
-      if (opWin) opWin.webContents.send('remoto', { acao: 'arquivoRecebido', caminho: destino });
+      if (opWin) opWin.webContents.send('remoto', { acao: 'arquivoRecebido', caminho: destino, destino: q.get('destino') || 'roteiro' });
       analytics.enviar('arquivo_do_celular', { tipo: ext, mb: Math.round(recebido / 1048576) });
       responder(200, { ok: true, nome: path.basename(destino) });
     });
   });
   req.pipe(saida);
+}
+
+// monta um .bible com o roteiro que está aberto e manda para o celular
+async function exportarRoteiro(res) {
+  if (!opWin) { res.writeHead(503); return res.end(); }
+  const txt = await opWin.webContents.executeJavaScript('JSON.stringify(MP.itens.map(limparEvento))', true);
+  const itens = JSON.parse(txt || '[]');
+  if (!itens.length) {
+    res.writeHead(409, { 'Content-Type': 'application/json; charset=utf-8' });
+    return res.end(JSON.stringify({ erro: 'O roteiro está vazio' }));
+  }
+  const nome = 'Roteiro ' + new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const r = await biblioteca.exportar({ tipo: 'preset', nome, dados: { preset: { nome, itens } }, midias: [], incluirMidias: false, auto: true });
+  if (!r) { res.writeHead(500); return res.end(); }
+  res.writeHead(200, {
+    'Content-Type': 'application/octet-stream',
+    'Content-Disposition': `attachment; filename="${nome}.bible"`,
+    'Content-Length': r.bytes,
+  });
+  fs.createReadStream(r.caminho).pipe(res);
 }
 
 function servirArquivo(res, arquivo) {
@@ -820,6 +840,13 @@ function startServer(port, tentativas = 10) {
       return res.end(JSON.stringify(estadoRemoto || {}));
     }
     // arquivo enviado pelo celular: vai para Documentos\BibleLyrics\Do celular e entra no roteiro
+    // o celular baixa o roteiro em um arquivo .bible, para compartilhar com outra igreja
+    if (url === '/api/roteiro.bible') {
+      const acesso = autorizar(req, new URL(req.url, 'http://x').searchParams.get('pin'));
+      if (acesso !== 'ok') return recusar(res, acesso);
+      return exportarRoteiro(res).catch(() => { if (!res.headersSent) { res.writeHead(500); res.end(); } });
+    }
+
     if (url === '/api/upload' && req.method === 'POST') return receberArquivo(req, res);
 
     if (url === '/api/cmd' && req.method === 'POST') {

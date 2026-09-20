@@ -7,7 +7,7 @@ const SENHA_OK = /^(\d{4}|[0-9a-f]{32})$/;
 const pinDoLink = new URLSearchParams(location.search).get('pin');
 if (SENHA_OK.test(pinDoLink || '')) {
   localStorage.setItem('bibleStudioPin', pinDoLink);
-  history.replaceState(null, '', location.pathname);
+  history.replaceState(null, '', location.pathname + location.hash);   // o # pode trazer o roteiro montado no celular
 }
 let PIN = localStorage.getItem('bibleStudioPin') || '';
 let E = null;              // último estado recebido do PC
@@ -124,6 +124,18 @@ function aplicarEstado(st) {
       d.className = 'item';
       d.dataset.i = i;
       d.innerHTML = `<b>${i + 1}</b><span>${esc(t)}</span>`;
+      // + põe direto no roteiro; NO AR joga na tela na hora
+      const mais = document.createElement('button');
+      mais.className = 'por-no-roteiro';
+      mais.title = 'Pôr no roteiro';
+      mais.innerHTML = icone('list-plus');
+      mais.onclick = ev => {
+        ev.stopPropagation();
+        vibrar();
+        enviar('addVersiculo', { b: st.livroIdx, c: st.cap, v1: i });
+        toast('Versículo no roteiro');
+      };
+      d.appendChild(mais);
       const b = document.createElement('button');
       b.className = 'tocar';
       b.textContent = 'NO AR';
@@ -297,6 +309,61 @@ $('formBusca').onsubmit = e => {
   $('busca').blur();
 };
 
+// ---------- roteiro montado no celular sem conexão (veio no endereço) ----------
+(function () {
+  let dados = null;
+  const m = location.hash.match(/rascunho=([^&]+)/);
+  if (!m) return;
+  try { dados = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); } catch (e) { return; }
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!dados || !(dados.itens || []).length) return;
+  const caixa = $('rascunhoRecebido');
+  caixa.hidden = false;
+  $('rascunhoTxt').textContent = `${dados.itens.length} evento${dados.itens.length === 1 ? '' : 's'} montados no celular${dados.nome ? ' — "' + dados.nome + '"' : ''}.`;
+  $('rascunhoNao').onclick = () => { caixa.hidden = true; };
+  $('rascunhoSim').onclick = () => {
+    const nome = dados.nome || ('Do celular ' + new Date().toLocaleDateString('pt-BR'));
+    enviar('presetDoCelular', { nome, itens: dados.itens });
+    caixa.hidden = true;
+    toast('Preset criado no computador');
+  };
+})();
+
+// ---------- enviar músicas do celular para a playlist do computador ----------
+$('inMusicas').addEventListener('change', e => {
+  const arquivos = [...e.target.files];
+  e.target.value = '';
+  arquivos.forEach(a => enviarArquivo(a, 'musica', $('enviosMus')));
+});
+
+// ---------- compartilhar o roteiro ----------
+$('btnCopiarRoteiro').onclick = async () => {
+  const lista = (E && E.roteiro) || [];
+  if (!lista.length) return toast('O roteiro está vazio');
+  const txt = 'Roteiro do culto:' + String.fromCharCode(10) +
+    lista.map((x, i) => `${i + 1}. ${x.nome}${x.sub ? ' — ' + x.sub : ''}`).join(String.fromCharCode(10));
+  try {
+    if (navigator.share) await navigator.share({ title: 'Roteiro do culto', text: txt });
+    else { await navigator.clipboard.writeText(txt); toast('Lista copiada'); }
+  } catch (err) { try { await navigator.clipboard.writeText(txt); toast('Lista copiada'); } catch (e2) {} }
+};
+$('btnBaixarRoteiro').onclick = async () => {
+  if (!((E && E.roteiro) || []).length) return toast('O roteiro está vazio');
+  toast('Preparando o arquivo…');
+  try {
+    const r = await fetch('api/roteiro.bible?pin=' + encodeURIComponent(PIN));
+    if (r.status === 409) return toast('O roteiro está vazio');
+    if (!r.ok) return toast('Não consegui gerar o arquivo');
+    const blob = await r.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Roteiro.bible';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Arquivo salvo no celular');
+  } catch (e) { toast('Não consegui baixar o arquivo'); }
+};
+
 // ---------- destacar palavras e montar o roteiro ----------
 const CORES = ['#FFD400', '#FF8A00', '#FF4D4D', '#FF5FA2', '#B57BFF', '#4DC3FF', '#37D67A', '#FFFFFF'];
 let corEscolhida = CORES[0];
@@ -418,6 +485,8 @@ $('mParar').onclick = () => enviar('midiaParar');
 $('mProxima').onclick = () => enviar('midiaProxima');
 $('mAnterior').onclick = () => enviar('midiaAnterior');
 $('mVol').addEventListener('change', e => enviar('midiaVolume', { valor: +e.target.value }));
+$('mMais').onclick = () => enviar('midiaVolume', { d: 5 });
+$('mMenos').onclick = () => enviar('midiaVolume', { d: -5 });
 
 $('progCelIniciar').onclick = () => { enviar('progIniciar'); toast('Pré-culto começando'); };
 $('progCelRetomar').onclick = () => enviar('progRetomar');
@@ -426,17 +495,19 @@ $('progCelParar').onclick = () => { if (confirm('Parar a programação?')) envia
 // ---------- enviar vídeos, fotos e áudios para o computador ----------
 const tamanho = b => b > 1073741824 ? (b / 1073741824).toFixed(1) + ' GB' : b > 1048576 ? (b / 1048576).toFixed(0) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
 let filaEnvio = Promise.resolve();
-function enviarArquivo(arquivo) {
+// destino: "roteiro" (padrão) ou "musica" (vai para a playlist de músicas)
+function enviarArquivo(arquivo, destino, caixa) {
   const item = document.createElement('div');
   item.className = 'envio-item';
   item.innerHTML = '<div class="nome"><span></span><span>na fila</span></div><div class="barra"><div></div></div>';
   item.querySelector('.nome span').textContent = arquivo.name;
   const info = item.querySelector('.nome span:last-child');
   const barra = item.querySelector('.barra div');
-  $('envios').prepend(item);
+  (caixa || $('envios')).prepend(item);
   return new Promise(pronto => {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'api/upload?pin=' + encodeURIComponent(PIN) + '&nome=' + encodeURIComponent(arquivo.name));
+    xhr.open('POST', 'api/upload?pin=' + encodeURIComponent(PIN) + '&nome=' + encodeURIComponent(arquivo.name)
+      + (destino === 'musica' ? '&destino=musica' : ''));
     xhr.upload.onprogress = e => {
       if (!e.lengthComputable) return;
       const pct = Math.round(e.loaded / e.total * 100);
@@ -446,7 +517,7 @@ function enviarArquivo(arquivo) {
     xhr.onload = () => {
       let r = {};
       try { r = JSON.parse(xhr.responseText); } catch (e) {}
-      if (xhr.status === 200) { item.classList.add('ok'); barra.style.width = '100%'; info.textContent = 'no roteiro'; }
+      if (xhr.status === 200) { item.classList.add('ok'); barra.style.width = '100%'; info.textContent = destino === 'musica' ? 'na playlist' : 'no roteiro'; }
       else if (xhr.status === 401) { item.classList.add('erro'); info.textContent = 'senha incorreta'; pedirSenha('Senha incorreta.'); }
       else if (xhr.status === 429) { item.classList.add('erro'); info.textContent = 'bloqueado'; pedirSenha(r.erro); }
       else { item.classList.add('erro'); info.textContent = r.erro || 'falhou'; }

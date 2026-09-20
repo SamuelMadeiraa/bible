@@ -66,3 +66,20 @@ video { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; ba
 .ico-depois { margin-left: .3em; }
 .ic .ico { width: 1em; height: 1em; vertical-align: -.15em; }
 .pc button.apagar .ico { width: 18px; height: 18px; vertical-align: -.2em; }
+
+/* montar o roteiro sem conectar */
+.btn.largo{width:100%;justify-content:center}
+#telaRascunho .campo{display:block;margin:10px 0}
+#telaRascunho input,#telaRascunho textarea,#telaRascunho select{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:inherit;border-radius:10px;padding:11px;font:inherit;margin-top:4px}
+.escolha{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-top:10px;font-size:.8rem}
+.r-ref{font-weight:700;margin:12px 0 4px}
+.r-previa{color:#c8c9cd;font-size:.9rem;margin:0 0 12px}
+.acoes-linha{display:flex;gap:8px;flex-wrap:wrap}
+.acoes-linha .btn{flex:1;justify-content:center}
+.r-cab{display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px}
+.r-lista{display:flex;flex-direction:column;gap:6px}
+.r-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-radius:10px;padding:10px}
+.r-n{color:#8b929c;font-size:.8rem;min-width:18px}
+.r-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.r-txt small{display:block;color:#8b929c;font-size:.75rem}
+.r-item button{background:none;border:0;color:#8b929c;font-size:1rem;padding:4px 8px}

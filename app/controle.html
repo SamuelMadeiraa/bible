@@ -126,6 +126,15 @@
         <button class="btn perigo largo" id="btnLimparRoteiro"><i data-i="trash-2"></i>Limpar o roteiro</button>
       </div>
 
+      <div class="cartao" id="cxCompartilhar">
+        <div class="rotulo">COMPARTILHAR O ROTEIRO</div>
+        <div class="acoes-linha">
+          <button class="btn" id="btnCopiarRoteiro"><i data-i="copy"></i>Copiar a lista</button>
+          <button class="btn primario" id="btnBaixarRoteiro"><i data-i="download"></i>Arquivo .bible</button>
+        </div>
+        <p class="dica">O arquivo .bible leva o roteiro inteiro para outro computador.</p>
+      </div>
+
       <div class="cartao" id="cxPresets">
         <div class="rotulo">PRESETS DE REUNIÃO</div>
         <div class="lista" id="listaPresets"></div>
@@ -149,7 +158,12 @@
           <button id="mParar" class="btn redondo" aria-label="Parar"><i data-i="square"></i></button>
           <button id="mProxima" class="btn redondo" aria-label="Próxima mídia"><i data-i="skip-forward"></i></button>
         </div>
-        <label class="vol"><i data-i="volume-2"></i><input type="range" id="mVol" min="0" max="100" /> <b id="mVolTxt">80%</b></label>
+        <div class="vol-botoes">
+          <button id="mMenos" class="btn vol-btn" aria-label="Abaixar o volume"><i data-i="volume-2"></i><span>−</span></button>
+          <div class="vol-num"><b id="mVolTxt">80%</b><small>volume no PC</small></div>
+          <button id="mMais" class="btn vol-btn" aria-label="Aumentar o volume"><i data-i="volume-2"></i><span>+</span></button>
+        </div>
+        <input type="range" id="mVol" min="0" max="100" aria-label="Volume da mídia" />
         <p class="dica" id="midiaStatus"></p>
       </div>
 
@@ -190,6 +204,9 @@
 
       <div class="cartao">
         <div class="rotulo">PLAYLIST</div>
+        <label class="btn primario largo" for="inMusicas"><i data-i="file-plus-2"></i>Enviar música do celular</label>
+        <input type="file" id="inMusicas" accept="audio/*" multiple hidden />
+        <div class="envios" id="enviosMus"></div>
         <div class="lista" id="musLista"></div>
         <p class="dica">As músicas são adicionadas no computador, no painel <b>Músicas</b>.</p>
       </div>
@@ -224,6 +241,15 @@
     <button data-tab="musica" id="abaMusica" hidden><i data-i="music"></i><span>Música</span></button>
     <button data-tab="tela"><i data-i="monitor"></i><span>Tela</span></button>
   </nav>
+</div>
+
+<div class="cartao rascunho-recebido" id="rascunhoRecebido" hidden>
+  <b>Roteiro montado no celular</b>
+  <p class="dica" id="rascunhoTxt"></p>
+  <div class="acoes-linha">
+    <button class="btn" id="rascunhoNao">Agora não</button>
+    <button class="btn primario" id="rascunhoSim"><i data-i="save"></i>Criar preset no PC</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
