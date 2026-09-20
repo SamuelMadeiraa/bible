@@ -51,6 +51,7 @@ contextBridge.exposeInMainWorld('bridge', {
   lerBible: caminho => ipcRenderer.invoke('bible:ler', caminho),
   biblePendente: () => ipcRenderer.invoke('bible:pendente'),
   estadoAtualizacao: () => ipcRenderer.invoke('atualizacao:estado'),
+  verificarAtualizacao: () => ipcRenderer.invoke('atualizacao:verificar'),
   instalarAtualizacao: () => ipcRenderer.send('atualizacao:instalar'),
 
   // controle pelo celular

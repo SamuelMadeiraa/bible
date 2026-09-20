@@ -336,12 +336,46 @@ $('btnRestaurar').onclick = () => abrirBible();
 $('btnAbrirBible').onclick = () => abrirBible();
 
 // ---------- atualização automática ----------
+// mostra em que pé está a atualização: procurando, baixando, pronta ou em dia
+let avisoPedido = false;             // "em dia" e erros só aparecem quando o operador mandou procurar
 function mostrarAtualizacao(a) {
-  if (!a || !a.pronta) return;
-  $('avisoAtualizacao').hidden = false;
-  $('avisoAtualizacaoTxt').textContent = `A versão ${a.pronta} do BibleLyrics já foi baixada. Ela é instalada quando você fechar o app — ou agora:`;
+  if (!a) return;
+  const caixa = $('avisoAtualizacao'), txt = $('avisoAtualizacaoTxt');
+  const barra = $('avisoBarra'), botao = $('btnReiniciar');
+  const versao = a.versao || a.pronta || a.baixando || '';
+  barra.hidden = true;
+  botao.hidden = true;
+  caixa.classList.remove('calma');
+  if (a.fase === 'pronta' || a.pronta) {
+    txt.textContent = `A versão ${versao} do BibleLyrics já foi baixada. Ela é instalada quando você fechar o app — ou agora:`;
+    botao.hidden = false;
+  } else if (a.fase === 'baixando') {
+    txt.textContent = `Versão ${versao} disponível — baixando sozinho${a.porcento ? ` (${a.porcento}%)` : ''}. Aviso quando estiver pronta.`;
+    barra.hidden = false;
+    barra.firstElementChild.style.width = (a.porcento || 3) + '%';
+  } else if (a.fase === 'procurando' && avisoPedido) {
+    txt.textContent = 'Procurando uma versão nova…';
+    caixa.classList.add('calma');
+  } else if (a.fase === 'em-dia' && avisoPedido) {
+    txt.textContent = 'Você já está na versão mais nova do BibleLyrics.';
+    caixa.classList.add('calma');
+    setTimeout(() => { if (caixa.classList.contains('calma')) caixa.hidden = true; }, 6000);
+  } else if (a.fase === 'erro' && avisoPedido) {
+    txt.textContent = 'Não consegui verificar agora — veja a conexão com a internet e tente de novo.';
+    caixa.classList.add('calma');
+  } else if (!a.ativa && avisoPedido) {
+    txt.textContent = 'Esta é a versão portátil: ela não se atualiza sozinha. Baixe a nova pelo site.';
+    caixa.classList.add('calma');
+  } else { caixa.hidden = true; return; }
+  caixa.hidden = false;
 }
 $('btnReiniciar').onclick = () => ponte.instalarAtualizacao();
+$('btnVerificar').onclick = async () => {
+  if (!ponte || !ponte.verificarAtualizacao) return;
+  avisoPedido = true;
+  mostrarAtualizacao({ fase: 'procurando', ativa: true });
+  mostrarAtualizacao(await ponte.verificarAtualizacao());
+};
 
 // ---------- janelas ----------
 function abrir(id) { $(id).classList.add('on'); }

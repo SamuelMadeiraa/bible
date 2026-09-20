@@ -25,6 +25,7 @@ const MP = {
   loop: false,        // repetir a mídia atual
   volume: 80,
   imgSeg: 8,
+  imgFixa: false,     // foto sem tempo: fica no ar até o operador trocar
 };
 try { Object.assign(MP, JSON.parse(localStorage.getItem('bibleStudioMidia') || '{}')); } catch (e) {}
 const CAMPOS = ['id', 'tipo', 'caminho', 'nome', 'dur', 'semSuporte', 'motivo', 'b', 'c', 'v1', 'v2', 'titulo', 'texto', 'url', 'cheia', 'embed', 'externo'];
@@ -290,7 +291,7 @@ function montarLista() {
     if (ehMidia(ev)) {
       const dur = document.createElement('span');
       dur.className = 'dur';
-      dur.textContent = ev.tipo === 'imagem' ? (MP.auto ? `${MP.imgSeg}s` : 'fixa') : ev.dur ? fmt(ev.dur) : '—';
+      dur.textContent = ev.tipo === 'imagem' ? (MP.auto && !MP.imgFixa ? `${MP.imgSeg}s` : 'fixa') : ev.dur ? fmt(ev.dur) : '—';
       d.appendChild(dur);
     }
     if (ev.semSuporte) {
@@ -587,8 +588,8 @@ function tocarItem(i, t = 0) {
   });
   tocando = true;
   tAtual = t;
-  durAtual = item.tipo === 'imagem' ? MP.imgSeg : (item.dur || 0);
-  if (item.tipo === 'imagem' && MP.auto && !MP.loop) {
+  durAtual = item.tipo === 'imagem' ? (MP.imgFixa ? 0 : MP.imgSeg) : (item.dur || 0);
+  if (item.tipo === 'imagem' && MP.auto && !MP.loop && !MP.imgFixa) {
     imgIni = Date.now() - t * 1000;
     imgTimer = setTimeout(aoFim, Math.max(200, (MP.imgSeg - t) * 1000));
   }
@@ -617,7 +618,7 @@ function alternarPlay() {
   if (!item) return;
   if (item.tipo === 'imagem') {
     if (tocando) { clearTimeout(imgTimer); imgTimer = null; }
-    else if (MP.auto && !MP.loop) { imgIni = Date.now() - tAtual * 1000; imgTimer = setTimeout(aoFim, Math.max(200, (MP.imgSeg - tAtual) * 1000)); }
+    else if (MP.auto && !MP.loop && !MP.imgFixa) { imgIni = Date.now() - tAtual * 1000; imgTimer = setTimeout(aoFim, Math.max(200, (MP.imgSeg - tAtual) * 1000)); }
     tocando = !tocando;
   } else {
     ponte.sendMedia({ a: tocando ? 'pause' : 'play' });
@@ -907,6 +908,23 @@ $('pImgSeg').addEventListener('change', e => {
   salvarMidia();
   agendarLista();
 });
+// foto sem tempo: some o campo de segundos e a foto no ar fica até trocarem
+function mostrarImgFixa() {
+  $('pImgSeg').disabled = MP.imgFixa;
+  $('campoImgSeg').classList.toggle('desligado', MP.imgFixa);
+}
+ligarCheck('pImgFixa', 'imgFixa', () => {
+  mostrarImgFixa();
+  const item = itemAtual();
+  if (MP.imgFixa) { clearTimeout(imgTimer); imgTimer = null; durAtual = 0; }
+  else if (item?.tipo === 'imagem' && tocando && MP.auto && !MP.loop) {
+    imgIni = Date.now() - tAtual * 1000;
+    imgTimer = setTimeout(aoFim, Math.max(200, (MP.imgSeg - tAtual) * 1000));
+    durAtual = MP.imgSeg;
+  }
+  agendarLista();
+});
+mostrarImgFixa();
 
 // atalhos de mídia: Ctrl+Espaço toca/pausa, Ctrl+setas trocam de mídia
 addEventListener('keydown', e => {

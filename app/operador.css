@@ -611,3 +611,7 @@ body.arrastando-passagem #blocoRoteiro .playlist,body.arrastando-passagem #bloco
 .marcados-barra .btn-add{background:#5aa0ef;color:#06121f;order:2;flex:1 1 100%;justify-content:center}
 .marcados-barra .btn-limpar{background:transparent;color:inherit;padding:7px}
 .marcados-barra .ico{width:16px;height:16px;margin:0}
+
+/* campo de segundos da foto desligado (quando a foto fica até trocar) */
+.p-opts .inline.desligado{opacity:.45}
+.p-opts .inline.desligado input{cursor:not-allowed}

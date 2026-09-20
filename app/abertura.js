@@ -13,6 +13,7 @@
   setTimeout(() => Biblioteca.backupAutomatico(), 5000);
   if (ponte) ponte.on('atualizacao', a => {
     if (a.pronta) toast(`BibleLyrics ${a.pronta} baixado — será instalado quando você fechar o app`);
+    else if (a.fase === 'baixando' && !a.porcento) toast(`Versão ${a.versao} do BibleLyrics disponível — baixando em segundo plano`);
   });
 
   const pedido = ler('bibleStudioAbrir');
