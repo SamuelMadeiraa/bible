@@ -84,6 +84,18 @@
         </form>
         <div class="lista" id="resultados"></div>
       </div>
+
+      <div class="cartao destaques" id="cxPalavras">
+        <div class="cab-linha">
+          <span class="rotulo">DESTACAR PALAVRAS</span>
+          <div class="cores" id="coresDestaque"></div>
+        </div>
+        <div class="palavras" id="palavrasPrev"></div>
+        <div class="acoes-linha">
+          <button class="btn" id="btnLimparDest"><i data-i="x"></i>Limpar</button>
+          <button class="btn primario" id="btnAddRoteiro"><i data-i="list-plus"></i>Pôr no roteiro</button>
+        </div>
+      </div>
     </section>
 
     <!-- ROTEIRO -->
@@ -99,6 +111,29 @@
       </div>
       <p class="dica">Toque num evento para a prévia • <b>No ar</b> coloca direto na tela</p>
       <div class="lista" id="roteiroLista"></div>
+      <div class="cartao" id="cxMontar">
+        <div class="rotulo">ADICIONAR AO ROTEIRO</div>
+        <div class="acoes-linha">
+          <button class="btn" id="btnAddVers"><i data-i="book-open"></i>Versículo da prévia</button>
+          <button class="btn" id="btnAddPreta"><i data-i="square"></i>Tela preta</button>
+          <button class="btn" id="btnAddFundo"><i data-i="image"></i>Só o fundo</button>
+        </div>
+        <div class="aviso-novo">
+          <input type="text" id="avisoTitulo" placeholder="Título do aviso (opcional)" maxlength="80" />
+          <textarea id="avisoTexto" rows="2" placeholder="Escreva o aviso… ex: Santa Ceia no próximo domingo" maxlength="600"></textarea>
+          <button class="btn largo" id="btnAddAviso"><i data-i="type"></i>Pôr aviso no roteiro</button>
+        </div>
+        <button class="btn perigo largo" id="btnLimparRoteiro"><i data-i="trash-2"></i>Limpar o roteiro</button>
+      </div>
+
+      <div class="cartao" id="cxPresets">
+        <div class="rotulo">PRESETS DE REUNIÃO</div>
+        <div class="lista" id="listaPresets"></div>
+        <div class="aviso-novo">
+          <input type="text" id="presetNome" placeholder="Nome do preset novo" maxlength="60" />
+          <button class="btn largo" id="btnSalvarPreset"><i data-i="save"></i>Salvar o roteiro como preset</button>
+        </div>
+      </div>
     </section>
 
     <!-- MÍDIA -->

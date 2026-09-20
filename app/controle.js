@@ -172,6 +172,9 @@ function aplicarEstado(st) {
 
   desenharMidia(st.midia);
   desenharMusica(st.musicas);
+  desenharPalavras(st.palavras, st.coresDestaque);
+  desenharPresets(st.presets, st.presetAtivo);
+  desenharEdicaoRoteiro(st);
   desenharRoteiro(st);
   desenharProgramacao(st.programacao);
 }
@@ -186,7 +189,7 @@ function desenharRoteiro(st) {
     box.dataset.chave = chave;
     box.innerHTML = '';
     if (!lista.length) {
-      box.innerHTML = '<div class="cartao dica">O roteiro está vazio. Monte no computador (Adicionar ou Presets) ou envie vídeos e fotos pela aba <b>Mídia</b>.</div>';
+      box.innerHTML = '<div class="cartao dica">O roteiro está vazio. Monte aqui mesmo: use <b>Adicionar ao roteiro</b> abaixo, abra um preset ou envie vídeos e fotos pela aba <b>Mídia</b>.</div>';
     }
     lista.forEach((ev, i) => {
       const d = document.createElement('div');
@@ -292,6 +295,85 @@ $('formBusca').onsubmit = e => {
   if (q.length < 3) return toast('Digite pelo menos 3 letras');
   enviar('buscar', { q });
   $('busca').blur();
+};
+
+// ---------- destacar palavras e montar o roteiro ----------
+const CORES = ['#FFD400', '#FF8A00', '#FF4D4D', '#FF5FA2', '#B57BFF', '#4DC3FF', '#37D67A', '#FFFFFF'];
+let corEscolhida = CORES[0];
+
+function desenharPalavras(lista, cor) {
+  const box = $('palavrasPrev');
+  if (!box) return;
+  box.innerHTML = (lista || []).map((p, i) =>
+    `<button class="pal${p.cor ? ' on' : ''}" data-i="${i}"${p.cor ? ` style="background:${p.cor};color:#0b1220"` : ''}>${esc(p.t)}</button>`).join('')
+    || '<p class="dica">Escolha um versículo na Bíblia para destacar as palavras.</p>';
+  box.querySelectorAll('.pal').forEach(b => b.onclick = () => { vibrar(); enviar('destacar', { i: +b.dataset.i }); });
+  const cores = $('coresDestaque');
+  if (cores && !cores.children.length) {
+    cores.innerHTML = CORES.map(c => `<button class="cor" data-c="${c}" style="background:${c}"></button>`).join('');
+    cores.querySelectorAll('.cor').forEach(b => b.onclick = () => {
+      corEscolhida = b.dataset.c;
+      cores.querySelectorAll('.cor').forEach(x => x.classList.toggle('on', x === b));
+      enviar('corDestaque', { cor: corEscolhida });
+    });
+    cores.firstElementChild.classList.add('on');
+  }
+}
+$('btnLimparDest').onclick = () => enviar('limparDestaques');
+$('btnAddRoteiro').onclick = () => { enviar('addVersiculo'); toast('Versículo no roteiro, com os destaques'); };
+$('btnAddVers').onclick = () => { enviar('addVersiculo'); toast('Versículo no roteiro'); };
+$('btnAddPreta').onclick = () => enviar('addEspecial', { tipo: 'preta' });
+$('btnAddFundo').onclick = () => enviar('addEspecial', { tipo: 'fundo' });
+$('btnAddAviso').onclick = () => {
+  const texto = $('avisoTexto').value.trim();
+  if (!texto) return toast('Escreva o aviso primeiro');
+  enviar('addTexto', { titulo: $('avisoTitulo').value.trim(), texto });
+  $('avisoTitulo').value = ''; $('avisoTexto').value = '';
+  toast('Aviso no roteiro');
+};
+$('btnLimparRoteiro').onclick = () => { if (confirm('Limpar o roteiro do computador?')) enviar('limparRoteiro'); };
+
+// mexer na ordem e tirar eventos (botões que aparecem em cada linha do roteiro)
+function desenharEdicaoRoteiro(st) {
+  const total = (st.roteiro || []).length;
+  document.querySelectorAll('#roteiroLista .item').forEach((linha, i) => {
+    if (linha.querySelector('.edit')) return;
+    const box = document.createElement('span');
+    box.className = 'edit';
+    box.innerHTML = `<button data-a="sobe" aria-label="Subir">${icone('chevron-up')}</button>
+      <button data-a="desce" aria-label="Descer">${icone('chevron-down')}</button>
+      <button data-a="tira" aria-label="Tirar do roteiro">${icone('x')}</button>`;
+    box.onclick = e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      e.stopPropagation();
+      vibrar();
+      if (b.dataset.a === 'sobe' && i > 0) enviar('moverEvento', { de: i, para: i - 1 });
+      else if (b.dataset.a === 'desce' && i < total - 1) enviar('moverEvento', { de: i, para: i + 1 });
+      else if (b.dataset.a === 'tira') enviar('removerEvento', { i });
+    };
+    linha.appendChild(box);
+  });
+}
+
+// presets: abrir no computador ou salvar o roteiro atual
+function desenharPresets(lista, ativo) {
+  const box = $('listaPresets');
+  if (!box) return;
+  box.innerHTML = (lista || []).map(p =>
+    `<button class="linha${p.id === ativo ? ' on' : ''}" data-id="${p.id}">
+       <span class="txt">${esc(p.nome)}<small>${p.itens} evento${p.itens === 1 ? '' : 's'}</small></span>
+       ${icone('play')}
+     </button>`).join('') || '<p class="dica">Nenhum preset salvo ainda.</p>';
+  box.querySelectorAll('.linha').forEach(b => b.onclick = () => {
+    if (confirm('Abrir este preset no computador? O roteiro atual será trocado.')) enviar('presetAbrir', { id: b.dataset.id });
+  });
+}
+$('btnSalvarPreset').onclick = () => {
+  const nome = $('presetNome').value.trim();
+  if (!nome) return toast('Dê um nome ao preset');
+  enviar('presetSalvar', { nome });
+  $('presetNome').value = '';
 };
 
 // ---------- música (playlist do computador) ----------

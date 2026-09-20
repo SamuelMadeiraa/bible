@@ -37,6 +37,14 @@ function estadoParaCelular() {
       volume: MP.volume,
       status: $('pStatus') ? $('pStatus').textContent : '',
     },
+    // palavras da prévia com a cor do destaque, para o celular poder destacar também
+    palavras: (() => {
+      const tks = typeof tokens === 'function' ? tokens() : [];
+      const cores = typeof mapaDestaque === 'function' ? mapaDestaque(tks) : [];
+      return tks.slice(0, 120).map((t, i) => ({ t, cor: cores[i] || '' }));
+    })(),
+    presets: typeof meusPresets === 'undefined' ? [] : meusPresets.map(p => ({ id: p.id, nome: p.nome, itens: (p.itens || []).length })),
+    presetAtivo: typeof presetAtivo === 'undefined' ? null : presetAtivo,
     musicas: window.Musicas ? Musicas.estado() : null,
     cron: $('cronValor') ? { valor: $('cronValor').textContent, rotulo: $('cronRotulo').textContent, classe: $('cron').className } : null,
     resultados: ultimosResultados,
@@ -129,6 +137,58 @@ function executarRemoto(cmd) {
     case 'progIniciar': window.Programacao?.iniciar(); break;
     case 'progRetomar': window.Programacao?.retomar(); break;
     case 'progParar': window.Programacao?.parar(); break;
+    // montar o roteiro pelo celular
+    case 'addVersiculo':
+      if (cmd.b != null) irPara(cmd.b, cmd.c, cmd.v1, cmd.v2 ?? cmd.v1);
+      adicionarVersiculoDaPrevia();
+      break;
+    case 'addEspecial': adicionarEspecial(cmd.tipo === 'fundo' ? 'fundo' : 'preta'); break;
+    case 'addTexto':
+      if ((cmd.texto || '').trim()) {
+        adicionarEvento({ tipo: 'texto', titulo: (cmd.titulo || '').slice(0, 80), texto: cmd.texto.slice(0, 600) });
+        toast('Aviso no roteiro');
+      }
+      break;
+    case 'moverEvento': moverEvento(cmd.de, cmd.para); break;
+    case 'removerEvento': removerEvento(cmd.i); break;
+    case 'limparRoteiro': if (MP.itens.length) { registrar(); MP.itens = []; MP.idx = R.prevIdx = R.liveIdx = -1; pararMidia(); salvarMidia(); montarLista(); toast('Roteiro limpo pelo celular'); } break;
+    case 'destacar': if (typeof alternarPalavra === 'function') alternarPalavra(cmd.i); break;
+    case 'corDestaque': if (cmd.cor) { S.hlColor = cmd.cor; salvar(); montarHlSwatches(); } break;
+    case 'limparDestaques':
+      regras = []; cliques = {};
+      montarRegras();
+      mudou(false);
+      if (typeof salvarDestaquesDoEvento === 'function') salvarDestaquesDoEvento();
+      break;
+    // pelo celular não dá para responder uma pergunta na tela do PC: o operador já
+    // confirmou no próprio celular, então aqui a troca é direta
+    case 'presetAbrir': {
+      const p = typeof acharPreset === 'function' ? acharPreset(cmd.id) : null;
+      if (!p) break;
+      const trocar = cmd.modo !== 'juntar';
+      if (trocar) {
+        pararMidia();
+        registrar();
+        MP.itens = [];
+        MP.idx = R.prevIdx = R.liveIdx = -1;
+        esconderPreviaEvento();
+        salvarMidia();
+      }
+      usarPreset(p, 'juntar');
+      if (trocar) { selecionarPrevia(0); definirPresetAtivo(p.id); }
+      break;
+    }
+    case 'presetSalvar': {
+      const nome = (cmd.nome || '').trim().slice(0, 60);
+      if (!nome) break;
+      if (typeof nomeRepetido === 'function' && nomeRepetido(nome)) { toast('Já existe um preset com esse nome'); break; }
+      const agora = Date.now();
+      meusPresets.unshift({ id: novoId(), nome, criado: agora, alterado: agora, itens: MP.itens.map(limparEvento) });
+      salvarPresets();
+      if (typeof montarPresets === 'function') montarPresets();
+      toast(`Preset "${nome}" criado pelo celular`);
+      break;
+    }
     case 'musPlay': window.Musicas?.alternarPlay(); break;
     case 'musParar': window.Musicas?.parar(); break;
     case 'musProx': window.Musicas?.pular(1); break;

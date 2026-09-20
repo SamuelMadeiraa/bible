@@ -233,3 +233,21 @@ main{flex:1;overflow:hidden;min-height:0}
 .lista .linha .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lista .linha .txt small{display:block;color:#e5383b;font-size:.72rem}
 .lista .linha .dur{color:var(--fraco);font-size:.85rem;font-variant-numeric:tabular-nums}
+
+/* destacar palavras e montar o roteiro pelo celular */
+.destaques .cab-linha{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.cores{display:flex;gap:6px}
+.cores .cor{width:22px;height:22px;border-radius:50%;border:2px solid transparent;padding:0}
+.cores .cor.on{border-color:#fff}
+.palavras{display:flex;flex-wrap:wrap;gap:6px}
+.palavras .pal{background:var(--cartao-2,rgba(255,255,255,.06));border:1px solid var(--linha,rgba(255,255,255,.12));color:inherit;border-radius:8px;padding:8px 10px;font-size:.95rem}
+.acoes-linha{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.acoes-linha .btn{flex:1;justify-content:center;white-space:nowrap}
+.aviso-novo{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.aviso-novo input,.aviso-novo textarea{width:100%;background:var(--cartao-2,rgba(255,255,255,.06));border:1px solid var(--linha,rgba(255,255,255,.12));color:inherit;border-radius:10px;padding:12px;font:inherit}
+.btn.largo{width:100%;justify-content:center}
+.btn.perigo{background:rgba(229,56,59,.14);border-color:rgba(229,56,59,.4);color:#ff8f91;margin-top:12px}
+#roteiroLista .item .edit{display:flex;gap:2px;margin-left:auto}
+#roteiroLista .item .edit button{background:none;border:0;color:var(--fraco);padding:8px 6px}
+#roteiroLista .item .edit .ico{width:18px;height:18px}
+#listaPresets .linha small{display:block;color:var(--fraco);font-size:.75rem}

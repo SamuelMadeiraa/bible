@@ -355,6 +355,7 @@ function alternarPalavra(i) {
   }
   mudou(false);
   if (typeof salvarDestaquesDoEvento === 'function') salvarDestaquesDoEvento();
+  if (typeof publicarEstado === 'function') publicarEstado();
 }
 function addRegra() {
   const v = $('novaPalavra').value.trim();
