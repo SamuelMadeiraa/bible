@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 const CANAIS = ['slide', 'displays-changed', 'output:state', 'media', 'media:progress', 'remoto', 'web:quadro', 'web:aviso', 'bible:abrir', 'atualizacao'];
 
 contextBridge.exposeInMainWorld('bridge', {
+  teste: process.argv.includes('--bl-teste'),     // versão de teste (BibleLyrics DEV)
   displays: () => ipcRenderer.invoke('displays'),
   openOutput: id => ipcRenderer.invoke('output:open', id),
   closeOutput: () => ipcRenderer.invoke('output:close'),

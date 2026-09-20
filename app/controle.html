@@ -132,6 +132,34 @@
       </div>
     </section>
 
+    <!-- MÚSICA (playlist do computador, versão de teste) -->
+    <section class="pane" data-pane="musica">
+      <div class="cartao player">
+        <div class="rotulo">MÚSICA TOCANDO</div>
+        <div class="agora" id="musAgora">Nada tocando</div>
+        <div class="barra"><div id="musBarra"></div></div>
+        <div class="tempos"><span id="musT">0:00</span><span id="musD">0:00</span></div>
+        <div class="transporte">
+          <button id="muAnt" class="btn redondo" aria-label="Música anterior"><i data-i="skip-back"></i></button>
+          <button id="muPlay" class="btn redondo grande-play" aria-label="Tocar ou pausar"><i data-i="play"></i></button>
+          <button id="muParar" class="btn redondo" aria-label="Parar"><i data-i="square"></i></button>
+          <button id="muProx" class="btn redondo" aria-label="Próxima música"><i data-i="skip-forward"></i></button>
+        </div>
+        <div class="vol-botoes">
+          <button id="muMenos" class="btn vol-btn" aria-label="Abaixar o volume"><i data-i="volume-2"></i><span>−</span></button>
+          <div class="vol-num"><b id="muVolTxt">70%</b><small>volume no PC</small></div>
+          <button id="muMais" class="btn vol-btn" aria-label="Aumentar o volume"><i data-i="volume-2"></i><span>+</span></button>
+        </div>
+        <input type="range" id="muVol" min="0" max="100" aria-label="Volume da música" />
+      </div>
+
+      <div class="cartao">
+        <div class="rotulo">PLAYLIST</div>
+        <div class="lista" id="musLista"></div>
+        <p class="dica">As músicas são adicionadas no computador, no painel <b>Músicas</b>.</p>
+      </div>
+    </section>
+
     <!-- TELA -->
     <section class="pane" data-pane="tela">
       <div class="modos">
@@ -158,6 +186,7 @@
     <button data-tab="versiculo" class="on"><i data-i="book-open"></i><span>Bíblia</span></button>
     <button data-tab="roteiro"><i data-i="list-video"></i><span>Roteiro</span></button>
     <button data-tab="midia"><i data-i="clapperboard"></i><span>Mídia</span></button>
+    <button data-tab="musica" id="abaMusica" hidden><i data-i="music"></i><span>Música</span></button>
     <button data-tab="tela"><i data-i="monitor"></i><span>Tela</span></button>
   </nav>
 </div>

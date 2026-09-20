@@ -194,6 +194,30 @@
     </div>
   </section>
 
+  <!-- ============ MÚSICAS (playlist de áudio, em teste) ============ -->
+  <section class="bloco" id="blocoMusicas">
+    <div class="mus-cab">
+      <button class="btn" id="btnAddMusicas"><i data-i="file-plus-2"></i>Adicionar músicas</button>
+      <span class="hint">Toca no computador, separado do roteiro</span>
+    </div>
+    <div class="mus-lista" id="listaMusicas"></div>
+    <div class="mus-player">
+      <div class="mus-agora" id="musAgora">Nada tocando</div>
+      <div class="mus-tempo" id="musTempo"></div>
+      <div class="mus-botoes">
+        <button id="musAnt" title="Música anterior"><i data-i="skip-back"></i></button>
+        <button id="musPlay" class="play" title="Tocar ou pausar"><i data-i="play"></i></button>
+        <button id="musParar" title="Parar"><i data-i="square"></i></button>
+        <button id="musProx" title="Próxima música"><i data-i="skip-forward"></i></button>
+      </div>
+      <label class="inline mus-vol"><i data-i="volume-2"></i><input type="range" id="musVol" min="0" max="100"> <b id="musVolTxt">70%</b></label>
+      <div class="mus-opts">
+        <label class="check"><input type="checkbox" id="musRepetir"> Repetir a playlist</label>
+        <label class="check"><input type="checkbox" id="musAleatorio"> Aleatório</label>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ AJUSTES (texto, estilo, fundo, saída) ============ -->
   <aside class="right bloco" id="blocoAjustes">
     <div class="tabs" data-group="right">
@@ -571,6 +595,7 @@
 <div class="toast" id="toast"></div>
 <script src="operador.js"></script>
 <script src="roteiro.js"></script>
+<script src="musicas.js"></script>
 <script src="painel.js"></script>
 <script src="layout.js"></script>
 <script src="programacao.js"></script>

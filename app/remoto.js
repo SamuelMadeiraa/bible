@@ -37,6 +37,7 @@ function estadoParaCelular() {
       volume: MP.volume,
       status: $('pStatus') ? $('pStatus').textContent : '',
     },
+    musicas: window.Musicas ? Musicas.estado() : null,
     cron: $('cronValor') ? { valor: $('cronValor').textContent, rotulo: $('cronRotulo').textContent, classe: $('cron').className } : null,
     resultados: ultimosResultados,
     programacao: window.Programacao ? Programacao.estado() : null,
@@ -128,6 +129,15 @@ function executarRemoto(cmd) {
     case 'progIniciar': window.Programacao?.iniciar(); break;
     case 'progRetomar': window.Programacao?.retomar(); break;
     case 'progParar': window.Programacao?.parar(); break;
+    case 'musPlay': window.Musicas?.alternarPlay(); break;
+    case 'musParar': window.Musicas?.parar(); break;
+    case 'musProx': window.Musicas?.pular(1); break;
+    case 'musAnt': window.Musicas?.pular(-1); break;
+    case 'musTocar': window.Musicas?.tocar(cmd.i ?? 0); break;
+    case 'musVolume':
+      if (cmd.d != null) window.Musicas?.mudarVolume(cmd.d);
+      else if (cmd.valor != null) window.Musicas?.definirVolume(cmd.valor);
+      break;
     case 'midiaSeek':
       $('pSeek').value = cmd.valor;
       $('pSeek').dispatchEvent(new Event('change'));

@@ -171,6 +171,7 @@ function aplicarEstado(st) {
   }
 
   desenharMidia(st.midia);
+  desenharMusica(st.musicas);
   desenharRoteiro(st);
   desenharProgramacao(st.programacao);
 }
@@ -292,6 +293,43 @@ $('formBusca').onsubmit = e => {
   enviar('buscar', { q });
   $('busca').blur();
 };
+
+// ---------- música (playlist do computador) ----------
+function desenharMusica(m) {
+  const aba = $('abaMusica');
+  if (aba) aba.hidden = !m;                       // só aparece quando o PC tem a playlist
+  if (!m) return;
+  $('musAgora').innerHTML = m.nome ? icone(m.tocando ? 'play' : 'pause', 'ico-antes') + esc(m.nome) : 'Nada tocando';
+  $('musT').textContent = fmt(m.t);
+  $('musD').textContent = fmt(m.dur);
+  $('musBarra').style.width = m.dur ? (m.t / m.dur * 100) + '%' : '0%';
+  porIcone($('muPlay'), m.tocando ? 'pause' : 'play');
+  $('muVolTxt').textContent = m.volume + '%';
+  if (document.activeElement !== $('muVol')) $('muVol').value = m.volume;
+  const box = $('musLista');
+  const html = (m.itens || []).map((x, i) =>
+    `<button class="linha${i === m.idx ? ' on' : ''}" data-i="${i}">
+       <span class="n">${i + 1}</span>
+       <span class="txt">${esc(x.nome)}${x.erro ? `<small>${esc(x.erro)}</small>` : ''}</span>
+       <span class="dur">${x.dur ? fmt(x.dur) : ''}</span>
+     </button>`).join('');
+  box.innerHTML = html || '<p class="dica">Nenhuma música na playlist ainda.</p>';
+  box.querySelectorAll('.linha').forEach(b => b.onclick = () => enviar('musTocar', { i: +b.dataset.i }));
+}
+$('muPlay').onclick = () => enviar('musPlay');
+$('muParar').onclick = () => enviar('musParar');
+$('muProx').onclick = () => enviar('musProx');
+$('muAnt').onclick = () => enviar('musAnt');
+$('muMais').onclick = () => enviar('musVolume', { d: 5 });
+$('muMenos').onclick = () => enviar('musVolume', { d: -5 });
+$('muVol').addEventListener('change', e => enviar('musVolume', { valor: +e.target.value }));
+// controles Bluetooth que mandam teclas de volume (os botões do próprio celular
+// o Android e o iPhone não entregam para a página — use os botões + e − da tela)
+addEventListener('keydown', e => {
+  if (!E || !E.musicas) return;
+  if (e.key === 'AudioVolumeUp') { e.preventDefault(); enviar('musVolume', { d: 5 }); }
+  else if (e.key === 'AudioVolumeDown') { e.preventDefault(); enviar('musVolume', { d: -5 }); }
+});
 
 $('mPlay').onclick = () => enviar('midiaPlay');
 $('mParar').onclick = () => enviar('midiaParar');

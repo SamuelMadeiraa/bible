@@ -10,7 +10,7 @@ const crypto = require('crypto');
 // Versão de teste (BibleLyrics DEV): mesmo programa, mas com dados, pasta e porta
 // separados, sem atualização automática e sem estatísticas. Serve para experimentar
 // coisas novas sem estragar nada da versão que a igreja usa.
-const EH_TESTE = /dev/i.test(app.getName());
+const EH_TESTE = /dev/i.test(app.getName()) || process.argv.includes('--teste');
 
 (function migrarDados() {
   try {
@@ -75,6 +75,8 @@ function recusar(res, r) {
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 const PRELOAD = path.join(__dirname, 'preload.js');
+// as telas precisam saber, já na abertura, se esta é a versão de teste
+const ARGS_TELA = EH_TESTE ? ['--bl-teste'] : [];
 const ICON = path.join(__dirname, 'app', 'icon.ico');
 
 // ---------------- janelas ----------------
@@ -86,7 +88,7 @@ function createOperator() {
     autoHideMenuBar: true,
     show: false,
     icon: ICON,
-    webPreferences: { preload: PRELOAD, backgroundThrottling: false },
+    webPreferences: { preload: PRELOAD, backgroundThrottling: false, additionalArguments: ARGS_TELA },
   });
   opWin.once('ready-to-show', () => { opWin.maximize(); opWin.show(); });
   opWin.loadFile(path.join(__dirname, 'app', 'home.html'));
@@ -166,7 +168,7 @@ function openOutput(displayId) {
     show: false,
     skipTaskbar: external,
     icon: ICON,
-    webPreferences: { preload: PRELOAD, backgroundThrottling: false },
+    webPreferences: { preload: PRELOAD, backgroundThrottling: false, additionalArguments: ARGS_TELA },
   });
   outWin.loadFile(path.join(__dirname, 'app', 'saida.html'));
   outWin.once('ready-to-show', () => {
@@ -573,7 +575,7 @@ ipcMain.on('janela:criador', () => {
     width: 1440, height: 900, minWidth: 1100, minHeight: 700, show: false,
     title: 'BibleLyrics — Criador de vídeo de louvor', autoHideMenuBar: true, icon: ICON,
     backgroundColor: '#0c0e12',
-    webPreferences: { preload: PRELOAD, backgroundThrottling: false },
+    webPreferences: { preload: PRELOAD, backgroundThrottling: false, additionalArguments: ARGS_TELA },
   });
   criadorWin.once('ready-to-show', () => { criadorWin.maximize(); criadorWin.show(); });
   criadorWin.loadFile(path.join(__dirname, 'app', 'criador.html'));
@@ -586,15 +588,22 @@ ipcMain.on('janela:criador', () => {
 });
 
 const FILTROS = {
-  audio: [{ name: 'Músicas', extensions: ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'm4b', 'oga', 'weba'] }],
+  audio: [
+    { name: 'Músicas', extensions: ['mp3', 'm4a', 'aac', 'wav', 'ogg', 'opus', 'flac', 'm4b', 'oga', 'weba', 'wma', 'aif', 'aiff', 'amr', 'ac3', 'mka', 'wv', 'ape', 'alac'] },
+    { name: 'Todos os arquivos', extensions: ['*'] },
+  ],
   imagem: [{ name: 'Imagens', extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'] }],
 };
-ipcMain.handle('arquivo:escolher', async (e, tipo) => {
+// tipo pode ser 'audio' / 'imagem', ou { tipo, varios } para escolher vários de uma vez
+ipcMain.handle('arquivo:escolher', async (e, pedido) => {
+  const { tipo, varios } = typeof pedido === 'string' ? { tipo: pedido, varios: false } : (pedido || {});
   const r = await dialog.showOpenDialog(BrowserWindow.fromWebContents(e.sender), {
-    title: tipo === 'audio' ? 'Escolher a música' : 'Escolher a imagem',
-    properties: ['openFile'], filters: FILTROS[tipo] || [],
+    title: tipo === 'audio' ? (varios ? 'Escolher as músicas' : 'Escolher a música') : 'Escolher a imagem',
+    properties: varios ? ['openFile', 'multiSelections'] : ['openFile'],
+    filters: FILTROS[tipo] || [],
   });
-  return r.canceled ? null : r.filePaths[0];
+  if (r.canceled) return varios ? [] : null;
+  return varios ? r.filePaths : r.filePaths[0];
 });
 // lê um arquivo local para a tela (música para o vídeo, imagem de fundo/logo)
 const LIMITE_LEITURA = 400 * 1024 * 1024;

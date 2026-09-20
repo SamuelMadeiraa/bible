@@ -218,3 +218,18 @@ main{flex:1;overflow:hidden;min-height:0}
 .ref-busca{display:block;color:var(--azul);font-weight:800;margin-bottom:2px}
 .corte{white-space:nowrap;font-size:.98rem;letter-spacing:.3px;padding-left:8px;padding-right:8px}
 .envio-item.erro .barra div{background:var(--live)}
+
+/* volume da música: botões grandes, bons de acertar no escuro */
+.vol-botoes{display:flex;align-items:center;gap:12px;margin-top:14px}
+.vol-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:18px 0;font-size:1.4rem;font-weight:700;border-radius:16px}
+.vol-btn span{font-size:1.6rem;line-height:1}
+.vol-num{text-align:center;min-width:86px}
+.vol-num b{display:block;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.vol-num small{color:var(--fraco);font-size:.72rem}
+#muVol{width:100%;margin-top:12px}
+.lista .linha{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:inherit;padding:12px 8px;border-radius:10px}
+.lista .linha.on{background:rgba(90,160,239,.16)}
+.lista .linha .n{color:var(--fraco);font-size:.85rem;min-width:18px}
+.lista .linha .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lista .linha .txt small{display:block;color:#e5383b;font-size:.72rem}
+.lista .linha .dur{color:var(--fraco);font-size:.85rem;font-variant-numeric:tabular-nums}

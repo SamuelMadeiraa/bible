@@ -17,7 +17,10 @@ window.Layout = (function () {
     roteiro:  { titulo: 'Roteiro',   icone: 'list-video',         bloco: 'blocoRoteiro' },
     midia:    { titulo: 'Mídia',     icone: 'clapperboard',       bloco: 'blocoMidia' },
     ajustes:  { titulo: 'Ajustes',   icone: 'palette',            bloco: 'blocoAjustes' },
+    musicas:  { titulo: 'Músicas',   icone: 'music',              bloco: 'blocoMusicas' },
   };
+  // a playlist de músicas está em teste: só aparece no BibleLyrics DEV
+  if (!(window.bridge && window.bridge.teste)) { delete PAINEIS.musicas; $('blocoMusicas')?.remove(); }
 
   if (!DV || !DV.createDockview) {
     // sem a biblioteca: mostra os blocos empilhados, para o app continuar funcionando
