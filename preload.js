@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('bridge', {
   lerArquivo: caminho => ipcRenderer.invoke('arquivo:ler', caminho),
   destinoVideo: nome => ipcRenderer.invoke('video:destino', nome),
   gravarVideo: (caminho, dados) => ipcRenderer.invoke('video:gravar', caminho, dados),
+  salvarImagensPdf: (nome, imagens) => ipcRenderer.invoke('pdf:salvar-imagens', nome, imagens),
   mostrarPasta: (qual, caminho) => ipcRenderer.send('pasta:mostrar', qual, caminho),
   adicionarAoRoteiro: caminho => ipcRenderer.invoke('roteiro:adicionar', caminho),
   abrirSite: pagina => ipcRenderer.send('abrir-site', pagina),

@@ -1,6 +1,6 @@
 {
   "name": "bible-acf-studio",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "description": "Projeção de versículos (ACF) e mídias ao vivo, com tela de operador e tela de projeção",
   "main": "main.js",
   "author": "Samuel Madeira",
@@ -25,7 +25,10 @@
       "node_modules/dockview-core/**/*",
       "node_modules/qrcode-generator/**/*",
       "node_modules/mp4-muxer/build/**/*",
-      "node_modules/mp4-muxer/package.json"
+      "node_modules/mp4-muxer/package.json",
+      "node_modules/pdfjs-dist/build/pdf.min.js",
+      "node_modules/pdfjs-dist/build/pdf.worker.min.js",
+      "node_modules/pdfjs-dist/standard_fonts/**/*"
     ],
     "win": {
       "target": [
@@ -84,6 +87,7 @@
     "electron-updater": "^6.8.9",
     "fflate": "^0.8.3",
     "mp4-muxer": "^5.2.2",
+    "pdfjs-dist": "3.11.174",
     "qrcode-generator": "^2.0.4"
   },
   "productName": "BibleLyrics"

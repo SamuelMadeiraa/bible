@@ -52,6 +52,7 @@
         <div class="hero-acoes">
           <button class="btn primario grande" id="btnOperar"><i data-i="monitor"></i>Iniciar operação<i data-i="arrow-right"></i></button>
           <button class="btn fantasma grande" id="btnCriador"><i data-i="film"></i>Criar vídeo de louvor</button>
+          <button class="btn fantasma grande" id="btnPdfHero" hidden><i data-i="image"></i>PDF em imagens</button>
         </div>
       </div>
 
@@ -113,6 +114,10 @@
           <i data-i="captions"></i><b>Vídeos gerados</b>
           <span>A pasta com os vídeos de louvor criados aqui.</span>
         </button>
+        <button class="ferramenta novo" data-acao="pdf" id="ferramentaPdf" hidden>
+          <i data-i="image"></i><b>PDF em imagens <em>Novo</em></b>
+          <span>Cada página do PDF vira uma foto. Escolha as páginas e crie um preset com elas.</span>
+        </button>
         <button class="ferramenta" data-acao="atalhos">
           <i data-i="keyboard"></i><b>Atalhos do teclado</b>
           <span>Espaço, setas, B, C, Insert, Ctrl+Z e o passador de slides.</span>
@@ -130,6 +135,7 @@
           <h2>Cada culto, pronto para abrir</h2>
         </div>
         <div class="form-acoes">
+          <button class="btn" id="btnPdfPreset" hidden title="Criar um preset com as páginas de um PDF"><i data-i="image"></i>Preset de um PDF</button>
           <button class="btn" id="btnAbrirBible" title="Abrir um preset ou backup (.bible)"><i data-i="download"></i>Abrir .bible</button>
           <button class="btn primario" id="btnNovoPreset"><i data-i="plus"></i>Novo preset</button>
         </div>
@@ -272,6 +278,58 @@
   </div>
 </div>
 
+<!-- PDF em imagens: cada página vira uma foto; as escolhidas viram um preset -->
+<div class="modal" id="modalPdf">
+  <div class="caixa pdf-caixa">
+    <div class="m-cab"><b><i data-i="image"></i>PDF em imagens</b><button class="fechar" data-fechar><i data-i="x"></i></button></div>
+    <div class="m-corpo">
+      <div class="pdf-inicio" id="pdfInicio">
+        <i data-i="file-plus-2"></i>
+        <b>Escolha um PDF</b>
+        <span>Cada página vira uma imagem em alta qualidade (Full HD). Depois é só marcar as que você quer
+          e criar um preset com elas — ou guardar só as imagens.</span>
+        <button class="btn primario" id="pdfEscolher"><i data-i="folder-open"></i>Escolher o PDF</button>
+        <small>ou arraste o arquivo PDF para cá</small>
+      </div>
+
+      <div class="pdf-lendo" id="pdfLendo" hidden>
+        <b id="pdfLendoTxt">Abrindo o PDF…</b>
+        <div class="pdf-barra"><i id="pdfBarra"></i></div>
+      </div>
+
+      <div id="pdfPaginas" hidden>
+        <div class="pdf-topo">
+          <div><b id="pdfArquivo"></b><small id="pdfContagem"></small></div>
+          <button class="btn pequeno" id="pdfTodas">Marcar todas</button>
+          <button class="btn pequeno" id="pdfNenhuma">Desmarcar todas</button>
+          <button class="btn pequeno" id="pdfOutro"><i data-i="folder-open"></i>Outro PDF</button>
+        </div>
+        <div class="pdf-grade" id="pdfGrade"></div>
+        <div class="pdf-rodape">
+          <div class="campo">
+            <label for="pdfNome">Nome do preset</label>
+            <input type="text" id="pdfNome" maxlength="60" autocomplete="off">
+          </div>
+          <button class="btn" id="pdfSoImagens" title="Guarda as imagens escolhidas na pasta do BibleLyrics, sem criar preset"><i data-i="save"></i>Só salvar as imagens</button>
+          <button class="btn primario" id="pdfCriar"><i data-i="list-plus"></i>Criar preset</button>
+        </div>
+        <p class="erro" id="pdfErro"></p>
+      </div>
+
+      <div class="pdf-pronto" id="pdfPronto" hidden>
+        <i data-i="circle-check"></i>
+        <b id="pdfProntoTxt"></b>
+        <span id="pdfProntoSub"></span>
+        <div class="form-acoes">
+          <button class="btn" id="pdfVerPasta"><i data-i="folder"></i>Mostrar na pasta</button>
+          <button class="btn" id="pdfNovo"><i data-i="file-plus-2"></i>Outro PDF</button>
+          <button class="btn primario" id="pdfUsar"><i data-i="play"></i>Abrir na operação</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- atalhos -->
 <div class="modal" id="modalAtalhos">
   <div class="caixa">
@@ -297,5 +355,7 @@
 
 <div class="toast" id="toast"></div>
 <script src="home.js"></script>
+<script src="pdf.js"></script>
+<script src="guia.js"></script>
 </body>
 </html>

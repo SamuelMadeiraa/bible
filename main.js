@@ -593,12 +593,13 @@ const FILTROS = {
     { name: 'Todos os arquivos', extensions: ['*'] },
   ],
   imagem: [{ name: 'Imagens', extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'] }],
+  pdf: [{ name: 'PDF', extensions: ['pdf'] }],
 };
 // tipo pode ser 'audio' / 'imagem', ou { tipo, varios } para escolher vários de uma vez
 ipcMain.handle('arquivo:escolher', async (e, pedido) => {
   const { tipo, varios } = typeof pedido === 'string' ? { tipo: pedido, varios: false } : (pedido || {});
   const r = await dialog.showOpenDialog(BrowserWindow.fromWebContents(e.sender), {
-    title: tipo === 'audio' ? (varios ? 'Escolher as músicas' : 'Escolher a música') : 'Escolher a imagem',
+    title: tipo === 'audio' ? (varios ? 'Escolher as músicas' : 'Escolher a música') : tipo === 'pdf' ? 'Escolher o PDF' : 'Escolher a imagem',
     properties: varios ? ['openFile', 'multiSelections'] : ['openFile'],
     filters: FILTROS[tipo] || [],
   });
@@ -626,6 +627,21 @@ ipcMain.handle('video:gravar', async (e, caminho, dados) => {
   await fs.promises.writeFile(caminho, Buffer.from(dados));
   analytics.enviar('video_louvor_gerado', { mb: Math.round(dados.byteLength / 1048576) });
   return true;
+});
+// páginas de um PDF viradas imagem (tela Início): cada PDF ganha uma pasta própria dentro de Mídias
+const semProibidos = s => String(s || '').replace(/[<>:"/\\|?*\x00-\x1f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 80);
+ipcMain.handle('pdf:salvar-imagens', async (e, nome, imagens) => {
+  const base = path.join(biblioteca.pasta('midias'), semProibidos(nome) || 'PDF');
+  let dir = base;
+  for (let n = 2; fs.existsSync(dir); n++) dir = `${base} (${n})`;
+  await fs.promises.mkdir(dir, { recursive: true });
+  const caminhos = [];
+  for (const img of imagens || []) {
+    const arq = path.join(dir, semProibidos(img.nome) || `pagina ${caminhos.length + 1}.jpg`);
+    await fs.promises.writeFile(arq, Buffer.from(img.dados));
+    caminhos.push(arq);
+  }
+  return { pasta: dir, caminhos };
 });
 ipcMain.on('pasta:mostrar', (e, qual, caminho) => {
   if (qual === 'arquivo' && caminho) return shell.showItemInFolder(caminho);
