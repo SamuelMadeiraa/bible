@@ -601,6 +601,8 @@
     }
     if (ler(DESLIGADO) === '1' || jaViu(pagina)) return;
     marcarVisto(pagina, true);
+    // a janela de Novidades já oferece o tour: não abre um por cima do outro
+    if (pagina === 'home' && window.NOVIDADES_ABERTAS) return;
     // a operação monta o layout e aplica o que veio do Início antes; espera um pouco
     setTimeout(abrir, pagina === 'operador' ? 900 : 400);
   }

@@ -162,6 +162,20 @@ input:focus,select:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(90,1
 .atalhos td:first-child{white-space:nowrap;width:1%;padding-right:18px}
 kbd{font-family:inherit;font-size:12px;padding:2px 7px;border-radius:6px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--text)}
 
+/* novidades */
+.nov-caixa{width:min(620px,100%);background:linear-gradient(180deg,rgba(90,160,239,.10),#151920 160px)}
+.nov-topo{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0}
+.nov-titulo{font-family:var(--titulo);font-weight:800;font-size:26px;line-height:1.15;margin-top:2px}
+.nov-sub{color:var(--muted-2);font-size:13.5px;margin:4px 0 18px}
+.nov-lista{display:flex;flex-direction:column;gap:10px}
+.nov-item{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line)}
+.nov-item>.ico{width:42px;height:42px;padding:10px;border-radius:12px;background:rgba(90,160,239,.1);color:var(--azul);flex:none}
+.nov-item>div{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:3px}
+.nov-item b{font-family:var(--titulo);font-size:15.5px}
+.nov-item span{color:var(--text-2);font-size:13.5px;line-height:1.5}
+.nov-item .btn{flex:none}
+.nov-acoes{margin-top:18px;justify-content:flex-end}
+
 /* PDF em imagens */
 .pdf-caixa{width:min(1100px,100%)}
 .pdf-inicio,.pdf-pronto{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:34px 20px;border:2px dashed var(--line-2);border-radius:16px;transition:border-color .15s,background .15s}
