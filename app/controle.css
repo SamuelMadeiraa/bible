@@ -260,3 +260,6 @@ main{flex:1;overflow:hidden;min-height:0}
 .rascunho-recebido{position:fixed;left:12px;right:12px;bottom:86px;z-index:60;box-shadow:0 20px 60px -20px #000}
 .rascunho-recebido[hidden]{display:none}
 .rascunho-recebido b{display:block;margin-bottom:4px}
+
+/* botão de repetir a música, ligado */
+.btn.redondo.ligado{background:rgba(90,160,239,.22);border-color:rgba(90,160,239,.6);color:#8ec2ff}

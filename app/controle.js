@@ -453,6 +453,8 @@ function desenharMusica(m) {
   $('musD').textContent = fmt(m.dur);
   $('musBarra').style.width = m.dur ? (m.t / m.dur * 100) + '%' : '0%';
   porIcone($('muPlay'), m.tocando ? 'pause' : 'play');
+  $('muLoop').classList.toggle('ligado', !!m.loop);
+  $('muLoop').title = m.loop ? 'Repetindo esta música' : 'Repetir esta música';
   $('muVolTxt').textContent = m.volume + '%';
   if (document.activeElement !== $('muVol')) $('muVol').value = m.volume;
   const box = $('musLista');
@@ -468,6 +470,7 @@ function desenharMusica(m) {
 $('muPlay').onclick = () => enviar('musPlay');
 $('muParar').onclick = () => enviar('musParar');
 $('muProx').onclick = () => enviar('musProx');
+$('muLoop').onclick = () => { vibrar(); enviar('musLoop'); };
 $('muAnt').onclick = () => enviar('musAnt');
 $('muMais').onclick = () => enviar('musVolume', { d: 5 });
 $('muMenos').onclick = () => enviar('musVolume', { d: -5 });

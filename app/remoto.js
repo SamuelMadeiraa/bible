@@ -213,6 +213,7 @@ function executarRemoto(cmd) {
       break;
     }
     case 'musPlay': window.Musicas?.alternarPlay(); break;
+    case 'musLoop': window.Musicas?.definirLoop(cmd.v != null ? cmd.v : !(Musicas.estado().loop)); break;
     case 'musParar': window.Musicas?.parar(); break;
     case 'musProx': window.Musicas?.pular(1); break;
     case 'musAnt': window.Musicas?.pular(-1); break;

@@ -14,7 +14,7 @@ const USADOS = [
   'eye', 'radio', 'sliders-horizontal', 'highlighter', 'palette',
   // menus do botão direito, arrastar arquivos e programação
   'alarm-clock', 'calendar-clock', 'list-plus', 'copy', 'copy-plus', 'trash-2', 'corner-down-right', 'zap',
-  'list-ordered', 'file-plus-2', 'circle-stop',
+  'list-ordered', 'file-plus-2', 'circle-stop', 'repeat', 'repeat-1', 'shuffle',
   // tela Início e criador de vídeo de louvor
   'house', 'film', 'sparkles', 'type', 'globe', 'timer', 'folder', 'arrow-right', 'wand-sparkles', 'qr-code',
   'monitor-check', 'audio-lines', 'captions', 'sun', 'moon', 'sunrise', 'align-left', 'align-center', 'rotate-cw',

@@ -1,4 +1,4 @@
-// Playlist de músicas (só na versão de teste, por enquanto).
+// Playlist de músicas do computador.
 // Toca no computador, separada do roteiro: dá para ter louvor de fundo enquanto o
 // versículo está na tela. O celular controla tocar, trocar e o volume.
 window.Musicas = (function () {
@@ -6,7 +6,9 @@ window.Musicas = (function () {
   // tenta tocar qualquer formato de áudio; se o Windows/Chromium não souber, o item avisa
   const EXT = /\.(mp3|m4a|m4b|aac|wav|ogg|oga|opus|flac|weba|mka|wma|aif|aiff|amr|ac3|mp2|wv|ape|alac|dsf)$/i;
 
-  const M = { itens: [], idx: -1, volume: 70, repetir: true, aleatorio: false };
+  // repetir: volta ao começo da playlist quando acaba a última
+  // loop: repete sem parar a música que está tocando
+  const M = { itens: [], idx: -1, volume: 70, repetir: true, aleatorio: false, loop: false };
   try { Object.assign(M, JSON.parse(localStorage.getItem(CHAVE) || '{}')); } catch (e) {}
   M.itens = (M.itens || []).filter(x => x && x.caminho);
 
@@ -61,6 +63,7 @@ window.Musicas = (function () {
     if (!item) return;
     M.idx = i;
     audio.src = urlArquivo(item.caminho);
+    audio.loop = M.loop;
     audio.volume = M.volume / 100;
     audio.play().then(() => { tocando = true; delete item.erro; montar(); })
       .catch(() => { tocando = false; item.erro = 'não consegui tocar este arquivo'; montar(); });
@@ -93,9 +96,18 @@ window.Musicas = (function () {
   function irPara(t) { if (isFinite(t)) audio.currentTime = Math.max(0, t); montar(); }
 
   audio.addEventListener('ended', () => {
+    if (M.loop) { audio.currentTime = 0; audio.play().catch(() => {}); montar(); return; }
     if (M.repetir || M.idx < M.itens.length - 1) pular(1);
     else { tocando = false; montar(); }
   });
+  // repetir a música atual (botão no PC e no celular)
+  function definirLoop(v) {
+    M.loop = !!v;
+    audio.loop = M.loop;        // sem cortes entre uma volta e outra
+    salvar();
+    montar();
+  }
+  const alternarLoop = () => definirLoop(!M.loop);
   audio.addEventListener('timeupdate', () => { if (Math.abs(audio.currentTime - (audio.__ultimo || 0)) > 0.9) { audio.__ultimo = audio.currentTime; montar(); } });
 
   // ---------- tela ----------
@@ -123,6 +135,7 @@ window.Musicas = (function () {
     if ($('musPlay')) porIcone($('musPlay').querySelector('i') || $('musPlay'), tocando ? 'pause' : 'play');
     if ($('musVol')) $('musVol').value = M.volume;
     if ($('musVolTxt')) $('musVolTxt').textContent = M.volume + '%';
+    if ($('musLoop')) { $('musLoop').checked = M.loop; $('musLoop').closest('.check')?.classList.toggle('ligado', M.loop); }
     if ($('musRepetir')) $('musRepetir').checked = M.repetir;
     if ($('musAleatorio')) $('musAleatorio').checked = M.aleatorio;
     if (typeof publicarEstado === 'function') publicarEstado();
@@ -136,6 +149,7 @@ window.Musicas = (function () {
       idx: M.idx,
       tocando,
       volume: M.volume,
+      loop: M.loop,
       repetir: M.repetir,
       aleatorio: M.aleatorio,
       t: Math.round(audio.currentTime || 0),
@@ -151,6 +165,7 @@ window.Musicas = (function () {
     $('musProx').onclick = () => pular(1);
     $('musAnt').onclick = () => pular(-1);
     $('musVol').addEventListener('input', e => definirVolume(+e.target.value));
+    $('musLoop').addEventListener('change', e => definirLoop(e.target.checked));
     $('musRepetir').addEventListener('change', e => { M.repetir = e.target.checked; salvar(); });
     $('musAleatorio').addEventListener('change', e => { M.aleatorio = e.target.checked; salvar(); });
     $('btnAddMusicas').onclick = async () => {
@@ -173,5 +188,6 @@ window.Musicas = (function () {
   }
   document.readyState === 'loading' ? addEventListener('DOMContentLoaded', ligarBotoes) : ligarBotoes();
 
-  return { adicionar, tocar, alternarPlay, parar, pular, definirVolume, mudarVolume, irPara, remover, limpar, estado, montar };
+  audio.loop = M.loop;
+  return { adicionar, tocar, alternarPlay, parar, pular, definirVolume, mudarVolume, irPara, remover, limpar, estado, montar, definirLoop, alternarLoop };
 })();
