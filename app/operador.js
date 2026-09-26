@@ -785,18 +785,16 @@ async function abrirProjecao(id) {
   S.monitor = id; salvar();
   await ponte.openOutput(id);
   if (!live.slide) alternarModo('clear');
-  primeiraMidiaNoAr();
+  primeiroItemNoAr();
 }
 
-// ao abrir a projeção, já entra a primeira mídia do roteiro (vídeo, foto ou áudio).
+// ao abrir a projeção, já entra o primeiro item do roteiro (versículo, vídeo, foto, aviso…).
 // Se alguma coisa já está no ar, não mexe.
-function primeiraMidiaNoAr() {
-  if (typeof MP === 'undefined' || !MP.itens || R.liveIdx >= 0) return;
-  const i = MP.itens.findIndex(ehMidia);
-  if (i < 0) return;
+function primeiroItemNoAr() {
+  if (typeof MP === 'undefined' || !MP.itens || !MP.itens.length || R.liveIdx >= 0) return;
   setTimeout(() => {
     if (R.liveIdx >= 0) return;
-    selecionarPrevia(i);
+    selecionarPrevia(0);
     cortar();
   }, 400);
 }
